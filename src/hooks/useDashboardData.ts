@@ -160,7 +160,7 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
   let totalOutput = 0, totalTarget = 0, totalDefects = 0, totalChecked = 0, totalRework = 0;
   let totalDowntime = 0, totalNpt = 0, totalManpower = 0, totalMachines = 0;
   let totalWorkingMinutes = 0, plannedOperators = 0, presentOperators = 0;
-  let smvWeightSum = 0, weightSum = 0;
+  let smvWeightSum = 0, weightSum = 0, totalOTMinutes = 0;
 
   for (const plan of (plans ?? [])) {
     const hourly = hourlyByPlan.get(plan.id);
