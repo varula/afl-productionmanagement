@@ -4,15 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { KPIHeroCard } from '@/components/dashboard/KPIHeroCard';
 import { SectionHeader } from '@/components/dashboard/SectionHeader';
 import { EfficiencyTrendChart } from '@/components/charts/EfficiencyTrendChart';
-import { DHUTrendChart } from '@/components/charts/DHUTrendChart';
-import { DowntimeParetoChart } from '@/components/charts/DowntimeParetoChart';
-import { LostTimeDonutChart } from '@/components/charts/LostTimeDonutChart';
 import { ProductionFunnelChart } from '@/components/charts/ProductionFunnelChart';
-import { LaborProductivityChart } from '@/components/charts/LaborProductivityChart';
-import { QualityStackedChart } from '@/components/charts/QualityStackedChart';
-import { TurnoverColumnChart } from '@/components/charts/TurnoverColumnChart';
-import { CostPerSMVChart } from '@/components/charts/CostPerSMVChart';
-import { ManMachineGauge } from '@/components/charts/ManMachineGauge';
+import { DowntimeParetoChart } from '@/components/charts/DowntimeParetoChart';
 import { LineStatusTable } from '@/components/dashboard/LineStatusTable';
 import { DashboardSubPanel } from '@/components/dashboard/DashboardSubPanel';
 import { computeAllKPIs } from '@/lib/kpi';
@@ -23,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3, CalendarIcon, Activity, Zap, Clock, Scissors, Factory, Package, ArrowRight } from 'lucide-react';
+import { BarChart3, CalendarIcon, Activity, Zap, Clock, Scissors, Factory, Package, ArrowRight, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { KPIInput } from '@/lib/kpi';
 
@@ -64,14 +57,10 @@ function DashboardSkeleton() {
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-[140px] rounded-2xl" />
+          <Skeleton key={i} className="h-[120px] rounded-2xl" />
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-[260px] rounded-xl" />
-        ))}
-      </div>
+      <Skeleton className="h-[300px] rounded-xl" />
     </div>
   );
 }
@@ -90,7 +79,6 @@ function EmptyState() {
   );
 }
 
-// Live pulse indicator
 function LiveBadge() {
   return (
     <div className="flex items-center gap-1.5 text-[9px] font-bold text-success bg-success/8 px-2 py-1 rounded-lg border border-success/15">
@@ -120,14 +108,12 @@ export default function Dashboard() {
   useEffect(() => { setPanelClosed(false); }, [currentFilter]);
 
   const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, totalOTMinutes, otBySection, otByFloor, isLoading, isEmpty } = useDashboardData(dateStr, factoryId);
-  const maxOTHours = 20; // daily OT budget in hours
 
-  // Top 4 hero KPIs — only the most important
+  // 4 hero KPIs
   const gaugeKPIs = useMemo(() => {
     const all = computeAllKPIs(kpiInput);
     const keys = ['factory_efficiency', 'dhu', 'lost_time'];
     const found = keys.map(k => all.find(kpi => kpi.key === k)).filter(Boolean) as typeof all;
-    // Add achievement as a custom KPI
     const achievementPct = kpiInput.totalTarget > 0 ? (kpiInput.totalOutput / kpiInput.totalTarget) * 100 : 0;
     found.unshift({
       key: 'achievement',
@@ -141,14 +127,6 @@ export default function Dashboard() {
     });
     return found;
   }, [kpiInput]);
-
-  // DHU trend
-  const dhuTrendData = useMemo(() => {
-    return trendData.map(t => ({
-      date: t.date,
-      dhu: Math.max(0.5, 8 - t.efficiency * 0.06 + (Math.random() * 1.5 - 0.75)),
-    }));
-  }, [trendData]);
 
   // Funnel
   const funnelData = useMemo(() => {
@@ -165,50 +143,7 @@ export default function Dashboard() {
     ];
   }, [kpiInput]);
 
-  // Labor by dept
-  const laborDeptData = useMemo(() => {
-    const avgProd = kpiInput.presentOperators > 0 ? kpiInput.totalOutput / kpiInput.presentOperators : 0;
-    return [
-      { department: 'Sewing', productivity: Math.round(avgProd * 1.1) },
-      { department: 'Cutting', productivity: Math.round(avgProd * 1.4) },
-      { department: 'Finishing', productivity: Math.round(avgProd * 0.9) },
-      { department: 'Overall', productivity: Math.round(avgProd) },
-    ];
-  }, [kpiInput]);
-
-  // Quality per line
-  const qualityData = useMemo(() => {
-    return lineStatuses.slice(0, 8).map(l => {
-      const checked = Math.max(l.output, 1);
-      const defects = Math.round(checked * l.dhu / 100);
-      const rework = Math.round(defects * 0.6);
-      return { line: `L${l.lineNumber}`, pass: checked - defects, rework, reject: defects - Math.round(defects * 0.6) };
-    });
-  }, [lineStatuses]);
-
-  // Cost per SMV trend
-  const costPerSMVData = useMemo(() => {
-    return trendData.map(t => ({
-      date: t.date,
-      cost: +(0.4 + Math.random() * 0.25).toFixed(2),
-    }));
-  }, [trendData]);
-
-  // Man:Machine ratio
-  const manMachineData = useMemo(() => {
-    const ratio = kpiInput.totalMachines > 0 ? kpiInput.totalManpower / kpiInput.totalMachines : 0;
-    return { ratio: +ratio.toFixed(2), target: 1.5, operators: kpiInput.totalManpower, machines: kpiInput.totalMachines };
-  }, [kpiInput]);
-
-  // Turnover
-  const turnoverData = useMemo(() => {
-    return ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'].map(month => ({
-      month,
-      turnover: +(2 + Math.random() * 4).toFixed(1),
-    }));
-  }, []);
-
-  // Summary stats for header
+  // Summary stats
   const summaryStats = useMemo(() => {
     const eff = gaugeKPIs.find(k => k.key === 'factory_efficiency');
     return {
@@ -225,10 +160,10 @@ export default function Dashboard() {
   const isDefault = currentFilter === 'dash-default';
 
   return (
-    <div key={currentFilter} className="space-y-5">
-      {/* ═══════════════════════ HEADER ══════════════════════ */}
+    <div key={currentFilter} className="space-y-4">
+      {/* ═══ HEADER ═══ */}
       <div className="animate-fade-in">
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between mb-2">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
               <h1 className="text-lg font-black text-foreground tracking-tight">{reportConfig.title}</h1>
@@ -238,27 +173,24 @@ export default function Dashboard() {
               {isToday ? reportConfig.subtitle : `Historical data — ${format(selectedDate, 'MMMM dd, yyyy')}`}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn('gap-1.5 text-[11px] h-8 rounded-lg', !isToday && 'border-primary text-primary')}>
-                  <CalendarIcon className="h-3.5 w-3.5" />
-                  {isToday ? 'Today' : format(selectedDate, 'MMM dd')}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar mode="single" selected={selectedDate} onSelect={d => d && setSelectedDate(d)} disabled={date => date > new Date()} initialFocus className="p-3 pointer-events-auto" />
-              </PopoverContent>
-            </Popover>
-          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn('gap-1.5 text-[11px] h-8 rounded-lg', !isToday && 'border-primary text-primary')}>
+                <CalendarIcon className="h-3.5 w-3.5" />
+                {isToday ? 'Today' : format(selectedDate, 'MMM dd')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar mode="single" selected={selectedDate} onSelect={d => d && setSelectedDate(d)} disabled={date => date > new Date()} initialFocus className="p-3 pointer-events-auto" />
+            </PopoverContent>
+          </Popover>
         </div>
 
-        {/* Quick summary strip */}
         {isDefault && (
-          <div className="flex items-center gap-4 text-[10px] font-medium text-muted-foreground pb-1">
+          <div className="flex items-center gap-4 text-[10px] font-medium text-muted-foreground">
             <div className="flex items-center gap-1">
               <Activity className="h-3 w-3" />
-              <span><span className="font-bold text-foreground">{summaryStats.lines}</span> active lines</span>
+              <span><span className="font-bold text-foreground">{summaryStats.lines}</span> lines</span>
             </div>
             <div className="w-px h-3 bg-border" />
             <div className="flex items-center gap-1">
@@ -267,26 +199,24 @@ export default function Dashboard() {
             </div>
             <div className="w-px h-3 bg-border" />
             <div className="flex items-center gap-1">
+              <Timer className="h-3 w-3" />
+              <span>OT: <span className="font-bold text-foreground">{(totalOTMinutes / 60).toFixed(1)} hrs</span></span>
+            </div>
+            <div className="w-px h-3 bg-border" />
+            <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              <span>Updated {format(new Date(), 'h:mm a')}</span>
+              <span>{format(new Date(), 'h:mm a')}</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* ═══════════════════════ KPI HERO ROW ══════════════════════ */}
+      {/* ═══ KPI HERO ROW ═══ */}
       {isDefault && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 animate-fade-in">
           {gaugeKPIs.map((kpi, i) => (
             <div key={kpi.key} style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'both' }} className="animate-fade-in min-w-0">
-              <KPIHeroCard
-                label={kpi.label}
-                value={kpi.value}
-                target={kpi.target ?? 0}
-                unit={kpi.unit}
-                status={kpi.status}
-                trend={kpi.trend}
-              />
+              <KPIHeroCard label={kpi.label} value={kpi.value} target={kpi.target ?? 0} unit={kpi.unit} status={kpi.status} trend={kpi.trend} />
             </div>
           ))}
         </div>
@@ -297,193 +227,50 @@ export default function Dashboard() {
         <DashboardSubPanel filter={currentFilter} lines={lineStatuses} onClose={handleClosePanel} />
       )}
 
-      {/* ═══════════════════════ DEPARTMENT DRILL-DOWN ══════════════════════ */}
+      {/* ═══ DEPARTMENT DRILL-DOWN ═══ */}
       {isDefault && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fade-in">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 animate-fade-in">
           {[
             { key: 'cutting', label: 'Cutting', icon: Scissors, color: 'from-primary to-primary/70', path: '/dashboard/cutting' },
             { key: 'sewing', label: 'Sewing', icon: Factory, color: 'from-purple to-purple/70', path: '/dashboard/sewing' },
             { key: 'finishing', label: 'Finishing', icon: Package, color: 'from-success to-success/70', path: '/dashboard/finishing' },
+            { key: 'overtime', label: 'Overtime', icon: Timer, color: 'from-warning to-warning/70', path: '/overtime' },
           ].map(dept => (
             <button
               key={dept.key}
               onClick={() => navigate(dept.path)}
-              className="group flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:-translate-y-0.5 transition-all"
+              className="group flex items-center gap-2.5 p-2.5 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:-translate-y-0.5 transition-all"
             >
-              <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${dept.color} flex items-center justify-center shrink-0`}>
-                <dept.icon className="h-4 w-4 text-primary-foreground" />
+              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${dept.color} flex items-center justify-center shrink-0`}>
+                <dept.icon className="h-3.5 w-3.5 text-primary-foreground" />
               </div>
-              <div className="text-left flex-1">
-                <div className="text-xs font-bold text-foreground">{dept.label} Department</div>
-                <div className="text-[10px] text-muted-foreground">View detailed analytics</div>
+              <div className="text-left flex-1 min-w-0">
+                <div className="text-[11px] font-bold text-foreground truncate">{dept.label}</div>
+                <div className="text-[9px] text-muted-foreground">View details</div>
               </div>
-              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+              <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
             </button>
           ))}
         </div>
       )}
 
-      {/* ═══════════════════════ PRODUCTIVITY PANEL ══════════════════════ */}
+      {/* ═══ CHARTS: Efficiency Trend + Production Funnel ═══ */}
       {isDefault && (
-        <div className="space-y-2.5">
-          <SectionHeader title="Productivity & Trends" color="bg-primary" badge="Live">
-            <span className="text-[9px] text-muted-foreground">Last 7 days</span>
-          </SectionHeader>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            {trendData.length > 0 && (
-              <div className="animate-fade-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-                <EfficiencyTrendChart data={trendData} />
-              </div>
-            )}
-            <div className="animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
-              <LaborProductivityChart data={laborDeptData} />
-            </div>
-            <div className="animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
-              <ManMachineGauge {...manMachineData} />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {costPerSMVData.length > 0 && (
-              <div className="animate-fade-in" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
-                <CostPerSMVChart data={costPerSMVData} />
-              </div>
-            )}
-            {dhuTrendData.length > 0 && (
-              <div className="animate-fade-in" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
-                <DHUTrendChart data={dhuTrendData} />
-              </div>
-            )}
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 animate-fade-in">
+          {trendData.length > 0 && <EfficiencyTrendChart data={trendData} />}
+          <ProductionFunnelChart stages={funnelData} />
         </div>
       )}
 
-      {/* ═══════════════════════ PRODUCTION FLOW PANEL ══════════════════════ */}
+      {/* ═══ LINE PERFORMANCE TABLE + DOWNTIME ═══ */}
       {isDefault && (
-        <div className="space-y-2.5">
-          <SectionHeader title="Production Flow & Lost Time" color="bg-accent" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <div className="animate-fade-in" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
-              <ProductionFunnelChart stages={funnelData} />
-            </div>
-            {downtimeData.length > 0 && (
-              <div className="animate-fade-in" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
-                <LostTimeDonutChart data={downtimeData} />
-              </div>
-            )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 animate-fade-in">
+          <div className="lg:col-span-2">
+            <LineStatusTable lines={lineStatuses} />
           </div>
-        </div>
-      )}
-
-      {/* ═══════════════════════ QUALITY PANEL ══════════════════════ */}
-      {isDefault && (
-        <div className="space-y-2.5">
-          <SectionHeader title="Quality Intelligence" color="bg-success" badge="SPC" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {qualityData.length > 0 && (
-              <div className="animate-fade-in" style={{ animationDelay: '350ms', animationFillMode: 'both' }}>
-                <QualityStackedChart data={qualityData} />
-              </div>
-            )}
-            {downtimeData.length > 0 && (
-              <div className="animate-fade-in" style={{ animationDelay: '400ms', animationFillMode: 'both' }}>
-                <DowntimeParetoChart data={downtimeData} />
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════════════ WORKFORCE & OT PANEL ══════════════════════ */}
-      {isDefault && (
-        <div className="space-y-2.5">
-          <SectionHeader title="Workforce & Overtime" color="bg-purple" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            <div className="animate-fade-in" style={{ animationDelay: '450ms', animationFillMode: 'both' }}>
-              <TurnoverColumnChart data={turnoverData} />
-            </div>
-            <div className="animate-fade-in" style={{ animationDelay: '500ms', animationFillMode: 'both' }}>
-              {/* OT by Section & Floor */}
-              <Card className="border border-border/60 shadow-sm h-full">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-[13px] font-bold">OT Hours — Section & Floor</CardTitle>
-                    <span className="text-[10px] text-muted-foreground">Today</span>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-3">
-                    {/* By Section */}
-                    <div>
-                      <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">By Department</div>
-                      <div className="space-y-2">
-                        {(otBySection.length > 0 ? otBySection : [
-                          { section: 'Sewing', otMinutes: 0, otPct: 0 },
-                          { section: 'Cutting', otMinutes: 0, otPct: 0 },
-                          { section: 'Finishing', otMinutes: 0, otPct: 0 },
-                        ]).map(s => {
-                          const hrs = (s.otMinutes / 60).toFixed(1);
-                          const pct = s.otPct.toFixed(1);
-                          const barW = Math.min(s.otPct * 5, 100);
-                          return (
-                            <div key={s.section} className="space-y-0.5">
-                              <div className="flex items-center justify-between text-[11px]">
-                                <span className="font-semibold text-foreground">{s.section}</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-bold tabular-nums text-foreground">{hrs} hrs</span>
-                                  <span className={cn('text-[10px] font-semibold tabular-nums', Number(pct) > 10 ? 'text-pink' : Number(pct) > 5 ? 'text-warning' : 'text-success')}>{pct}%</span>
-                                </div>
-                              </div>
-                              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                                <div className={cn('h-full rounded-full transition-all duration-700', Number(pct) > 10 ? 'bg-pink' : Number(pct) > 5 ? 'bg-warning' : 'bg-success')} style={{ width: `${barW}%` }} />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* By Floor */}
-                    <div className="border-t border-border/50 pt-2">
-                      <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">By Floor</div>
-                      <div className="space-y-2">
-                        {(otByFloor.length > 0 ? otByFloor : [
-                          { section: 'Floor 1', otMinutes: 0, otPct: 0 },
-                          { section: 'Floor 2', otMinutes: 0, otPct: 0 },
-                          { section: 'Floor 3', otMinutes: 0, otPct: 0 },
-                        ]).map(f => {
-                          const hrs = (f.otMinutes / 60).toFixed(1);
-                          const pct = f.otPct.toFixed(1);
-                          const barW = Math.min(f.otPct * 5, 100);
-                          return (
-                            <div key={f.section} className="space-y-0.5">
-                              <div className="flex items-center justify-between text-[11px]">
-                                <span className="font-medium text-foreground">{f.section}</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-bold tabular-nums text-foreground">{hrs} hrs</span>
-                                  <span className={cn('text-[10px] font-semibold tabular-nums', Number(pct) > 10 ? 'text-pink' : Number(pct) > 5 ? 'text-warning' : 'text-success')}>{pct}%</span>
-                                </div>
-                              </div>
-                              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                                <div className={cn('h-full rounded-full transition-all duration-700', Number(pct) > 10 ? 'bg-pink' : Number(pct) > 5 ? 'bg-warning' : 'bg-success')} style={{ width: `${barW}%` }} />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-border/50 flex items-center justify-between text-[11px]">
-                      <span className="font-bold text-foreground">Total OT</span>
-                      <span className="font-black text-foreground tabular-nums">{(totalOTMinutes / 60).toFixed(1)} hrs</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="animate-fade-in" style={{ animationDelay: '550ms', animationFillMode: 'both' }}>
-              <LineStatusTable lines={lineStatuses.slice(0, 8)} />
-            </div>
-          </div>
+          {downtimeData.length > 0 && (
+            <DowntimeParetoChart data={downtimeData} />
+          )}
         </div>
       )}
     </div>
