@@ -1,17 +1,27 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, ChevronDown, LogOut, Factory, Menu } from 'lucide-react';
+import { Search, ChevronDown, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface TopBarProps {
   selectedFactoryId: string;
   onFactoryChange: (id: string) => void;
 }
 
+const ROLE_COLORS: Record<string, string> = {
+  admin: 'bg-destructive/15 text-destructive border-destructive/30',
+  manager: 'bg-primary/15 text-primary border-primary/30',
+  line_chief: 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400',
+  operator: 'bg-muted text-muted-foreground border-border',
+};
+
 export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
   const { user, signOut } = useAuth();
+  const { highestRole, roleLabel } = useUserRole();
   const [factoryOpen, setFactoryOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const factoryRef = useRef<HTMLDivElement>(null);
@@ -111,7 +121,12 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
             {initials}
           </div>
           <div className="hidden md:block text-left">
-            <div className="text-[9px] text-muted-foreground">Welcome back,</div>
+            <div className="text-[9px] text-muted-foreground flex items-center gap-1">
+              Welcome back,
+              <Badge variant="outline" className={`text-[8px] px-1 py-0 h-3.5 font-semibold ${ROLE_COLORS[highestRole]}`}>
+                {roleLabel}
+              </Badge>
+            </div>
             <div className="text-xs font-bold text-foreground">{displayName}</div>
           </div>
           <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -119,6 +134,13 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
 
         {userOpen && (
           <div className="absolute top-full mt-1.5 right-0 min-w-[160px] bg-card border border-border rounded-xl shadow-lg z-50 p-1">
+            <div className="px-3 py-2 border-b border-border mb-1">
+              <div className="text-[10px] text-muted-foreground">Signed in as</div>
+              <div className="text-xs font-semibold text-foreground truncate">{user?.email}</div>
+              <Badge variant="outline" className={`mt-1 text-[9px] ${ROLE_COLORS[highestRole]}`}>
+                {roleLabel}
+              </Badge>
+            </div>
             <Button
               variant="ghost"
               size="sm"
