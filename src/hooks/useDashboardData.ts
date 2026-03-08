@@ -144,7 +144,7 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
     downtime: number; npt: number; operators: number; helpers: number;
   }>();
   for (const h of (hourlyRows ?? [])) {
-    const existing = hourlyByPlan.get(h.plan_id) ?? { output: 0, defects: 0, rework: 0, checked: 0, downtime: 0, npt: 0, operators: 0, helpers: 0 };
+    const existing = hourlyByPlan.get(h.plan_id) ?? { output: 0, defects: 0, rework: 0, checked: 0, downtime: 0, npt: 0, operators: 0, helpers: 0, ot: 0 };
     existing.output += h.produced_qty;
     existing.defects += h.defects;
     existing.rework += h.rework;
@@ -153,6 +153,7 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
     existing.npt += h.npt_minutes;
     existing.operators = Math.max(existing.operators, h.operators_present);
     existing.helpers = Math.max(existing.helpers, h.helpers_present);
+    existing.ot += (h as any).overtime_minutes ?? 0;
     hourlyByPlan.set(h.plan_id, existing);
   }
 
