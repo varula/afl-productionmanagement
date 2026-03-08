@@ -94,12 +94,12 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
   if (plans.length === 0) return null;
 
   return (
-    <div className="bg-card rounded-xl border border-border overflow-hidden">
+    <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ease-out">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <span>{icon}</span> {title}
         </h3>
-        <span className="text-[10px] text-muted-foreground">
+        <span className="text-xs text-muted-foreground">
           Target: {defaultHourlyTarget.toLocaleString()} pcs/hr per line
         </span>
       </div>
@@ -115,7 +115,7 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
                   h.slot >= 9 ? 'text-warning bg-warning/10 border-l border-warning/30' : 'text-muted-foreground'
                 )}>
                   <div>{h.label}</div>
-                  <div className="text-[9px] font-normal">{h.sub}</div>
+                  <div className="text-[10px] font-normal">{h.sub}</div>
                 </th>
               ))}
               <th className="text-center px-2 py-2 font-semibold text-muted-foreground bg-muted/40 w-[60px]">Total</th>

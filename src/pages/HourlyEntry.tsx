@@ -338,14 +338,14 @@ export default function HourlyEntry() {
 
             {/* Legend + Target */}
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-4 text-[10px]">
+              <div className="flex items-center gap-4 text-xs">
                 <span className="text-xs font-medium text-muted-foreground">Hourly Tracker — {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-success/80" /> ≥100%</span>
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-warning/70" /> 80–99%</span>
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-pink/70" /> &lt;80%</span>
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-muted/50" /> Pending</span>
               </div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 Target: Sewing {sewingPlans.length > 0 ? Math.round(sewingPlans[0].target_qty / (sewingPlans[0].working_hours || 8)) : 0} pcs/hr · Finishing {finishingPlans.length > 0 ? Math.round(finishingPlans[0].target_qty / (finishingPlans[0].working_hours || 8)) : 0} pcs/hr
               </div>
             </div>

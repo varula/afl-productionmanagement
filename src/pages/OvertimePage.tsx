@@ -34,10 +34,10 @@ function OTKPICard({ label, value, unit, icon: Icon, status }: {
             <Icon className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
             <div className="flex items-baseline gap-1">
               <span className="text-xl font-black text-foreground">{value}</span>
-              <span className="text-[11px] text-muted-foreground">{unit}</span>
+              <span className="text-xs text-muted-foreground">{unit}</span>
             </div>
           </div>
         </div>
@@ -148,8 +148,8 @@ export default function OvertimePage() {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-lg font-black text-foreground tracking-tight">Overtime Management</h1>
-        <p className="text-[11px] text-muted-foreground">Track, analyze, and manage overtime across departments and floors</p>
+        <h1 className="text-xl font-bold text-foreground tracking-tight">Overtime Management</h1>
+        <p className="text-xs text-muted-foreground">Track, analyze, and manage overtime across departments and floors</p>
       </div>
 
       <Tabs defaultValue="analytics" className="space-y-4">
@@ -191,7 +191,7 @@ export default function OvertimePage() {
                           <span className="font-semibold text-foreground">{s.section}</span>
                           <div className="flex items-center gap-3">
                             <span className="font-bold tabular-nums text-foreground">{hrs} hrs</span>
-                            <span className={cn('text-[10px] font-bold tabular-nums', Number(pct) > 10 ? 'text-pink' : Number(pct) > 5 ? 'text-warning' : 'text-success')}>{pct}%</span>
+                            <span className={cn('text-xs font-bold tabular-nums', Number(pct) > 10 ? 'text-pink' : Number(pct) > 5 ? 'text-warning' : 'text-success')}>{pct}%</span>
                           </div>
                         </div>
                         <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
@@ -224,7 +224,7 @@ export default function OvertimePage() {
                           <span className="font-semibold text-foreground">{f.section}</span>
                           <div className="flex items-center gap-3">
                             <span className="font-bold tabular-nums text-foreground">{hrs} hrs</span>
-                            <span className={cn('text-[10px] font-bold tabular-nums', Number(pct) > 10 ? 'text-pink' : Number(pct) > 5 ? 'text-warning' : 'text-success')}>{pct}%</span>
+                            <span className={cn('text-xs font-bold tabular-nums', Number(pct) > 10 ? 'text-pink' : Number(pct) > 5 ? 'text-warning' : 'text-success')}>{pct}%</span>
                           </div>
                         </div>
                         <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
@@ -302,22 +302,22 @@ export default function OvertimePage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold">OT Approval Requests</CardTitle>
-                <Badge variant="outline" className="text-[10px]">Coming Soon</Badge>
+                <Badge variant="outline" className="text-xs">Coming Soon</Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground">Submit and track overtime approval requests for each department/floor</p>
+              <p className="text-xs text-muted-foreground">Submit and track overtime approval requests for each department/floor</p>
             </CardHeader>
             <CardContent>
               {/* Mock approval table */}
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-[11px]">Date</TableHead>
-                    <TableHead className="text-[11px]">Department</TableHead>
-                    <TableHead className="text-[11px]">Floor</TableHead>
-                    <TableHead className="text-[11px]">Requested Hours</TableHead>
-                    <TableHead className="text-[11px]">Reason</TableHead>
-                    <TableHead className="text-[11px]">Status</TableHead>
-                    <TableHead className="text-[11px]">Actions</TableHead>
+                    <TableHead className="text-xs">Date</TableHead>
+                    <TableHead className="text-xs">Department</TableHead>
+                    <TableHead className="text-xs">Floor</TableHead>
+                    <TableHead className="text-xs">Requested Hours</TableHead>
+                    <TableHead className="text-xs">Reason</TableHead>
+                    <TableHead className="text-xs">Status</TableHead>
+                    <TableHead className="text-xs">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -334,7 +334,7 @@ export default function OvertimePage() {
                       <TableCell className="text-xs font-bold tabular-nums">{row.hours} hrs</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{row.reason}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn('text-[9px] font-bold',
+                        <Badge variant="outline" className={cn('text-xs font-bold',
                           row.status === 'approved' && 'border-success/30 text-success bg-success/8',
                           row.status === 'rejected' && 'border-pink/30 text-pink bg-pink/8',
                           row.status === 'pending' && 'border-warning/30 text-warning bg-warning/8',
