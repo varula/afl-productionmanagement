@@ -22,6 +22,12 @@ import MISPage from "./pages/MISPage";
 import PreProductionPage from "./pages/PreProductionPage";
 import CuttingProductionPage from "./pages/CuttingProductionPage";
 import CuttingQualityPage from "./pages/CuttingQualityPage";
+import SewingProductionPage from "./pages/SewingProductionPage";
+import SewingQualityPage from "./pages/SewingQualityPage";
+import FinishingProductionPage from "./pages/FinishingProductionPage";
+import FinishingQualityPage from "./pages/FinishingQualityPage";
+import GeneralActivitiesPage from "./pages/GeneralActivitiesPage";
+import StoresActivitiesPage from "./pages/StoresActivitiesPage";
 import SettingsPage from "./pages/SettingsPage";
 import FactorySetupPage from "./pages/FactorySetupPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
@@ -64,6 +70,12 @@ const AppRoutes = () => (
       <Route path="/mis/pre-production" element={<PreProductionPage />} />
       <Route path="/mis/cutting-production" element={<CuttingProductionPage />} />
       <Route path="/mis/cutting-quality" element={<CuttingQualityPage />} />
+      <Route path="/mis/sewing-production" element={<SewingProductionPage />} />
+      <Route path="/mis/sewing-quality" element={<SewingQualityPage />} />
+      <Route path="/mis/finishing-production" element={<FinishingProductionPage />} />
+      <Route path="/mis/finishing-quality" element={<FinishingQualityPage />} />
+      <Route path="/mis/general" element={<GeneralActivitiesPage />} />
+      <Route path="/mis/stores" element={<StoresActivitiesPage />} />
       <Route path="/plans/new" element={<ProductionPlanEntry />} />
       <Route path="/planning" element={<PlanningModule />} />
       <Route path="/admin/factories" element={<FactorySetupPage />} />
