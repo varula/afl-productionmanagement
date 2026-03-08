@@ -31,8 +31,8 @@ export interface PipelineStage {
   color: string;
 }
 
-export function useDashboardData(): DashboardData {
-  const todayStr = today();
+export function useDashboardData(selectedDate?: string): DashboardData {
+  const todayStr = selectedDate || today();
 
   // 1. Production plans for today with line + style info
   const { data: plans, isLoading: plansLoading } = useQuery({
