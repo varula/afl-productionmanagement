@@ -180,6 +180,7 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
       totalRework += hourly.rework;
       totalDowntime += hourly.downtime;
       totalNpt += hourly.npt;
+      totalOTMinutes += hourly.ot;
       presentOperators += hourly.operators;
       totalManpower += hourly.operators + hourly.helpers;
     } else {
