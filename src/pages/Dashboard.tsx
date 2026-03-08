@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import { KPIHeroCard } from '@/components/dashboard/KPIHeroCard';
 import { SectionHeader } from '@/components/dashboard/SectionHeader';
 import { EfficiencyTrendChart } from '@/components/charts/EfficiencyTrendChart';
@@ -10,6 +11,8 @@ import { ProductionFunnelChart } from '@/components/charts/ProductionFunnelChart
 import { LaborProductivityChart } from '@/components/charts/LaborProductivityChart';
 import { QualityStackedChart } from '@/components/charts/QualityStackedChart';
 import { TurnoverColumnChart } from '@/components/charts/TurnoverColumnChart';
+import { CostPerSMVChart } from '@/components/charts/CostPerSMVChart';
+import { ManMachineGauge } from '@/components/charts/ManMachineGauge';
 import { LineStatusTable } from '@/components/dashboard/LineStatusTable';
 import { DashboardSubPanel } from '@/components/dashboard/DashboardSubPanel';
 import { computeAllKPIs } from '@/lib/kpi';
@@ -19,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3, CalendarIcon, Activity, Zap, Clock } from 'lucide-react';
+import { BarChart3, CalendarIcon, Activity, Zap, Clock, Scissors, Factory, Package, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { KPIInput } from '@/lib/kpi';
 
