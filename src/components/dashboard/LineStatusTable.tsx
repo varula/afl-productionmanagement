@@ -35,57 +35,57 @@ export function LineStatusTable({ lines }: LineStatusTableProps) {
     <Card className="border-[1.5px]">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-[13px] font-bold">Line Performance Summary — Today vs Target</CardTitle>
-          <span className="text-[10px] text-muted-foreground">Mar 8, 2026 · Up to 4 PM</span>
+          <CardTitle className="text-[13px] font-bold">Line Performance Summary</CardTitle>
+          <span className="text-[10px] text-muted-foreground">Today vs Target</span>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-[10px] uppercase tracking-wider font-semibold">Line</TableHead>
-                <TableHead className="text-[10px] uppercase tracking-wider font-semibold">Style</TableHead>
-                <TableHead className="text-right text-[10px] uppercase tracking-wider font-semibold">Target</TableHead>
-                <TableHead className="text-right text-[10px] uppercase tracking-wider font-semibold">Output</TableHead>
-                <TableHead className="text-right text-[10px] uppercase tracking-wider font-semibold">Shortfall</TableHead>
-                <TableHead className="text-right text-[10px] uppercase tracking-wider font-semibold">Eff %</TableHead>
-                <TableHead className="text-right text-[10px] uppercase tracking-wider font-semibold">DHU %</TableHead>
-                <TableHead className="text-[10px] uppercase tracking-wider font-semibold">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-border bg-muted/30">
+                <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2.5 w-[72px]">Line</th>
+                <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 min-w-[120px]">Style</th>
+                <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[72px]">Target</th>
+                <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[72px]">Output</th>
+                <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[80px]">Shortfall</th>
+                <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[64px]">Eff %</th>
+                <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[56px]">DHU %</th>
+                <th className="text-center text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[88px]">Status</th>
+              </tr>
+            </thead>
+            <tbody>
               {lines.map((line, idx) => {
                 const config = statusConfig[line.status];
                 const shortfall = line.output - line.target;
                 return (
-                  <TableRow key={`${line.lineNumber}-${idx}`} className="hover:bg-muted/50 cursor-pointer">
-                    <TableCell className="font-bold text-foreground text-[11.5px]">Line {line.lineNumber}</TableCell>
-                    <TableCell className="text-muted-foreground text-[11.5px]">{line.style}</TableCell>
-                    <TableCell className="text-right text-[11.5px] font-medium">{line.target.toLocaleString()}</TableCell>
-                    <TableCell className="text-right text-[11.5px] font-medium">{line.output.toLocaleString()}</TableCell>
-                    <TableCell className={cn('text-right text-[11.5px] font-medium', shortfall < 0 ? 'text-pink' : 'text-success')}>
+                  <tr key={`${line.lineNumber}-${idx}`} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-2.5 text-[11.5px] font-bold text-foreground whitespace-nowrap">Line {line.lineNumber}</td>
+                    <td className="px-3 py-2.5 text-[11.5px] text-muted-foreground">{line.style}</td>
+                    <td className="px-3 py-2.5 text-right text-[11.5px] font-medium text-foreground tabular-nums">{line.target.toLocaleString()}</td>
+                    <td className="px-3 py-2.5 text-right text-[11.5px] font-medium text-foreground tabular-nums">{line.output.toLocaleString()}</td>
+                    <td className={cn('px-3 py-2.5 text-right text-[11.5px] font-semibold tabular-nums', shortfall < 0 ? 'text-pink' : 'text-success')}>
                       {shortfall >= 0 ? '+' : ''}{shortfall.toLocaleString()}
-                    </TableCell>
-                    <TableCell className={cn('text-right text-[11.5px] font-bold',
+                    </td>
+                    <td className={cn('px-3 py-2.5 text-right text-[11.5px] font-bold tabular-nums',
                       line.efficiency >= 92 ? 'text-success' : line.efficiency >= 85 ? 'text-warning' : 'text-pink'
                     )}>
                       {line.efficiency}%
-                    </TableCell>
-                    <TableCell className={cn('text-right text-[11.5px]', line.dhu > 3 ? 'text-pink font-bold' : 'text-muted-foreground')}>
+                    </td>
+                    <td className={cn('px-3 py-2.5 text-right text-[11.5px] tabular-nums', line.dhu > 3 ? 'text-pink font-bold' : 'text-muted-foreground')}>
                       {line.dhu}%
-                    </TableCell>
-                    <TableCell>
-                      <span className={cn('inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border', config.className)}>
-                        <span className="w-[5px] h-[5px] rounded-full bg-current" />
+                    </td>
+                    <td className="px-3 py-2.5 text-center">
+                      <span className={cn('inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border whitespace-nowrap', config.className)}>
+                        <span className="w-[5px] h-[5px] rounded-full bg-current shrink-0" />
                         {config.label}
                       </span>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 );
               })}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>
