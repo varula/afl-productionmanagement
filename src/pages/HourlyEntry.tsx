@@ -61,6 +61,7 @@ export default function HourlyEntry() {
   const today = new Date().toISOString().split('T')[0];
   const activeFilter = useActiveFilter();
   const factoryId = useFactoryId();
+  const { canEdit } = useUserRole();
 
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [editingSlot, setEditingSlot] = useState(1);
