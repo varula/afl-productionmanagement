@@ -34,6 +34,12 @@ const demoFloors = [
       { num: 12, style: 'UCB Polo Shirt', operators: 34, helpers: 8, machines: 30, efficiency: 88, status: 'running' },
     ]
   },
+  {
+    name: 'Auxiliary (Bartack & Eyelet)', key: 'fl-aux', lines: [
+      { num: 1, style: 'Bartack — All Styles', operators: 6, helpers: 2, machines: 8, efficiency: 92, status: 'running' },
+      { num: 2, style: 'Eyelet — All Styles', operators: 5, helpers: 2, machines: 6, efficiency: 88, status: 'running' },
+    ]
+  },
 ];
 
 const statusBadge = (s: string) =>
