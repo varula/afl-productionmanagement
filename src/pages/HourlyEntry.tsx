@@ -68,7 +68,7 @@ export default function HourlyEntry() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('production_plans')
-        .select('*, lines!production_plans_line_id_fkey(line_number, floor_id), styles!production_plans_style_id_fkey(style_no, smv)')
+        .select('*, lines!production_plans_line_id_fkey(line_number, floor_id, type), styles!production_plans_style_id_fkey(style_no, smv)')
         .eq('date', today);
       if (error) throw error;
       return data as any[];
@@ -215,7 +215,7 @@ export default function HourlyEntry() {
             <SelectContent>
               {plans.map((plan) => (
                 <SelectItem key={plan.id} value={plan.id}>
-                  Line {plan.lines?.line_number} — {plan.styles?.style_no} (Target: {plan.target_qty})
+                  {plan.lines?.type ? `${plan.lines.type.charAt(0).toUpperCase() + plan.lines.type.slice(1)} ` : ''}Line {plan.lines?.line_number} — {plan.styles?.style_no} (Target: {plan.target_qty})
                 </SelectItem>
               ))}
             </SelectContent>
