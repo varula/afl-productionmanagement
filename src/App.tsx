@@ -83,6 +83,7 @@ const AppRoutes = () => (
       <Route path="/planning" element={<PlanningModule />} />
       <Route path="/admin/factories" element={<FactorySetupPage />} />
       <Route path="/admin/settings" element={<SettingsPage />} />
+      <Route path="/admin/users" element={<UserManagementPage />} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
