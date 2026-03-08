@@ -13,6 +13,8 @@ export interface DashboardData {
   downtimeData: { reason: string; minutes: number }[];
   topStats: TopStat[];
   pipeline: PipelineStage[];
+  totalOTMinutes: number;
+  otBySection: { section: string; otMinutes: number; otPct: number }[];
   isLoading: boolean;
   isEmpty: boolean;
 }
@@ -139,10 +141,10 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
   // Aggregate hourly by plan
   const hourlyByPlan = new Map<string, {
     output: number; defects: number; rework: number; checked: number;
-    downtime: number; npt: number; operators: number; helpers: number;
+    downtime: number; npt: number; operators: number; helpers: number; ot: number;
   }>();
   for (const h of (hourlyRows ?? [])) {
-    const existing = hourlyByPlan.get(h.plan_id) ?? { output: 0, defects: 0, rework: 0, checked: 0, downtime: 0, npt: 0, operators: 0, helpers: 0 };
+    const existing = hourlyByPlan.get(h.plan_id) ?? { output: 0, defects: 0, rework: 0, checked: 0, downtime: 0, npt: 0, operators: 0, helpers: 0, ot: 0 };
     existing.output += h.produced_qty;
     existing.defects += h.defects;
     existing.rework += h.rework;
@@ -151,6 +153,7 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
     existing.npt += h.npt_minutes;
     existing.operators = Math.max(existing.operators, h.operators_present);
     existing.helpers = Math.max(existing.helpers, h.helpers_present);
+    existing.ot += h.overtime_minutes ?? 0;
     hourlyByPlan.set(h.plan_id, existing);
   }
 
@@ -158,7 +161,7 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
   let totalOutput = 0, totalTarget = 0, totalDefects = 0, totalChecked = 0, totalRework = 0;
   let totalDowntime = 0, totalNpt = 0, totalManpower = 0, totalMachines = 0;
   let totalWorkingMinutes = 0, plannedOperators = 0, presentOperators = 0;
-  let smvWeightSum = 0, weightSum = 0;
+  let smvWeightSum = 0, weightSum = 0, totalOTMinutes = 0;
 
   for (const plan of (plans ?? [])) {
     const hourly = hourlyByPlan.get(plan.id);
@@ -177,6 +180,7 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
       totalRework += hourly.rework;
       totalDowntime += hourly.downtime;
       totalNpt += hourly.npt;
+      totalOTMinutes += hourly.ot;
       presentOperators += hourly.operators;
       totalManpower += hourly.operators + hourly.helpers;
     } else {
@@ -299,7 +303,24 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
     { stage: 'Auxiliary', qty: `${(typeOutputMap.get('auxiliary') ?? 0).toLocaleString()} pcs`, color: 'bg-accent' },
   ];
 
-  return { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty };
+  // OT by section (line type)
+  const otBySectionMap = new Map<string, { ot: number; working: number }>();
+  for (const plan of (plans ?? [])) {
+    const line = plan.lines as any;
+    const hourly = hourlyByPlan.get(plan.id);
+    const section = line.type || 'sewing';
+    const existing = otBySectionMap.get(section) ?? { ot: 0, working: 0 };
+    existing.ot += hourly?.ot ?? 0;
+    existing.working += (plan.working_hours ?? 8) * 60 * (hourly?.operators || plan.planned_operators);
+    otBySectionMap.set(section, existing);
+  }
+  const otBySection = Array.from(otBySectionMap.entries()).map(([section, { ot, working }]) => ({
+    section: section.charAt(0).toUpperCase() + section.slice(1),
+    otMinutes: ot,
+    otPct: working > 0 ? (ot / working) * 100 : 0,
+  }));
+
+  return { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, totalOTMinutes, otBySection, isLoading, isEmpty };
 }
 
 // Filter helpers for sidebar reports - operate on live data

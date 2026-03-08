@@ -32,6 +32,7 @@ interface HourlyRecord {
   checked_qty: number;
   downtime_minutes: number;
   npt_minutes: number;
+  overtime_minutes: number;
   operators_present: number;
   helpers_present: number;
   downtime_reason: string | null;
@@ -150,6 +151,7 @@ export function HourlyEntryForm({ plans, planIds }: Props) {
         checked_qty: actual,
         downtime_minutes: 0,
         npt_minutes: 0,
+        overtime_minutes: 0,
         operators_present: plan?.planned_operators ?? 0,
         helpers_present: plan?.planned_helpers ?? 0,
         downtime_reason: null,

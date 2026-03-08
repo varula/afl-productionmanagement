@@ -59,7 +59,7 @@ export function LineStatusTable({ lines }: LineStatusTableProps) {
                 const config = statusConfig[line.status];
                 const shortfall = line.output - line.target;
                 return (
-                  <tr key={`${line.lineNumber}-${idx}`} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                  <tr key={`${line.lineNumber}-${idx}`} className={cn('border-b border-border/50 hover:bg-muted/40 transition-colors', idx % 2 === 1 && 'bg-muted/15')}>
                     <td className="px-4 py-2.5 text-[11.5px] font-bold text-foreground whitespace-nowrap">Line {line.lineNumber}</td>
                     <td className="px-3 py-2.5 text-[11.5px] text-muted-foreground">{line.style}</td>
                     <td className="px-3 py-2.5 text-right text-[11.5px] font-medium text-foreground tabular-nums">{line.target.toLocaleString()}</td>
