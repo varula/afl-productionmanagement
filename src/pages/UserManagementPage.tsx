@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Users, Shield, Crown, UserCheck, User as UserIcon } from 'lucide-react';
+import { Users, Shield, Crown, UserCheck, User as UserIcon, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 
 type AppRole = 'admin' | 'manager' | 'line_chief' | 'operator';
@@ -25,14 +25,14 @@ const ALL_ROLES: AppRole[] = ['admin', 'manager', 'line_chief', 'operator'];
 export default function UserManagementPage() {
   const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('all');
 
-  // Fetch all profiles with their roles
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
       const { data: profiles, error: pErr } = await supabase
         .from('profiles')
-        .select('id, user_id, full_name, phone, created_at, factory_id')
+        .select('id, user_id, full_name, phone, created_at, factory_id, is_approved')
         .order('created_at', { ascending: true });
       if (pErr) throw pErr;
 
@@ -58,17 +58,9 @@ export default function UserManagementPage() {
 
   const updateRole = useMutation({
     mutationFn: async ({ userId, newRole }: { userId: string; newRole: AppRole }) => {
-      // Delete existing roles
-      const { error: delErr } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
+      const { error: delErr } = await supabase.from('user_roles').delete().eq('user_id', userId);
       if (delErr) throw delErr;
-
-      // Insert new role
-      const { error: insErr } = await supabase
-        .from('user_roles')
-        .insert({ user_id: userId, role: newRole });
+      const { error: insErr } = await supabase.from('user_roles').insert({ user_id: userId, role: newRole });
       if (insErr) throw insErr;
     },
     onSuccess: () => {
@@ -78,22 +70,69 @@ export default function UserManagementPage() {
     onError: (err: any) => toast.error(err.message || 'Failed to update role'),
   });
 
+  const toggleApproval = useMutation({
+    mutationFn: async ({ userId, approve }: { userId: string; approve: boolean }) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_approved: approve })
+        .eq('user_id', userId);
+      if (error) throw error;
+    },
+    onSuccess: (_, { approve }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      toast.success(approve ? 'User approved' : 'User access revoked');
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to update approval'),
+  });
+
+  const pendingCount = users.filter(u => !u.is_approved).length;
+  const approvedCount = users.filter(u => u.is_approved).length;
+
+  const filteredUsers = users.filter(u => {
+    if (filter === 'pending') return !u.is_approved;
+    if (filter === 'approved') return u.is_approved;
+    return true;
+  });
+
   const roleCounts = ALL_ROLES.reduce((acc, role) => {
     acc[role] = users.filter(u => u.role === role).length;
     return acc;
   }, {} as Record<AppRole, number>);
 
   return (
-    <div className="space-y-5 max-w-4xl">
+    <div className="space-y-5 max-w-5xl">
       <div>
         <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" /> User Management
         </h1>
-        <p className="text-sm text-muted-foreground">View all users and manage role assignments</p>
+        <p className="text-sm text-muted-foreground">Manage user approvals and role assignments</p>
       </div>
 
-      {/* Role Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+        {/* Pending / Approved counts */}
+        <Card className="border-amber-500/30 bg-amber-500/5">
+          <CardContent className="p-3 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-500/15 text-amber-600">
+              <Clock className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-foreground">{pendingCount}</div>
+              <div className="text-[10px] text-muted-foreground">Pending</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-success/30 bg-success/5">
+          <CardContent className="p-3 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-success/15 text-success">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-foreground">{approvedCount}</div>
+              <div className="text-[10px] text-muted-foreground">Approved</div>
+            </div>
+          </CardContent>
+        </Card>
         {ALL_ROLES.map(role => {
           const cfg = ROLE_CONFIG[role];
           const Icon = cfg.icon;
@@ -113,11 +152,28 @@ export default function UserManagementPage() {
         })}
       </div>
 
+      {/* Filter Tabs */}
+      <div className="flex gap-2">
+        {(['all', 'pending', 'approved'] as const).map(f => (
+          <Button
+            key={f}
+            variant={filter === f ? 'default' : 'outline'}
+            size="sm"
+            className="text-xs capitalize"
+            onClick={() => setFilter(f)}
+          >
+            {f} {f === 'pending' && pendingCount > 0 && (
+              <Badge className="ml-1 h-4 px-1 text-[9px] bg-amber-500 text-white">{pendingCount}</Badge>
+            )}
+          </Button>
+        ))}
+      </div>
+
       {/* Users Table */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold">
-            All Users ({users.length})
+            Users ({filteredUsers.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -127,24 +183,25 @@ export default function UserManagementPage() {
                 <TableHead className="text-xs">User</TableHead>
                 <TableHead className="text-xs">Phone</TableHead>
                 <TableHead className="text-xs">Joined</TableHead>
-                <TableHead className="text-xs">Current Role</TableHead>
-                <TableHead className="text-xs">Change Role</TableHead>
+                <TableHead className="text-xs">Status</TableHead>
+                <TableHead className="text-xs">Role</TableHead>
+                <TableHead className="text-xs">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-8">Loading…</TableCell>
+                  <TableCell colSpan={6} className="text-center text-sm text-muted-foreground py-8">Loading…</TableCell>
                 </TableRow>
-              ) : users.length === 0 ? (
+              ) : filteredUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-8">No users found</TableCell>
+                  <TableCell colSpan={6} className="text-center text-sm text-muted-foreground py-8">No users found</TableCell>
                 </TableRow>
-              ) : users.map(u => {
+              ) : filteredUsers.map(u => {
                 const cfg = ROLE_CONFIG[u.role];
                 const isSelf = u.user_id === currentUser?.id;
                 return (
-                  <TableRow key={u.id}>
+                  <TableRow key={u.id} className={!u.is_approved ? 'bg-amber-500/3' : ''}>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-purple flex items-center justify-center text-[10px] font-bold text-primary-foreground shrink-0">
@@ -163,9 +220,15 @@ export default function UserManagementPage() {
                       {format(new Date(u.created_at), 'dd MMM yyyy')}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`text-[9px] ${cfg.color}`}>
-                        {cfg.label}
-                      </Badge>
+                      {u.is_approved ? (
+                        <Badge variant="outline" className="text-[9px] bg-success/10 text-success border-success/30">
+                          <CheckCircle2 className="h-2.5 w-2.5 mr-1" /> Approved
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] bg-amber-500/10 text-amber-600 border-amber-500/30">
+                          <Clock className="h-2.5 w-2.5 mr-1" /> Pending
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Select
@@ -184,6 +247,29 @@ export default function UserManagementPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </TableCell>
+                    <TableCell>
+                      {!isSelf && (
+                        u.is_approved ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-[11px] text-destructive hover:text-destructive h-7 gap-1"
+                            onClick={() => toggleApproval.mutate({ userId: u.user_id, approve: false })}
+                          >
+                            <XCircle className="h-3 w-3" /> Revoke
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="text-[11px] h-7 gap-1"
+                            onClick={() => toggleApproval.mutate({ userId: u.user_id, approve: true })}
+                          >
+                            <CheckCircle2 className="h-3 w-3" /> Approve
+                          </Button>
+                        )
+                      )}
                     </TableCell>
                   </TableRow>
                 );
