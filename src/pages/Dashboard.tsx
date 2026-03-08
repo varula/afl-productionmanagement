@@ -166,10 +166,10 @@ export default function Dashboard() {
         <div className="flex items-start justify-between mb-2">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
-              <h1 className="text-lg font-black text-foreground tracking-tight">Dashboard</h1>
+              <h1 className="text-xl font-bold text-foreground tracking-tight">Dashboard</h1>
               {isToday && <LiveBadge />}
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {isToday ? format(new Date(), 'EEEE, MMMM dd, yyyy') : `Historical data — ${format(selectedDate, 'MMMM dd, yyyy')}`}
             </p>
           </div>
