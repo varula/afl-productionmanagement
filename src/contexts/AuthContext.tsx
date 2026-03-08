@@ -49,12 +49,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function fetchRoles(userId: string) {
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId);
-    setRoles((data ?? []).map(r => r.role as AppRole));
+  async function fetchUserData(userId: string) {
+    const [rolesRes, profileRes] = await Promise.all([
+      supabase.from('user_roles').select('role').eq('user_id', userId),
+      supabase.from('profiles').select('is_approved').eq('user_id', userId).maybeSingle(),
+    ]);
+    setRoles((rolesRes.data ?? []).map(r => r.role as AppRole));
+    setIsApproved(profileRes.data?.is_approved ?? false);
     setLoading(false);
   }
 
