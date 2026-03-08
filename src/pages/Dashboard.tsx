@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { KPIGrid } from '@/components/kpi/KPIGrid';
 import { EfficiencyTrendChart } from '@/components/charts/EfficiencyTrendChart';
 import { DowntimeParetoChart } from '@/components/charts/DowntimeParetoChart';
