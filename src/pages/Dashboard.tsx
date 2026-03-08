@@ -235,9 +235,31 @@ export default function Dashboard() {
   return (
     <div key={currentFilter} className="space-y-4">
       {/* Report Header */}
-      <div className="animate-fade-in">
-        <h1 className="text-xl font-bold text-foreground">{reportConfig.title}</h1>
-        <p className="text-sm text-muted-foreground">{reportConfig.subtitle}</p>
+      <div className="animate-fade-in flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-foreground">{reportConfig.title}</h1>
+          <p className="text-sm text-muted-foreground">
+            {isToday ? reportConfig.subtitle : `Data for ${format(selectedDate, 'MMM dd, yyyy')}`}
+          </p>
+        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn('gap-1.5 text-xs', !isToday && 'border-primary text-primary')}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {isToday ? 'Today' : format(selectedDate, 'MMM dd, yyyy')}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={d => d && setSelectedDate(d)}
+              disabled={date => date > new Date()}
+              initialFocus
+              className={cn('p-3 pointer-events-auto')}
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Top Stats Grid */}
