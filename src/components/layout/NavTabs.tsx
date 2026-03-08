@@ -5,28 +5,25 @@ import {
   PenLine,
   BarChart3,
   FileText,
-  Factory,
   Settings,
   Layers,
-  Clock,
   AlertTriangle,
   Users,
   Cpu,
   Shield,
   Package,
   LineChart,
-  Mail,
 } from 'lucide-react';
 
 const tabs = [
   { title: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { title: 'Orders', path: '/plans', icon: ClipboardList },
+  { title: 'Orders', path: '/plans', icon: ClipboardList, badge: 18 },
   { title: 'Floors & Lines', path: '/floors', icon: Layers },
-  { title: 'Hourly Output', path: '/hourly-entry', icon: PenLine, badge: undefined },
-  { title: 'Lost Time', path: '/lost-time', icon: AlertTriangle, badge: undefined },
-  { title: 'Workers', path: '/workers', icon: Users },
+  { title: 'Hourly Output', path: '/hourly-entry', icon: PenLine },
+  { title: 'Lost Time', path: '/lost-time', icon: AlertTriangle, badge: 14 },
+  { title: 'Workers', path: '/workers', icon: Users, badge: 1900 },
   { title: 'Machines', path: '/machines', icon: Cpu },
-  { title: 'Quality Control', path: '/qc', icon: Shield },
+  { title: 'Quality Control', path: '/qc', icon: Shield, badge: 5 },
   { title: 'Inventory', path: '/inventory', icon: Package },
   { title: 'Analytics', path: '/analytics', icon: LineChart },
   { title: 'Reports', path: '/reports', icon: FileText },
@@ -39,7 +36,7 @@ export function NavTabs() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center gap-0.5 px-5 py-2 border-b border-border shrink-0 overflow-x-auto custom-scrollbar">
+    <div className="flex items-center gap-0.5 px-3 md:px-5 py-2 border-b border-border shrink-0 overflow-x-auto custom-scrollbar">
       {tabs.map(tab => {
         const active = location.pathname === tab.path || location.pathname.startsWith(tab.path + '/');
         return (
@@ -49,10 +46,10 @@ export function NavTabs() {
             className={`nav-tab ${active ? 'active' : ''}`}
           >
             <tab.icon className="h-3.5 w-3.5 shrink-0" />
-            <span className="hidden lg:inline">{tab.title}</span>
+            <span className="hidden sm:inline">{tab.title}</span>
             {tab.badge !== undefined && (
               <span className={`text-[9px] font-bold px-1.5 py-0 rounded-full ml-0.5 ${
-                active ? 'bg-primary-foreground/30 text-primary-foreground' : 'bg-pink text-pink-foreground'
+                active ? 'bg-primary-foreground/30 text-primary-foreground' : 'bg-pink text-white'
               }`}>
                 {tab.badge}
               </span>
