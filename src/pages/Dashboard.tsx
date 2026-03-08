@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
+import { format } from 'date-fns';
 import { KPIGrid } from '@/components/kpi/KPIGrid';
 import { EfficiencyTrendChart } from '@/components/charts/EfficiencyTrendChart';
 import { DowntimeParetoChart } from '@/components/charts/DowntimeParetoChart';
@@ -6,10 +7,14 @@ import { LineStatusTable } from '@/components/dashboard/LineStatusTable';
 import { DashboardSubPanel } from '@/components/dashboard/DashboardSubPanel';
 import { computeAllKPIs } from '@/lib/kpi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 import { useActiveFilter } from '@/hooks/useActiveFilter';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { LineStatus } from '@/components/dashboard/LineStatusTable';
 import type { TopStat } from '@/hooks/useDashboardData';
 import type { KPIInput } from '@/lib/kpi';
@@ -161,13 +166,17 @@ export default function Dashboard() {
   const currentFilter = activeFilter || 'dash-default';
   const reportConfig = REPORT_CONFIG[currentFilter] || REPORT_CONFIG['dash-default'];
   const [panelClosed, setPanelClosed] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  const dateStr = format(selectedDate, 'yyyy-MM-dd');
+  const isToday = dateStr === format(new Date(), 'yyyy-MM-dd');
 
   // Reset panel closed state when filter changes
   const showSubPanel = currentFilter !== 'dash-default' && !panelClosed;
   const handleClosePanel = useCallback(() => setPanelClosed(true), []);
   useEffect(() => { setPanelClosed(false); }, [currentFilter]);
 
-  const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData();
+  const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData(dateStr);
 
   // Filter lines first — then derive everything else from filtered lines
   const filteredLines = useMemo(() => filterLineStatuses(lineStatuses, currentFilter), [lineStatuses, currentFilter]);
@@ -226,9 +235,31 @@ export default function Dashboard() {
   return (
     <div key={currentFilter} className="space-y-4">
       {/* Report Header */}
-      <div className="animate-fade-in">
-        <h1 className="text-xl font-bold text-foreground">{reportConfig.title}</h1>
-        <p className="text-sm text-muted-foreground">{reportConfig.subtitle}</p>
+      <div className="animate-fade-in flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-foreground">{reportConfig.title}</h1>
+          <p className="text-sm text-muted-foreground">
+            {isToday ? reportConfig.subtitle : `Data for ${format(selectedDate, 'MMM dd, yyyy')}`}
+          </p>
+        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn('gap-1.5 text-xs', !isToday && 'border-primary text-primary')}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {isToday ? 'Today' : format(selectedDate, 'MMM dd, yyyy')}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={d => d && setSelectedDate(d)}
+              disabled={date => date > new Date()}
+              initialFocus
+              className={cn('p-3 pointer-events-auto')}
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Top Stats Grid */}
