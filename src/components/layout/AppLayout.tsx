@@ -11,6 +11,7 @@ import { useUserRole, type AppRole } from '@/hooks/useUserRole';
 const ROUTE_MIN_ROLES: Record<string, AppRole> = {
   '/admin/settings': 'admin',
   '/admin/factories': 'admin',
+  '/admin/users': 'admin',
   '/plans': 'line_chief',
   '/plans/new': 'manager',
   '/hourly-entry': 'line_chief',

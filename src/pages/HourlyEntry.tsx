@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import { Save, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2, Clock, PenLine } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
+import { useUserRole } from '@/hooks/useUserRole';
+import { ReadOnlyBanner } from '@/components/ui/read-only-banner';
 import { HourlyKPICards } from '@/components/hourly/HourlyKPICards';
 import { HourlyTrackerTable } from '@/components/hourly/HourlyTrackerTable';
 import { HourlyEntryForm } from '@/components/hourly/HourlyEntryForm';
@@ -59,6 +61,7 @@ export default function HourlyEntry() {
   const today = new Date().toISOString().split('T')[0];
   const activeFilter = useActiveFilter();
   const factoryId = useFactoryId();
+  const { canEdit } = useUserRole();
 
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [editingSlot, setEditingSlot] = useState(1);
@@ -199,6 +202,7 @@ export default function HourlyEntry() {
 
   // Handle cell click to open entry dialog
   const handleCellClick = (planId: string, hourSlot: number) => {
+    if (!canEdit) return; // read-only for operators
     setEditingPlanId(planId);
     setEditingSlot(hourSlot);
 
@@ -304,6 +308,7 @@ export default function HourlyEntry() {
 
   return (
     <div className="space-y-4">
+      {!canEdit && <ReadOnlyBanner />}
       {/* Header with Tabs */}
       <div className="flex items-center justify-between">
         <Tabs defaultValue="tracker" className="w-full">

@@ -30,6 +30,7 @@ import GeneralActivitiesPage from "./pages/GeneralActivitiesPage";
 import StoresActivitiesPage from "./pages/StoresActivitiesPage";
 import SettingsPage from "./pages/SettingsPage";
 import ShipmentsPage from "./pages/ShipmentsPage";
+import UserManagementPage from "./pages/UserManagementPage";
 import FactorySetupPage from "./pages/FactorySetupPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
 import PlanningModule from "./pages/PlanningModule";
@@ -82,6 +83,7 @@ const AppRoutes = () => (
       <Route path="/planning" element={<PlanningModule />} />
       <Route path="/admin/factories" element={<FactorySetupPage />} />
       <Route path="/admin/settings" element={<SettingsPage />} />
+      <Route path="/admin/users" element={<UserManagementPage />} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
