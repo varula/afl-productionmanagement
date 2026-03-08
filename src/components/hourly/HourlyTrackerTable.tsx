@@ -41,6 +41,7 @@ function getFloorCode(floorName: string, lineType: string, lineNum: number): str
 function getLineLabel(lineType: string, lineNum: number): string {
   if (lineType === 'cutting') return `C${lineNum}`;
   if (lineType === 'finishing') return `F${lineNum}`;
+  if (lineType === 'auxiliary') return `AX${lineNum}`;
   return `L${lineNum}`;
 }
 
