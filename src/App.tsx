@@ -8,6 +8,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import HourlyEntry from "./pages/HourlyEntry";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,7 +34,7 @@ const AppRoutes = () => (
     <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/plans" element={<Dashboard />} />
-      <Route path="/hourly-entry" element={<Dashboard />} />
+      <Route path="/hourly-entry" element={<HourlyEntry />} />
       <Route path="/reports" element={<Dashboard />} />
       <Route path="/mis" element={<Dashboard />} />
       <Route path="/admin/factories" element={<Dashboard />} />
