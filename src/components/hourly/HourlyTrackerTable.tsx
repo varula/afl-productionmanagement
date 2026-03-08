@@ -99,7 +99,7 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <span>{icon}</span> {title}
         </h3>
-        <span className="text-[10px] text-muted-foreground">
+        <span className="text-xs text-muted-foreground">
           Target: {defaultHourlyTarget.toLocaleString()} pcs/hr per line
         </span>
       </div>
