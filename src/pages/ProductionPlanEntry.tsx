@@ -346,16 +346,18 @@ export default function ProductionPlanEntry() {
                       <td className="p-3 text-right">{plan.planned_helpers}</td>
                       <td className="p-3 text-right">{plan.working_hours}</td>
                       <td className="p-3 text-right">{plan.styles?.smv}</td>
-                      <td className="p-3 text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
-                          onClick={() => deletePlan.mutate(plan.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </td>
+                      {canManage && (
+                        <td className="p-3 text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-destructive hover:text-destructive"
+                            onClick={() => deletePlan.mutate(plan.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
