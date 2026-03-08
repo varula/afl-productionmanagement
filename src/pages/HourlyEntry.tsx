@@ -14,6 +14,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { useActiveFilter } from '@/hooks/useActiveFilter';
 import { HourlyKPICards } from '@/components/hourly/HourlyKPICards';
 import { HourlyTrackerTable } from '@/components/hourly/HourlyTrackerTable';
+import { HourlyEntryForm } from '@/components/hourly/HourlyEntryForm';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 type DowntimeReason = Database['public']['Enums']['downtime_reason_type'];
