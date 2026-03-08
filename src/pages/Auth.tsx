@@ -43,10 +43,10 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div className="fixed inset-0 app-bg-gradient flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-[0_20px_80px_rgba(30,40,100,0.15)] border-0 rounded-[22px]">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-[12px] bg-gradient-to-br from-primary to-purple">
             <Factory className="h-6 w-6 text-primary-foreground" />
           </div>
           <CardTitle className="text-xl">GarmentIQ</CardTitle>
