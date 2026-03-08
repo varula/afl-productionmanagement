@@ -271,7 +271,7 @@ export default function HourlyEntry() {
   const handleSave = () => saveMutation.mutate();
   const handleSaveAndNext = () => {
     saveMutation.mutate();
-    if (editingSlot < 10) setTimeout(() => setEditingSlot(prev => prev + 1), 300);
+    if (editingSlot < 9) setTimeout(() => setEditingSlot(prev => prev + 1), 300);
   };
 
   const updateField = (field: keyof FormData, value: number | string) => {
