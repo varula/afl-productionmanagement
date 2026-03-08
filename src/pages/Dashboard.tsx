@@ -413,39 +413,76 @@ export default function Dashboard() {
               <TurnoverColumnChart data={turnoverData} />
             </div>
             <div className="animate-fade-in" style={{ animationDelay: '500ms', animationFillMode: 'both' }}>
-              {/* OT by Section/Floor */}
+              {/* OT by Section & Floor */}
               <Card className="border border-border/60 shadow-sm h-full">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-[13px] font-bold">OT Hours by Section</CardTitle>
+                    <CardTitle className="text-[13px] font-bold">OT Hours — Section & Floor</CardTitle>
                     <span className="text-[10px] text-muted-foreground">Today</span>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="space-y-2.5">
-                    {(otBySection.length > 0 ? otBySection : [
-                      { section: 'Sewing', otMinutes: 0, otPct: 0 },
-                      { section: 'Cutting', otMinutes: 0, otPct: 0 },
-                      { section: 'Finishing', otMinutes: 0, otPct: 0 },
-                    ]).map(s => {
-                      const hrs = (s.otMinutes / 60).toFixed(1);
-                      const pct = s.otPct.toFixed(1);
-                      const barW = Math.min(s.otPct * 5, 100);
-                      return (
-                        <div key={s.section} className="space-y-1">
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="font-semibold text-foreground">{s.section}</span>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold tabular-nums text-foreground">{hrs} hrs</span>
-                              <span className={cn('text-[10px] font-semibold tabular-nums', Number(pct) > 10 ? 'text-pink' : Number(pct) > 5 ? 'text-warning' : 'text-success')}>{pct}%</span>
+                  <div className="space-y-3">
+                    {/* By Section */}
+                    <div>
+                      <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">By Department</div>
+                      <div className="space-y-2">
+                        {(otBySection.length > 0 ? otBySection : [
+                          { section: 'Sewing', otMinutes: 0, otPct: 0 },
+                          { section: 'Cutting', otMinutes: 0, otPct: 0 },
+                          { section: 'Finishing', otMinutes: 0, otPct: 0 },
+                        ]).map(s => {
+                          const hrs = (s.otMinutes / 60).toFixed(1);
+                          const pct = s.otPct.toFixed(1);
+                          const barW = Math.min(s.otPct * 5, 100);
+                          return (
+                            <div key={s.section} className="space-y-0.5">
+                              <div className="flex items-center justify-between text-[11px]">
+                                <span className="font-semibold text-foreground">{s.section}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold tabular-nums text-foreground">{hrs} hrs</span>
+                                  <span className={cn('text-[10px] font-semibold tabular-nums', Number(pct) > 10 ? 'text-pink' : Number(pct) > 5 ? 'text-warning' : 'text-success')}>{pct}%</span>
+                                </div>
+                              </div>
+                              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                                <div className={cn('h-full rounded-full transition-all duration-700', Number(pct) > 10 ? 'bg-pink' : Number(pct) > 5 ? 'bg-warning' : 'bg-success')} style={{ width: `${barW}%` }} />
+                              </div>
                             </div>
-                          </div>
-                          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                            <div className={cn('h-full rounded-full transition-all duration-700', Number(pct) > 10 ? 'bg-pink' : Number(pct) > 5 ? 'bg-warning' : 'bg-success')} style={{ width: `${barW}%` }} />
-                          </div>
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* By Floor */}
+                    <div className="border-t border-border/50 pt-2">
+                      <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">By Floor</div>
+                      <div className="space-y-2">
+                        {(otByFloor.length > 0 ? otByFloor : [
+                          { section: 'Floor 1', otMinutes: 0, otPct: 0 },
+                          { section: 'Floor 2', otMinutes: 0, otPct: 0 },
+                          { section: 'Floor 3', otMinutes: 0, otPct: 0 },
+                        ]).map(f => {
+                          const hrs = (f.otMinutes / 60).toFixed(1);
+                          const pct = f.otPct.toFixed(1);
+                          const barW = Math.min(f.otPct * 5, 100);
+                          return (
+                            <div key={f.section} className="space-y-0.5">
+                              <div className="flex items-center justify-between text-[11px]">
+                                <span className="font-medium text-foreground">{f.section}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold tabular-nums text-foreground">{hrs} hrs</span>
+                                  <span className={cn('text-[10px] font-semibold tabular-nums', Number(pct) > 10 ? 'text-pink' : Number(pct) > 5 ? 'text-warning' : 'text-success')}>{pct}%</span>
+                                </div>
+                              </div>
+                              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                                <div className={cn('h-full rounded-full transition-all duration-700', Number(pct) > 10 ? 'bg-pink' : Number(pct) > 5 ? 'bg-warning' : 'bg-success')} style={{ width: `${barW}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                     <div className="pt-2 border-t border-border/50 flex items-center justify-between text-[11px]">
                       <span className="font-bold text-foreground">Total OT</span>
                       <span className="font-black text-foreground tabular-nums">{(totalOTMinutes / 60).toFixed(1)} hrs</span>
