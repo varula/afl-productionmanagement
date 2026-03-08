@@ -1,21 +1,13 @@
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { ClipboardList, Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { useActiveFilter } from '@/hooks/useActiveFilter';
-
-const demoOrders = [
-  { id: 'AAF-3101', buyer: 'Gap', style: "Men's Fleece Hoodie", pcs: 142400, stage: 'Cutting', progress: 22, priority: 'high', status: 'active' },
-  { id: 'AAF-3102', buyer: 'Lager 157', style: "Women's Printed Blouse", pcs: 318200, stage: 'Sewing', progress: 56, priority: 'high', status: 'active' },
-  { id: 'AAF-3103', buyer: 'UCB', style: "Men's Polo Shirt", pcs: 48600, stage: 'QC', progress: 78, priority: 'medium', status: 'active' },
-  { id: 'AAF-3104', buyer: 'ZXY', style: 'Sport Legging AW26', pcs: 96400, stage: 'Finishing', progress: 45, priority: 'medium', status: 'active' },
-  { id: 'AAF-3105', buyer: 'Cubus', style: 'Kids Knit Cardigan', pcs: 22100, stage: 'Packing', progress: 91, priority: 'low', status: 'active' },
-  { id: 'AAF-3106', buyer: 'Gap', style: "Women's Chino Trouser", pcs: 18800, stage: 'Sewing', progress: 34, priority: 'high', status: 'delayed' },
-  { id: 'AAF-3107', buyer: 'Lager 157', style: 'Woven Shorts — Summer', pcs: 64000, stage: 'Cutting', progress: 12, priority: 'medium', status: 'active' },
-];
 
 const stageColors: Record<string, string> = {
   Cutting: 'bg-primary/15 text-primary border-primary/30',
@@ -31,53 +23,84 @@ const priorityColors: Record<string, string> = {
   low: 'bg-muted text-muted-foreground border-border',
 };
 
-const buyerFilterMap: Record<string, string> = {
-  'ord-gap': 'Gap',
-  'ord-lager157': 'Lager 157',
-  'ord-ucb': 'UCB',
-  'ord-zxy': 'ZXY',
-  'ord-cubus': 'Cubus',
-};
-
-const stageFilterMap: Record<string, string> = {
-  'stg-cutting': 'Cutting',
-  'stg-sewing': 'Sewing',
-  'stg-qchold': 'QC',
-  'stg-finishing': 'Finishing',
-  'stg-packing': 'Packing',
-  'stg-delayed': '__delayed__',
-};
-
-const priorityFilterMap: Record<string, string> = {
-  'pri-high': 'high',
-  'pri-medium': 'medium',
-  'pri-low': 'low',
-};
-
 export default function OrdersPage() {
   const activeFilter = useActiveFilter();
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data: plans = [] } = useQuery({
+    queryKey: ['orders-plans', today],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('production_plans')
+        .select('id, date, line_id, target_qty, lines(line_number, type), styles(style_no, buyer, smv)')
+        .eq('date', today);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const planIds = (plans as any[]).map(p => p.id);
+  const { data: hourly = [] } = useQuery({
+    queryKey: ['orders-hourly', planIds],
+    queryFn: async () => {
+      if (planIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from('hourly_production')
+        .select('plan_id, produced_qty')
+        .in('plan_id', planIds);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: planIds.length > 0,
+  });
+
+  const orders = useMemo(() => {
+    // Group by style (buyer)
+    const styleMap = new Map<string, { buyer: string; style: string; totalTarget: number; totalOutput: number; lineType: string }>();
+    const outputByPlan = new Map<string, number>();
+    for (const h of hourly) outputByPlan.set(h.plan_id, (outputByPlan.get(h.plan_id) ?? 0) + h.produced_qty);
+
+    for (const plan of plans as any[]) {
+      const key = plan.styles?.style_no || plan.id;
+      const existing = styleMap.get(key) || { buyer: plan.styles?.buyer || '', style: plan.styles?.style_no || '', totalTarget: 0, totalOutput: 0, lineType: plan.lines?.type || 'sewing' };
+      existing.totalTarget += plan.target_qty;
+      existing.totalOutput += outputByPlan.get(plan.id) ?? 0;
+      styleMap.set(key, existing);
+    }
+
+    return Array.from(styleMap.entries()).map(([key, v], i) => {
+      const progress = v.totalTarget > 0 ? Math.round((v.totalOutput / v.totalTarget) * 100) : 0;
+      const stage = v.lineType === 'cutting' ? 'Cutting' : v.lineType === 'finishing' ? 'Finishing' : progress > 80 ? 'QC' : 'Sewing';
+      const priority = progress < 70 ? 'high' : progress < 90 ? 'medium' : 'low';
+      const status = progress < 80 ? 'delayed' : 'active';
+      return {
+        id: `AAF-${3100 + i}`,
+        buyer: v.buyer,
+        style: v.style,
+        pcs: v.totalTarget,
+        output: v.totalOutput,
+        stage,
+        progress: Math.min(100, progress),
+        priority,
+        status,
+      };
+    });
+  }, [plans, hourly]);
+
+  const buyerFilterMap: Record<string, string> = { 'ord-gap': 'Gap', 'ord-lager157': 'Lager 157', 'ord-ucb': 'UCB', 'ord-zxy': 'ZXY', 'ord-cubus': 'Cubus' };
+  const stageFilterMap: Record<string, string> = { 'stg-cutting': 'Cutting', 'stg-sewing': 'Sewing', 'stg-qchold': 'QC', 'stg-finishing': 'Finishing', 'stg-packing': 'Packing', 'stg-delayed': '__delayed__' };
+  const priorityFilterMap: Record<string, string> = { 'pri-high': 'high', 'pri-medium': 'medium', 'pri-low': 'low' };
 
   const filteredOrders = useMemo(() => {
-    if (!activeFilter || activeFilter === 'ord-all' || activeFilter === 'stg-all') return demoOrders;
+    if (!activeFilter || activeFilter === 'ord-all' || activeFilter === 'stg-all') return orders;
+    if (buyerFilterMap[activeFilter]) return orders.filter(o => o.buyer === buyerFilterMap[activeFilter]);
+    if (activeFilter === 'stg-delayed') return orders.filter(o => o.status === 'delayed');
+    if (stageFilterMap[activeFilter]) return orders.filter(o => o.stage === stageFilterMap[activeFilter]);
+    if (priorityFilterMap[activeFilter]) return orders.filter(o => o.priority === priorityFilterMap[activeFilter]);
+    return orders;
+  }, [activeFilter, orders]);
 
-    if (buyerFilterMap[activeFilter]) {
-      return demoOrders.filter(o => o.buyer === buyerFilterMap[activeFilter]);
-    }
-    if (activeFilter === 'stg-delayed') {
-      return demoOrders.filter(o => o.status === 'delayed');
-    }
-    if (stageFilterMap[activeFilter]) {
-      return demoOrders.filter(o => o.stage === stageFilterMap[activeFilter]);
-    }
-    if (priorityFilterMap[activeFilter]) {
-      return demoOrders.filter(o => o.priority === priorityFilterMap[activeFilter]);
-    }
-    return demoOrders;
-  }, [activeFilter]);
-
-  const avgProgress = filteredOrders.length > 0
-    ? Math.round(filteredOrders.reduce((s, o) => s + o.progress, 0) / filteredOrders.length)
-    : 0;
+  const avgProgress = filteredOrders.length > 0 ? Math.round(filteredOrders.reduce((s, o) => s + o.progress, 0) / filteredOrders.length) : 0;
   const delayed = filteredOrders.filter(o => o.status === 'delayed').length;
 
   return (
@@ -115,9 +138,7 @@ export default function OrdersPage() {
       </div>
 
       <Card className="border-[1.5px]">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-[13px] font-bold">Order Pipeline</CardTitle>
-        </CardHeader>
+        <CardHeader className="pb-2"><CardTitle className="text-[13px] font-bold">Order Pipeline</CardTitle></CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -126,7 +147,8 @@ export default function OrdersPage() {
                   <th className="text-left py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Order ID</th>
                   <th className="text-left py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Buyer</th>
                   <th className="text-left py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Style</th>
-                  <th className="text-right py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Qty</th>
+                  <th className="text-right py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Target</th>
+                  <th className="text-right py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Output</th>
                   <th className="text-center py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Stage</th>
                   <th className="text-center py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Priority</th>
                   <th className="py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold w-32">Progress</th>
@@ -139,6 +161,7 @@ export default function OrdersPage() {
                     <td className="py-2.5 px-3 text-muted-foreground">{order.buyer}</td>
                     <td className="py-2.5 px-3 text-foreground font-medium">{order.style}</td>
                     <td className="py-2.5 px-3 text-right font-bold text-foreground">{order.pcs.toLocaleString()}</td>
+                    <td className="py-2.5 px-3 text-right font-medium text-foreground">{order.output.toLocaleString()}</td>
                     <td className="py-2.5 px-3 text-center">
                       <Badge variant="outline" className={`text-[10px] ${stageColors[order.stage] || ''}`}>{order.stage}</Badge>
                     </td>
@@ -154,7 +177,7 @@ export default function OrdersPage() {
                   </tr>
                 ))}
                 {filteredOrders.length === 0 && (
-                  <tr><td colSpan={7} className="py-8 text-center text-muted-foreground text-sm">No orders match this filter</td></tr>
+                  <tr><td colSpan={8} className="py-8 text-center text-muted-foreground text-sm">No orders match this filter</td></tr>
                 )}
               </tbody>
             </table>
