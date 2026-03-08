@@ -94,7 +94,7 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
   if (plans.length === 0) return null;
 
   return (
-    <div className="bg-card rounded-xl border border-border overflow-hidden">
+    <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ease-out">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <span>{icon}</span> {title}
