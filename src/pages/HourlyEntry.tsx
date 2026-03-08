@@ -134,6 +134,11 @@ export default function HourlyEntry() {
       .sort((a: any, b: any) => (a.lines?.line_number || 0) - (b.lines?.line_number || 0)),
     [filteredPlans]);
 
+  const auxiliaryPlans = useMemo(() =>
+    filteredPlans.filter((p: any) => p.lines?.type === 'auxiliary')
+      .sort((a: any, b: any) => (a.lines?.line_number || 0) - (b.lines?.line_number || 0)),
+    [filteredPlans]);
+
   // KPI calculations
   const kpis = useMemo(() => {
     const allRecords = filteredPlans.flatMap((p: any) => p.hourly_records || []);
