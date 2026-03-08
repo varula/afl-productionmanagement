@@ -14,9 +14,16 @@ export interface DashboardData {
   topStats: TopStat[];
   pipeline: PipelineStage[];
   totalOTMinutes: number;
-  otBySection: { section: string; otMinutes: number; otPct: number }[];
+  otBySection: OTBreakdown[];
+  otByFloor: OTBreakdown[];
   isLoading: boolean;
   isEmpty: boolean;
+}
+
+export interface OTBreakdown {
+  section: string;
+  otMinutes: number;
+  otPct: number;
 }
 
 export interface TopStat {
@@ -74,7 +81,7 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
     queryFn: async () => {
       let query = supabase
         .from('production_plans')
-        .select('*, lines!inner(id, line_number, type, machine_count, operator_count, helper_count, is_active, supervisor), styles!inner(style_no, buyer, smv, sam, target_efficiency)')
+        .select('*, lines!inner(id, line_number, type, machine_count, operator_count, helper_count, is_active, supervisor, floor_id, floors!inner(id, name)), styles!inner(style_no, buyer, smv, sam, target_efficiency)')
         .eq('date', todayStr);
       if (factoryLineIds && factoryLineIds.length > 0) {
         query = query.in('line_id', factoryLineIds);
@@ -305,22 +312,38 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
 
   // OT by section (line type)
   const otBySectionMap = new Map<string, { ot: number; working: number }>();
+  const otByFloorMap = new Map<string, { ot: number; working: number; name: string }>();
   for (const plan of (plans ?? [])) {
     const line = plan.lines as any;
     const hourly = hourlyByPlan.get(plan.id);
     const section = line.type || 'sewing';
-    const existing = otBySectionMap.get(section) ?? { ot: 0, working: 0 };
-    existing.ot += hourly?.ot ?? 0;
-    existing.working += (plan.working_hours ?? 8) * 60 * (hourly?.operators || plan.planned_operators);
-    otBySectionMap.set(section, existing);
+    const floorName = line.floors?.name || 'Unknown';
+    const floorId = line.floor_id || 'unknown';
+    
+    // By section
+    const sExisting = otBySectionMap.get(section) ?? { ot: 0, working: 0 };
+    sExisting.ot += hourly?.ot ?? 0;
+    sExisting.working += (plan.working_hours ?? 8) * 60 * (hourly?.operators || plan.planned_operators);
+    otBySectionMap.set(section, sExisting);
+
+    // By floor
+    const fExisting = otByFloorMap.get(floorId) ?? { ot: 0, working: 0, name: floorName };
+    fExisting.ot += hourly?.ot ?? 0;
+    fExisting.working += (plan.working_hours ?? 8) * 60 * (hourly?.operators || plan.planned_operators);
+    otByFloorMap.set(floorId, fExisting);
   }
-  const otBySection = Array.from(otBySectionMap.entries()).map(([section, { ot, working }]) => ({
+  const otBySection: OTBreakdown[] = Array.from(otBySectionMap.entries()).map(([section, { ot, working }]) => ({
     section: section.charAt(0).toUpperCase() + section.slice(1),
     otMinutes: ot,
     otPct: working > 0 ? (ot / working) * 100 : 0,
   }));
+  const otByFloor: OTBreakdown[] = Array.from(otByFloorMap.entries()).map(([_, { ot, working, name }]) => ({
+    section: name,
+    otMinutes: ot,
+    otPct: working > 0 ? (ot / working) * 100 : 0,
+  }));
 
-  return { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, totalOTMinutes, otBySection, isLoading, isEmpty };
+  return { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, totalOTMinutes, otBySection, otByFloor, isLoading, isEmpty };
 }
 
 // Filter helpers for sidebar reports - operate on live data

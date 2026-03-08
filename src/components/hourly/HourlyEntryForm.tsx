@@ -57,6 +57,7 @@ interface Props {
 interface InlineEntry {
   actual: string;
   rejects: string;
+  ot: string;
   remarks: string;
 }
 
@@ -120,10 +121,11 @@ export function HourlyEntryForm({ plans, planIds }: Props) {
       return {
         actual: existing.produced_qty > 0 ? String(existing.produced_qty) : '',
         rejects: existing.defects > 0 ? String(existing.defects) : '',
+        ot: existing.overtime_minutes > 0 ? String(existing.overtime_minutes) : '',
         remarks: '',
       };
     }
-    return { actual: '', rejects: '', remarks: '' };
+    return { actual: '', rejects: '', ot: '', remarks: '' };
   }, [entries, plans, selectedSlot]);
 
   const updateEntry = useCallback((planId: string, field: keyof InlineEntry, value: string) => {
@@ -151,7 +153,7 @@ export function HourlyEntryForm({ plans, planIds }: Props) {
         checked_qty: actual,
         downtime_minutes: 0,
         npt_minutes: 0,
-        overtime_minutes: 0,
+        overtime_minutes: parseInt(entry.ot) || 0,
         operators_present: plan?.planned_operators ?? 0,
         helpers_present: plan?.planned_helpers ?? 0,
         downtime_reason: null,
@@ -281,6 +283,7 @@ export function HourlyEntryForm({ plans, planIds }: Props) {
                     <th className="text-right px-4 py-2 font-semibold text-primary w-[80px]">Target/hr</th>
                     <th className="text-center px-4 py-2 font-semibold text-primary w-[90px]">Actual</th>
                     <th className="text-center px-4 py-2 font-semibold text-primary w-[90px]">Rejects</th>
+                    <th className="text-center px-4 py-2 font-semibold text-primary w-[70px]">OT (min)</th>
                     <th className="text-center px-4 py-2 font-semibold text-primary w-[60px]">Eff%</th>
                     <th className="text-center px-4 py-2 font-semibold text-primary w-[110px]">Remarks</th>
                   </tr>
@@ -324,6 +327,18 @@ export function HourlyEntryForm({ plans, planIds }: Props) {
                             onChange={e => updateEntry(plan.id, 'rejects', e.target.value)}
                             onBlur={() => entry.actual && handleSaveRow(plan.id)}
                             className="h-8 w-[75px] mx-auto text-center text-xs"
+                            placeholder=""
+                          />
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          <Input
+                            type="number"
+                            min={0}
+                            max={120}
+                            value={entry.ot}
+                            onChange={e => updateEntry(plan.id, 'ot', e.target.value)}
+                            onBlur={() => entry.actual && handleSaveRow(plan.id)}
+                            className="h-8 w-[60px] mx-auto text-center text-xs"
                             placeholder=""
                           />
                         </td>
