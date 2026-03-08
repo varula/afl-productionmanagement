@@ -60,17 +60,6 @@ function getEffColor(eff: number): string {
   return 'text-destructive font-bold';
 }
 
-function getLossColor(loss: number): string {
-  if (loss >= 0) return 'text-success font-semibold';
-  return 'text-destructive font-semibold';
-}
-
-/** Calculate how many hours have been filled so far */
-function getFilledHours(records: HourlyRecord[]): number {
-  if (records.length === 0) return 0;
-  return Math.max(...records.map(r => r.hour_slot));
-}
-
 interface Props {
   plans: PlanWithHourly[];
   title: string;
@@ -80,37 +69,24 @@ interface Props {
 }
 
 export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, onCellClick }: Props) {
-  // Compute summary row
   const summary = useMemo(() => {
-    let totalTgtUptoHr = 0;
-    let totalAchieved = 0;
-    let totalDayTarget = 0;
-    let totalDayAchieved = 0;
+    let grandTotal = 0;
+    let grandTarget = 0;
 
     const lineStats = plans.map(plan => {
-      const hourlyTarget = Math.round(plan.target_qty / (plan.working_hours || 8));
-      const filledHours = getFilledHours(plan.hourly_records);
-      const tgtUptoHr = hourlyTarget * filledHours;
-      const achieved = plan.hourly_records.reduce((s, r) => s + r.produced_qty, 0);
-      const loss = achieved - tgtUptoHr;
-      const eff = tgtUptoHr > 0 ? (achieved / tgtUptoHr) * 100 : 0;
-
-      totalTgtUptoHr += tgtUptoHr;
-      totalAchieved += achieved;
-      totalDayTarget += plan.target_qty;
-      totalDayAchieved += achieved;
-
-      return { hourlyTarget, filledHours, tgtUptoHr, achieved, loss, eff };
+      const total = plan.hourly_records.reduce((s, r) => s + r.produced_qty, 0);
+      const target = plan.target_qty;
+      const eff = target > 0 ? (total / target) * 100 : 0;
+      grandTotal += total;
+      grandTarget += target;
+      return { total, target, eff };
     });
 
     return {
       lineStats,
-      totalTgtUptoHr,
-      totalAchieved,
-      totalLoss: totalAchieved - totalTgtUptoHr,
-      totalEff: totalTgtUptoHr > 0 ? (totalAchieved / totalTgtUptoHr) * 100 : 0,
-      totalDayTarget,
-      totalDayLoss: totalDayAchieved - totalDayTarget,
+      grandTotal,
+      grandTarget,
+      grandEff: grandTarget > 0 ? (grandTotal / grandTarget) * 100 : 0,
     };
   }, [plans]);
 
@@ -130,24 +106,17 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-border bg-muted/30">
-              <th className="text-left px-3 py-2 font-semibold text-muted-foreground w-[100px] sticky left-0 bg-muted/30 z-10">Floor / Line</th>
-              <th className="text-left px-3 py-2 font-semibold text-muted-foreground w-[110px]">Buyer · Style</th>
+              <th className="text-left px-3 py-2 font-semibold text-muted-foreground w-[110px] sticky left-0 bg-muted/30 z-10">Floor / Line</th>
+              <th className="text-left px-3 py-2 font-semibold text-muted-foreground w-[120px]">Buyer · Style</th>
               {HOUR_HEADERS.map(h => (
-                <th key={h.slot} className="text-center px-1 py-2 font-semibold text-muted-foreground w-[50px]">
+                <th key={h.slot} className="text-center px-1 py-2 font-semibold text-muted-foreground w-[52px]">
                   <div>{h.label}</div>
                   <div className="text-[9px] font-normal">{h.sub}</div>
                 </th>
               ))}
-              <th className="text-center px-2 py-2 font-semibold text-muted-foreground bg-primary/5 w-[60px]">
-                <div>Tgt upto</div><div className="text-[9px] font-normal">Hr</div>
-              </th>
-              <th className="text-center px-2 py-2 font-semibold text-muted-foreground bg-warning/5 w-[60px]">
-                <div>Achieved</div><div className="text-[9px] font-normal">upto Hr</div>
-              </th>
-              <th className="text-center px-2 py-2 font-semibold text-muted-foreground bg-destructive/5 w-[60px]">
-                <div>Loss to</div><div className="text-[9px] font-normal">Tgt</div>
-              </th>
-              <th className="text-center px-2 py-2 font-semibold text-muted-foreground w-[48px]">Eff%</th>
+              <th className="text-center px-2 py-2 font-semibold text-muted-foreground bg-muted/40 w-[60px]">Total</th>
+              <th className="text-center px-2 py-2 font-semibold text-muted-foreground bg-muted/40 w-[60px]">Target</th>
+              <th className="text-center px-2 py-2 font-semibold text-muted-foreground w-[52px]">Eff%</th>
             </tr>
           </thead>
           <tbody>
@@ -156,8 +125,8 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
               const lineNum = plan.lines?.line_number || 0;
               const floorCode = getFloorCode(plan.lines?.floors?.name || '', lineType, lineNum);
               const lineLabel = getLineLabel(lineType, lineNum);
-              const hourlyTarget = summary.lineStats[idx].hourlyTarget;
-              const { tgtUptoHr, achieved, loss, eff } = summary.lineStats[idx];
+              const hourlyTarget = Math.round(plan.target_qty / (plan.working_hours || 8));
+              const { total, target, eff } = summary.lineStats[idx];
               const isBelowTarget = eff > 0 && eff < 80;
 
               return (
@@ -188,27 +157,19 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
                       </td>
                     );
                   })}
-                  {/* Tgt upto Hr */}
-                  <td className="px-2 py-2 text-center font-semibold text-foreground bg-primary/5">
-                    {tgtUptoHr > 0 ? tgtUptoHr.toLocaleString() : '—'}
+                  <td className="px-2 py-2 text-center font-semibold text-foreground bg-muted/20">
+                    {total > 0 ? total.toLocaleString() : '—'}
                   </td>
-                  {/* Achieved upto Hr */}
-                  <td className="px-2 py-2 text-center font-semibold text-warning bg-warning/5">
-                    {achieved > 0 ? achieved.toLocaleString() : '—'}
+                  <td className="px-2 py-2 text-center font-semibold text-muted-foreground bg-muted/20">
+                    {target.toLocaleString()}
                   </td>
-                  {/* Loss to Tgt */}
-                  <td className={cn('px-2 py-2 text-center bg-destructive/5', getLossColor(loss))}>
-                    {tgtUptoHr > 0 ? (loss > 0 ? `+${loss}` : loss) : '—'}
-                  </td>
-                  {/* Eff% */}
-                  <td className={cn('px-2 py-2 text-center', tgtUptoHr > 0 ? getEffColor(eff) : 'text-muted-foreground')}>
-                    {tgtUptoHr > 0 ? `${Math.round(eff)}%` : '—'}
+                  <td className={cn('px-2 py-2 text-center', eff > 0 ? getEffColor(eff) : 'text-muted-foreground')}>
+                    {eff > 0 ? `${eff.toFixed(1)}%` : '—'}
                   </td>
                 </tr>
               );
             })}
           </tbody>
-          {/* Summary Footer */}
           <tfoot>
             <tr className="bg-warning/10 border-t-2 border-warning/30 font-bold">
               <td className="px-3 py-2 text-foreground sticky left-0 bg-warning/10 z-10" colSpan={2}>
@@ -225,32 +186,14 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
                   </td>
                 );
               })}
-              <td className="px-2 py-2 text-center text-foreground bg-primary/10">
-                {summary.totalTgtUptoHr.toLocaleString()}
+              <td className="px-2 py-2 text-center text-foreground bg-warning/15">
+                {summary.grandTotal.toLocaleString()}
               </td>
-              <td className="px-2 py-2 text-center text-warning bg-warning/10">
-                {summary.totalAchieved.toLocaleString()}
+              <td className="px-2 py-2 text-center text-foreground bg-warning/15">
+                {summary.grandTarget.toLocaleString()}
               </td>
-              <td className={cn('px-2 py-2 text-center bg-destructive/10', getLossColor(summary.totalLoss))}>
-                {summary.totalLoss > 0 ? `+${summary.totalLoss}` : summary.totalLoss}
-              </td>
-              <td className={cn('px-2 py-2 text-center', getEffColor(summary.totalEff))}>
-                {Math.round(summary.totalEff)}%
-              </td>
-            </tr>
-            {/* Day target gap row */}
-            <tr className="bg-destructive/10 font-bold text-destructive">
-              <td className="px-3 py-2 sticky left-0 bg-destructive/10 z-10" colSpan={2}>
-                Gap to Day Target
-              </td>
-              <td colSpan={9}></td>
-              <td className="px-2 py-2 text-center">{summary.totalDayTarget.toLocaleString()}</td>
-              <td className="px-2 py-2 text-center">{summary.totalAchieved.toLocaleString()}</td>
-              <td className={cn('px-2 py-2 text-center', getLossColor(summary.totalDayLoss))}>
-                {summary.totalDayLoss > 0 ? `+${summary.totalDayLoss}` : summary.totalDayLoss.toLocaleString()}
-              </td>
-              <td className={cn('px-2 py-2 text-center', getEffColor(summary.totalDayTarget > 0 ? (summary.totalAchieved / summary.totalDayTarget) * 100 : 0))}>
-                {summary.totalDayTarget > 0 ? `${Math.round((summary.totalAchieved / summary.totalDayTarget) * 100)}%` : '—'}
+              <td className={cn('px-2 py-2 text-center', getEffColor(summary.grandEff))}>
+                {summary.grandEff > 0 ? `${summary.grandEff.toFixed(1)}%` : '—'}
               </td>
             </tr>
           </tfoot>
