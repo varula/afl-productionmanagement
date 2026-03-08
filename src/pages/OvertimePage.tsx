@@ -34,10 +34,10 @@ function OTKPICard({ label, value, unit, icon: Icon, status }: {
             <Icon className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
             <div className="flex items-baseline gap-1">
               <span className="text-xl font-black text-foreground">{value}</span>
-              <span className="text-[11px] text-muted-foreground">{unit}</span>
+              <span className="text-xs text-muted-foreground">{unit}</span>
             </div>
           </div>
         </div>
