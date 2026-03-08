@@ -7,6 +7,13 @@ import {
   Settings,
   Factory,
   LogOut,
+  Layers,
+  AlertTriangle,
+  Users,
+  Cpu,
+  Shield,
+  Package,
+  LineChart,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -27,10 +34,17 @@ import { Button } from '@/components/ui/button';
 
 const mainNav = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Production Plans', url: '/plans', icon: ClipboardList },
-  { title: 'Hourly Entry', url: '/hourly-entry', icon: PenLine },
-  { title: 'Reports', url: '/reports', icon: BarChart3 },
-  { title: 'MIS Reports', url: '/mis', icon: FileText },
+  { title: 'Orders', url: '/plans', icon: ClipboardList },
+  { title: 'Floors & Lines', url: '/floors', icon: Layers },
+  { title: 'Hourly Output', url: '/hourly-entry', icon: PenLine },
+  { title: 'Lost Time', url: '/lost-time', icon: AlertTriangle },
+  { title: 'Workers', url: '/workers', icon: Users },
+  { title: 'Machines', url: '/machines', icon: Cpu },
+  { title: 'Quality Control', url: '/qc', icon: Shield },
+  { title: 'Inventory', url: '/inventory', icon: Package },
+  { title: 'Analytics', url: '/analytics', icon: LineChart },
+  { title: 'Reports', url: '/reports', icon: FileText },
+  { title: 'MIS Reports', url: '/mis', icon: BarChart3 },
 ];
 
 const adminNav = [
@@ -49,7 +63,6 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        {/* Logo area */}
         <div className="flex items-center gap-2 px-4 py-4">
           <Factory className="h-7 w-7 text-sidebar-primary shrink-0" />
           {!collapsed && (
