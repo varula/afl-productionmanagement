@@ -302,7 +302,7 @@ export default function OvertimePage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold">OT Approval Requests</CardTitle>
-                <Badge variant="outline" className="text-[10px]">Coming Soon</Badge>
+                <Badge variant="outline" className="text-xs">Coming Soon</Badge>
               </div>
               <p className="text-xs text-muted-foreground">Submit and track overtime approval requests for each department/floor</p>
             </CardHeader>
