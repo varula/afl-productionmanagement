@@ -14,6 +14,7 @@ const sections = [
 ];
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   return (
     <div className="space-y-4 max-w-3xl">
       <div>
