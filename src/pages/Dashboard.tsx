@@ -243,15 +243,17 @@ export default function Dashboard() {
 
   const filteredLines = useMemo(() => getFilteredLines(currentFilter), [currentFilter]);
   const filteredDowntime = useMemo(() => getFilteredDowntime(currentFilter), [currentFilter]);
+  const filteredTrend = useMemo(() => getFilteredTrend(currentFilter), [currentFilter]);
   const filteredTopStats = useMemo(() => getFilteredTopStats(currentFilter), [currentFilter]);
+  const filteredInput = useMemo(() => getFilterAdjustedInput(currentFilter), [currentFilter]);
 
   const kpis = useMemo(() => {
-    const results = computeAllKPIs(demoInput);
+    const results = computeAllKPIs(filteredInput);
     return results.map((kpi, i) => ({
       ...kpi,
       trend: (['up', 'down', 'up', 'flat', 'up', 'up', 'up', 'up', 'down', 'down', 'down', 'flat'] as const)[i],
     }));
-  }, []);
+  }, [filteredInput]);
 
   return (
     <div className="space-y-4">
