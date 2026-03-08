@@ -22,6 +22,7 @@ import MISPage from "./pages/MISPage";
 import SettingsPage from "./pages/SettingsPage";
 import FactorySetupPage from "./pages/FactorySetupPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
+import PlanningModule from "./pages/PlanningModule";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const AppRoutes = () => (
       <Route path="/reports" element={<ReportsPage />} />
       <Route path="/mis" element={<MISPage />} />
       <Route path="/plans/new" element={<ProductionPlanEntry />} />
+      <Route path="/planning" element={<PlanningModule />} />
       <Route path="/admin/factories" element={<FactorySetupPage />} />
       <Route path="/admin/settings" element={<SettingsPage />} />
     </Route>
