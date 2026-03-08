@@ -276,7 +276,7 @@ export default function Dashboard() {
 
       {/* ═══════════════════════ KPI HERO ROW ══════════════════════ */}
       {isDefault && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 animate-fade-in">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 animate-fade-in">
           {gaugeKPIs.map((kpi, i) => (
             <div key={kpi.key} style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'both' }} className="animate-fade-in">
               <KPIHeroCard
