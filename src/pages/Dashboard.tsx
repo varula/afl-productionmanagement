@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { useActiveFilter } from '@/hooks/useActiveFilter';
+import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart3, CalendarIcon } from 'lucide-react';

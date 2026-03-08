@@ -31,21 +31,58 @@ export interface PipelineStage {
   color: string;
 }
 
-export function useDashboardData(selectedDate?: string): DashboardData {
+export function useDashboardData(selectedDate?: string, factoryId?: string): DashboardData {
   const todayStr = selectedDate || today();
 
-  // 1. Production plans for today with line + style info
-  const { data: plans, isLoading: plansLoading } = useQuery({
-    queryKey: ['dashboard-plans', todayStr],
+  // 1. Get floor IDs for this factory to filter plans
+  const { data: factoryFloorIds } = useQuery({
+    queryKey: ['dashboard-factory-floors', factoryId],
     queryFn: async () => {
+      if (!factoryId) return null;
       const { data, error } = await supabase
+        .from('floors')
+        .select('id')
+        .eq('factory_id', factoryId);
+      if (error) throw error;
+      return data?.map(f => f.id) ?? [];
+    },
+    enabled: !!factoryId,
+    staleTime: 60_000,
+  });
+
+  // Get line IDs for this factory's floors
+  const { data: factoryLineIds } = useQuery({
+    queryKey: ['dashboard-factory-lines', factoryFloorIds],
+    queryFn: async () => {
+      if (!factoryFloorIds || factoryFloorIds.length === 0) return null;
+      const { data, error } = await supabase
+        .from('lines')
+        .select('id')
+        .in('floor_id', factoryFloorIds);
+      if (error) throw error;
+      return data?.map(l => l.id) ?? [];
+    },
+    enabled: !!factoryFloorIds && factoryFloorIds.length > 0,
+    staleTime: 60_000,
+  });
+
+  // 2. Production plans for today with line + style info, filtered by factory lines
+  const { data: plans, isLoading: plansLoading } = useQuery({
+    queryKey: ['dashboard-plans', todayStr, factoryLineIds],
+    queryFn: async () => {
+      let query = supabase
         .from('production_plans')
         .select('*, lines!inner(id, line_number, type, machine_count, operator_count, helper_count, is_active, supervisor), styles!inner(style_no, buyer, smv, sam, target_efficiency)')
         .eq('date', todayStr);
+      if (factoryLineIds && factoryLineIds.length > 0) {
+        query = query.in('line_id', factoryLineIds);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data ?? [];
     },
     staleTime: 30_000,
+    enabled: !factoryId || (!!factoryLineIds && factoryLineIds.length > 0),
   });
 
   // 2. Hourly production for today's plans
