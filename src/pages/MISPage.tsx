@@ -184,9 +184,16 @@ export default function MISPage() {
 
       {/* Section Navigation */}
       <div>
-        <h2 className="text-sm font-bold text-foreground mb-3">Document Modules</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-foreground">Document Modules</h2>
+          {allowedSections && (
+            <Badge variant="outline" className="text-[10px]">
+              Filtered: {filteredSections.length} of {MIS_SECTIONS.length} modules
+            </Badge>
+          )}
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {MIS_SECTIONS.map((section) => {
+          {filteredSections.map((section) => {
             const Icon = ICON_MAP[section.icon] || FileCheck;
             const count = (docCounts as Record<string, number>)[section.key] || 0;
             const route = SECTION_ROUTES[section.key];
