@@ -403,15 +403,57 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ═══════════════════════ WORKFORCE PANEL ══════════════════════ */}
+      {/* ═══════════════════════ WORKFORCE & OT PANEL ══════════════════════ */}
       {isDefault && (
         <div className="space-y-2.5">
-          <SectionHeader title="Workforce & Performance" color="bg-purple" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <SectionHeader title="Workforce & Overtime" color="bg-purple" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             <div className="animate-fade-in" style={{ animationDelay: '450ms', animationFillMode: 'both' }}>
               <TurnoverColumnChart data={turnoverData} />
             </div>
             <div className="animate-fade-in" style={{ animationDelay: '500ms', animationFillMode: 'both' }}>
+              {/* OT by Section/Floor */}
+              <Card className="border border-border/60 shadow-sm h-full">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-[13px] font-bold">OT Hours by Section</CardTitle>
+                    <span className="text-[10px] text-muted-foreground">Today</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-2.5">
+                    {(otBySection.length > 0 ? otBySection : [
+                      { section: 'Sewing', otMinutes: 0, otPct: 0 },
+                      { section: 'Cutting', otMinutes: 0, otPct: 0 },
+                      { section: 'Finishing', otMinutes: 0, otPct: 0 },
+                    ]).map(s => {
+                      const hrs = (s.otMinutes / 60).toFixed(1);
+                      const pct = s.otPct.toFixed(1);
+                      const barW = Math.min(s.otPct * 5, 100);
+                      return (
+                        <div key={s.section} className="space-y-1">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="font-semibold text-foreground">{s.section}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold tabular-nums text-foreground">{hrs} hrs</span>
+                              <span className={cn('text-[10px] font-semibold tabular-nums', Number(pct) > 10 ? 'text-pink' : Number(pct) > 5 ? 'text-warning' : 'text-success')}>{pct}%</span>
+                            </div>
+                          </div>
+                          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                            <div className={cn('h-full rounded-full transition-all duration-700', Number(pct) > 10 ? 'bg-pink' : Number(pct) > 5 ? 'bg-warning' : 'bg-success')} style={{ width: `${barW}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div className="pt-2 border-t border-border/50 flex items-center justify-between text-[11px]">
+                      <span className="font-bold text-foreground">Total OT</span>
+                      <span className="font-black text-foreground tabular-nums">{(totalOTMinutes / 60).toFixed(1)} hrs</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '550ms', animationFillMode: 'both' }}>
               <LineStatusTable lines={lineStatuses.slice(0, 8)} />
             </div>
           </div>
