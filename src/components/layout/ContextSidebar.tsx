@@ -346,11 +346,12 @@ function useHourlyEntrySidebar(factoryId: string): SidebarGroup[] {
 interface ContextSidebarProps {
   activeFilter: string;
   onFilterChange: (key: string) => void;
+  factoryId?: string;
 }
 
-export function ContextSidebar({ activeFilter, onFilterChange }: ContextSidebarProps) {
+export function ContextSidebar({ activeFilter, onFilterChange, factoryId = '' }: ContextSidebarProps) {
   const location = useLocation();
-  const hourlyGroups = useHourlyEntrySidebar();
+  const hourlyGroups = useHourlyEntrySidebar(factoryId);
 
   const isHourlyEntry = location.pathname === '/hourly-entry';
   const groups = isHourlyEntry ? hourlyGroups : (STATIC_SIDEBAR_CONFIG[location.pathname] || []);
