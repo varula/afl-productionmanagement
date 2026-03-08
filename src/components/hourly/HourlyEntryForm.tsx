@@ -268,7 +268,7 @@ export function HourlyEntryForm({ plans, planIds }: Props) {
       {currentFloors.map((floor, fi) => (
         <Card key={floor.floorId} className="border-[1.5px] animate-fade-in" style={{ animationDelay: `${fi * 60}ms`, animationFillMode: 'both' }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-[13px] font-bold flex items-center gap-2">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
               {getFloorLabel(floor.floorName, fi, activeDept)}
               <span className="text-muted-foreground font-normal text-xs">({floor.plans.length} lines)</span>
             </CardTitle>

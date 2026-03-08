@@ -345,7 +345,7 @@ export default function HourlyEntry() {
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-pink/70" /> &lt;80%</span>
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-muted/50" /> Pending</span>
               </div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 Target: Sewing {sewingPlans.length > 0 ? Math.round(sewingPlans[0].target_qty / (sewingPlans[0].working_hours || 8)) : 0} pcs/hr · Finishing {finishingPlans.length > 0 ? Math.round(finishingPlans[0].target_qty / (finishingPlans[0].working_hours || 8)) : 0} pcs/hr
               </div>
             </div>
