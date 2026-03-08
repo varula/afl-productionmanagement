@@ -217,14 +217,14 @@ export default function Dashboard() {
               onClick={() => navigate(dept.path)}
               className="group flex items-center gap-2.5 p-2.5 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:-translate-y-0.5 transition-all"
             >
-              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${dept.color} flex items-center justify-center shrink-0`}>
-                <dept.icon className="h-3.5 w-3.5 text-primary-foreground" />
+              <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${dept.color} flex items-center justify-center shrink-0`}>
+                <dept.icon className="h-4 w-4 text-primary-foreground" />
               </div>
               <div className="text-left flex-1 min-w-0">
-                <div className="text-[11px] font-bold text-foreground truncate">{dept.label}</div>
-                <div className="text-[9px] text-muted-foreground">View details</div>
+                <div className="text-sm font-semibold text-foreground truncate">{dept.label}</div>
+                <div className="text-xs text-muted-foreground">View details</div>
               </div>
-              <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
             </button>
           ))}
         </div>
