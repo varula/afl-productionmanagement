@@ -2,21 +2,18 @@ import { useMemo, useState, useCallback, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { KPIHeroCard } from '@/components/dashboard/KPIHeroCard';
-import { SectionHeader } from '@/components/dashboard/SectionHeader';
 import { EfficiencyTrendChart } from '@/components/charts/EfficiencyTrendChart';
 import { ProductionFunnelChart } from '@/components/charts/ProductionFunnelChart';
 import { DowntimeParetoChart } from '@/components/charts/DowntimeParetoChart';
-import { LineStatusTable } from '@/components/dashboard/LineStatusTable';
 import { DashboardSubPanel } from '@/components/dashboard/DashboardSubPanel';
 import { computeAllKPIs } from '@/lib/kpi';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3, CalendarIcon, Activity, Zap, Clock, Scissors, Factory, Package, ArrowRight, Timer } from 'lucide-react';
+import { BarChart3, CalendarIcon, Scissors, Factory, Package, ArrowRight, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { KPIInput } from '@/lib/kpi';
 
@@ -35,19 +32,6 @@ const REPORT_CONFIG: Record<string, { title: string; subtitle: string }> = {
   'dash-period': { title: 'Period Comparison', subtitle: 'Trend comparison' },
 };
 
-const KPI_FILTER_MAP: Record<string, string[]> = {
-  'dash-lineeff': ['factory_efficiency', 'labor_productivity', 'man_to_machine', 'lost_time'],
-  'dash-qcsummary': ['rft', 'dhu'],
-  'dash-attendance': ['absenteeism', 'employee_turnover', 'labor_productivity'],
-  'dash-machines': ['lost_time', 'man_to_machine'],
-  'dash-delays': ['factory_efficiency', 'lost_time', 'absenteeism'],
-  'dash-output': ['factory_efficiency', 'labor_productivity', 'cut_to_ship', 'order_to_ship'],
-  'dash-orderstatus': ['on_time_delivery', 'order_to_ship', 'cut_to_ship'],
-  'dash-shipments': ['cut_to_ship', 'order_to_ship', 'on_time_delivery'],
-  'dash-buyers': ['factory_efficiency', 'rft', 'dhu', 'on_time_delivery'],
-  'dash-inventory': ['cut_to_ship', 'order_to_ship'],
-};
-
 function DashboardSkeleton() {
   return (
     <div className="space-y-5">
@@ -55,12 +39,12 @@ function DashboardSkeleton() {
         <Skeleton className="h-10 w-72" />
         <Skeleton className="h-8 w-24" />
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-[120px] rounded-2xl" />
+          <Skeleton key={i} className="h-[140px] rounded-2xl" />
         ))}
       </div>
-      <Skeleton className="h-[300px] rounded-xl" />
+      <Skeleton className="h-[300px] rounded-2xl" />
     </div>
   );
 }
@@ -81,7 +65,7 @@ function EmptyState() {
 
 function LiveBadge() {
   return (
-    <div className="flex items-center gap-1.5 text-xs font-semibold text-success bg-success/8 px-2.5 py-1 rounded-lg border border-success/15">
+    <div className="flex items-center gap-1.5 text-xs font-semibold text-success bg-success/10 px-2.5 py-1 rounded-lg border border-success/20">
       <span className="relative flex h-2 w-2">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
@@ -96,7 +80,6 @@ export default function Dashboard() {
   const activeFilter = useActiveFilter();
   const factoryId = useFactoryId();
   const currentFilter = activeFilter || 'dash-default';
-  const reportConfig = REPORT_CONFIG[currentFilter] || REPORT_CONFIG['dash-default'];
   const [panelClosed, setPanelClosed] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
@@ -143,53 +126,42 @@ export default function Dashboard() {
     ];
   }, [kpiInput]);
 
-  // Summary stats
-  const summaryStats = useMemo(() => {
-    const eff = gaugeKPIs.find(k => k.key === 'factory_efficiency');
-    return {
-      lines: lineStatuses.length,
-      output: kpiInput.totalOutput,
-      target: kpiInput.totalTarget,
-      efficiency: eff?.value ?? 0,
-    };
-  }, [lineStatuses, kpiInput, gaugeKPIs]);
-
   if (isLoading) return <DashboardSkeleton />;
   if (isEmpty) return <EmptyState />;
 
   const isDefault = currentFilter === 'dash-default';
 
   return (
-    <div key={currentFilter} className="space-y-4">
+    <div key={currentFilter} className="space-y-5">
       {/* ═══ HEADER ═══ */}
       <div className="animate-fade-in">
-        <div className="flex items-start justify-between mb-2">
+        <div className="flex items-start justify-between mb-1">
           <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <h1 className="text-xl font-bold text-foreground tracking-tight">Dashboard</h1>
-              {isToday && <LiveBadge />}
-            </div>
+            <h1 className="text-xl font-bold text-foreground tracking-tight mb-0.5">Dashboard</h1>
             <p className="text-sm text-muted-foreground">
               {isToday ? format(new Date(), 'EEEE, MMMM dd, yyyy') : `Historical data — ${format(selectedDate, 'MMMM dd, yyyy')}`}
             </p>
           </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className={cn('gap-1.5 text-sm h-9 rounded-lg', !isToday && 'border-primary text-primary')}>
-                <CalendarIcon className="h-3.5 w-3.5" />
-                {isToday ? 'Today' : format(selectedDate, 'MMM dd')}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar mode="single" selected={selectedDate} onSelect={d => d && setSelectedDate(d)} disabled={date => date > new Date()} initialFocus className="p-3 pointer-events-auto" />
-            </PopoverContent>
-          </Popover>
+          <div className="flex items-center gap-2">
+            {isToday && <LiveBadge />}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn('gap-1.5 text-sm h-9 rounded-lg', !isToday && 'border-primary text-primary')}>
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {isToday ? 'Today' : format(selectedDate, 'MMM dd')}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar mode="single" selected={selectedDate} onSelect={d => d && setSelectedDate(d)} disabled={date => date > new Date()} initialFocus className="p-3 pointer-events-auto" />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </div>
 
       {/* ═══ KPI HERO ROW ═══ */}
       {isDefault && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 animate-fade-in">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
           {gaugeKPIs.map((kpi, i) => (
             <div key={kpi.key} style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'both' }} className="animate-fade-in min-w-0">
               <KPIHeroCard label={kpi.label} value={kpi.value} target={kpi.target ?? 0} unit={kpi.unit} status={kpi.status} trend={kpi.trend} />
@@ -205,7 +177,7 @@ export default function Dashboard() {
 
       {/* ═══ DEPARTMENT DRILL-DOWN ═══ */}
       {isDefault && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 animate-fade-in">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in">
           {[
             { key: 'cutting', label: 'Cutting', icon: Scissors, color: 'from-primary to-primary/70', path: '/dashboard/cutting' },
             { key: 'sewing', label: 'Sewing', icon: Factory, color: 'from-purple to-purple/70', path: '/dashboard/sewing' },
@@ -215,10 +187,10 @@ export default function Dashboard() {
             <button
               key={dept.key}
               onClick={() => navigate(dept.path)}
-              className="group flex items-center gap-2.5 p-2.5 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:-translate-y-0.5 transition-all"
+              className="group flex items-center gap-3 p-4 rounded-2xl border border-border/60 bg-card hover:shadow-md hover:-translate-y-0.5 transition-all"
             >
-              <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${dept.color} flex items-center justify-center shrink-0`}>
-                <dept.icon className="h-4 w-4 text-primary-foreground" />
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${dept.color} flex items-center justify-center shrink-0`}>
+                <dept.icon className="h-4.5 w-4.5 text-primary-foreground" />
               </div>
               <div className="text-left flex-1 min-w-0">
                 <div className="text-sm font-semibold text-foreground truncate">{dept.label}</div>
@@ -232,7 +204,7 @@ export default function Dashboard() {
 
       {/* ═══ CHARTS: Efficiency Trend + Production Funnel ═══ */}
       {isDefault && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 animate-fade-in">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in">
           {trendData.length > 0 && <EfficiencyTrendChart data={trendData} />}
           <ProductionFunnelChart stages={funnelData} />
         </div>
