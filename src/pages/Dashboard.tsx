@@ -5,6 +5,7 @@ import { DowntimeParetoChart } from '@/components/charts/DowntimeParetoChart';
 import { LineStatusTable, type LineStatus } from '@/components/dashboard/LineStatusTable';
 import { computeAllKPIs, type KPIInput } from '@/lib/kpi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useActiveFilter } from '@/hooks/useActiveFilter';
 
 // Demo data — will be replaced with Supabase queries
 const demoInput: KPIInput = {
@@ -67,6 +68,22 @@ const demoLines: LineStatus[] = [
   { lineNumber: 12, style: 'UCB Polo Shirt', target: 4000, output: 3520, efficiency: 88, achievement: 88.0, dhu: 2.5, status: 'at_risk' },
 ];
 
+// Map sidebar keys to report titles and filtered content
+const REPORT_CONFIG: Record<string, { title: string; subtitle: string }> = {
+  'dash-default': { title: 'Production Summary', subtitle: 'Factory-wide overview for today' },
+  'dash-output': { title: 'Daily Output Report', subtitle: 'Detailed output breakdown by line' },
+  'dash-orderstatus': { title: 'Order Status Overview', subtitle: '62 active orders across 5 buyers' },
+  'dash-shipments': { title: 'Shipment Tracker', subtitle: '4 shipments due this week' },
+  'dash-delays': { title: 'Delay Analysis', subtitle: '4 delayed orders requiring attention' },
+  'dash-lineeff': { title: 'Line Efficiency', subtitle: 'Efficiency ranking across all 12 sewing lines' },
+  'dash-attendance': { title: 'Attendance Log', subtitle: '1,824 present / 1,900 planned (96.0%)' },
+  'dash-machines': { title: 'Machine Status', subtitle: '643 running · 5 down · 0 idle' },
+  'dash-qcsummary': { title: 'QC Summary', subtitle: 'DHU 2.2% · Pass Rate 97.8%' },
+  'dash-buyers': { title: 'Buyer Performance', subtitle: 'On-time delivery by buyer' },
+  'dash-inventory': { title: 'Inventory Snapshot', subtitle: '9 items at critical stock level' },
+  'dash-period': { title: 'Period Comparison', subtitle: 'This week vs last week performance' },
+};
+
 // Top-level stats from attachment
 const topStats = [
   { label: 'On-Time Delivery (OTD)', value: '93.8%', trend: '↑ 1.1% vs Feb · Target 97%', up: true, color: 'success' as const },
@@ -88,7 +105,53 @@ const colorMap = {
   warning: { bg: 'bg-warning/10', icon: 'text-warning', border: 'border-warning/20' },
 };
 
+// Filtered demo data per report type
+function getFilteredLines(filter: string): LineStatus[] {
+  switch (filter) {
+    case 'dash-lineeff':
+      return [...demoLines].sort((a, b) => b.efficiency - a.efficiency);
+    case 'dash-delays':
+      return demoLines.filter(l => l.status === 'behind' || l.status === 'at_risk');
+    case 'dash-qcsummary':
+      return [...demoLines].sort((a, b) => b.dhu - a.dhu);
+    case 'dash-output':
+      return [...demoLines].sort((a, b) => b.output - a.output);
+    default:
+      return demoLines;
+  }
+}
+
+function getFilteredDowntime(filter: string) {
+  if (filter === 'dash-machines') {
+    return demoDowntimeData.filter(d => d.reason === 'machine_breakdown' || d.reason === 'maintenance');
+  }
+  return demoDowntimeData;
+}
+
+function getFilteredTopStats(filter: string) {
+  switch (filter) {
+    case 'dash-orderstatus':
+      return topStats.filter(s => s.label.includes('Order') || s.label.includes('Delivery') || s.label.includes('Shipment'));
+    case 'dash-attendance':
+      return topStats.filter(s => s.label.includes('Worker') || s.label.includes('Present'));
+    case 'dash-machines':
+      return topStats.filter(s => s.label.includes('Machine'));
+    case 'dash-qcsummary':
+      return topStats.filter(s => s.label.includes('QC'));
+    default:
+      return topStats;
+  }
+}
+
 export default function Dashboard() {
+  const activeFilter = useActiveFilter();
+  const currentFilter = activeFilter || 'dash-default';
+  const reportConfig = REPORT_CONFIG[currentFilter] || REPORT_CONFIG['dash-default'];
+
+  const filteredLines = useMemo(() => getFilteredLines(currentFilter), [currentFilter]);
+  const filteredDowntime = useMemo(() => getFilteredDowntime(currentFilter), [currentFilter]);
+  const filteredTopStats = useMemo(() => getFilteredTopStats(currentFilter), [currentFilter]);
+
   const kpis = useMemo(() => {
     const results = computeAllKPIs(demoInput);
     return results.map((kpi, i) => ({
@@ -99,9 +162,15 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4">
+      {/* Report Header */}
+      <div>
+        <h1 className="text-xl font-bold text-foreground">{reportConfig.title}</h1>
+        <p className="text-sm text-muted-foreground">{reportConfig.subtitle}</p>
+      </div>
+
       {/* Top Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {topStats.map((stat, i) => {
+      <div className={`grid grid-cols-2 ${filteredTopStats.length <= 4 ? 'md:grid-cols-2' : 'md:grid-cols-4'} gap-3`}>
+        {filteredTopStats.map((stat, i) => {
           const colors = colorMap[stat.color];
           return (
             <div
@@ -127,7 +196,7 @@ export default function Dashboard() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <EfficiencyTrendChart data={demoTrendData} />
-        <DowntimeParetoChart data={demoDowntimeData} />
+        <DowntimeParetoChart data={filteredDowntime} />
       </div>
 
       {/* Production Pipeline */}
@@ -142,6 +211,7 @@ export default function Dashboard() {
               { stage: 'Sewing (12 Lines)', qty: '318,200 pcs', color: 'bg-purple' },
               { stage: 'QC Inline', qty: '48,600 pcs', color: 'bg-warning' },
               { stage: 'Finishing (4 Lines)', qty: '96,400 pcs', color: 'bg-success' },
+              { stage: 'Auxiliary (Bartack/Eyelet)', qty: '18,000 pcs', color: 'bg-accent' },
               { stage: 'Final QC', qty: '22,100 pcs', color: 'bg-accent' },
               { stage: 'Packing & Dispatch', qty: '18,800 pcs', color: 'bg-pink' },
             ].map(item => (
@@ -161,7 +231,7 @@ export default function Dashboard() {
       </div>
 
       {/* Line Status */}
-      <LineStatusTable lines={demoLines} />
+      <LineStatusTable lines={filteredLines} />
     </div>
   );
 }
