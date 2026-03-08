@@ -280,18 +280,21 @@ const HOUR_LABELS = [
 ];
 
 /** Build dynamic sidebar groups for /hourly-entry from actual floor/line data */
-function useHourlyEntrySidebar(): SidebarGroup[] {
+function useHourlyEntrySidebar(factoryId: string): SidebarGroup[] {
   const { data: floorsWithLines } = useQuery({
-    queryKey: ['sidebar-floors-lines'],
+    queryKey: ['sidebar-floors-lines', factoryId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('floors')
         .select('id, name, lines(id, line_number, type, is_active)')
         .order('floor_index');
+      if (factoryId) query = query.eq('factory_id', factoryId);
+      const { data, error } = await query;
       if (error) throw error;
       return data as any[];
     },
     staleTime: 60_000,
+    enabled: !!factoryId,
   });
 
   if (!floorsWithLines || floorsWithLines.length === 0) {
