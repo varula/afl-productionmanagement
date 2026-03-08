@@ -166,11 +166,11 @@ export default function Dashboard() {
         <div className="flex items-start justify-between mb-2">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
-              <h1 className="text-lg font-black text-foreground tracking-tight">{reportConfig.title}</h1>
+              <h1 className="text-lg font-black text-foreground tracking-tight">Dashboard</h1>
               {isToday && <LiveBadge />}
             </div>
             <p className="text-[11px] text-muted-foreground">
-              {isToday ? reportConfig.subtitle : `Historical data — ${format(selectedDate, 'MMMM dd, yyyy')}`}
+              {isToday ? format(new Date(), 'EEEE, MMMM dd, yyyy') : `Historical data — ${format(selectedDate, 'MMMM dd, yyyy')}`}
             </p>
           </div>
           <Popover>
@@ -185,30 +185,6 @@ export default function Dashboard() {
             </PopoverContent>
           </Popover>
         </div>
-
-        {isDefault && (
-          <div className="flex items-center gap-4 text-[10px] font-medium text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Activity className="h-3 w-3" />
-              <span><span className="font-bold text-foreground">{summaryStats.lines}</span> lines</span>
-            </div>
-            <div className="w-px h-3 bg-border" />
-            <div className="flex items-center gap-1">
-              <Zap className="h-3 w-3" />
-              <span><span className="font-bold text-foreground">{summaryStats.output.toLocaleString()}</span> / {summaryStats.target.toLocaleString()} pcs</span>
-            </div>
-            <div className="w-px h-3 bg-border" />
-            <div className="flex items-center gap-1">
-              <Timer className="h-3 w-3" />
-              <span>OT: <span className="font-bold text-foreground">{(totalOTMinutes / 60).toFixed(1)} hrs</span></span>
-            </div>
-            <div className="w-px h-3 bg-border" />
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              <span>{format(new Date(), 'h:mm a')}</span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ═══ KPI HERO ROW ═══ */}
