@@ -3,10 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import HourlyEntry from "./pages/HourlyEntry";
 import OrdersPage from "./pages/OrdersPage";
@@ -17,7 +14,6 @@ import MachinesPage from "./pages/MachinesPage";
 import QCPage from "./pages/QCPage";
 import InventoryPage from "./pages/InventoryPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
-// ReportsPage removed - merged into MIS
 import MISPage from "./pages/MISPage";
 import PreProductionPage from "./pages/PreProductionPage";
 import CuttingProductionPage from "./pages/CuttingProductionPage";
@@ -35,41 +31,19 @@ import FactorySetupPage from "./pages/FactorySetupPage";
 import NotificationSettingsPage from "./pages/NotificationSettingsPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
 import PlanningModule from "./pages/PlanningModule";
-import PendingApprovalPage from "./pages/PendingApprovalPage";
+import DepartmentDashboard from "./pages/DepartmentDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session, loading, isApproved } = useAuth();
-  if (loading) return null;
-  if (!session) return <Navigate to="/auth" replace />;
-  if (!isApproved) return <Navigate to="/pending-approval" replace />;
-  return <>{children}</>;
-}
-
-function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useAuth();
-  if (loading) return null;
-  if (session) return <Navigate to="/dashboard" replace />;
-  return <>{children}</>;
-}
-
-function PendingApprovalRoute() {
-  const { session, loading, isApproved } = useAuth();
-  if (loading) return null;
-  if (!session) return <Navigate to="/auth" replace />;
-  if (isApproved) return <Navigate to="/dashboard" replace />;
-  return <PendingApprovalPage />;
-}
-
 const AppRoutes = () => (
   <Routes>
-    <Route path="/" element={<Index />} />
-    <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-    <Route path="/pending-approval" element={<PendingApprovalRoute />} />
-    <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    <Route element={<AppLayout />}>
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/dashboard/cutting" element={<DepartmentDashboard department="cutting" />} />
+      <Route path="/dashboard/sewing" element={<DepartmentDashboard department="sewing" />} />
+      <Route path="/dashboard/finishing" element={<DepartmentDashboard department="finishing" />} />
       <Route path="/plans" element={<OrdersPage />} />
       <Route path="/floors" element={<FloorsPage />} />
       <Route path="/hourly-entry" element={<HourlyEntry />} />
@@ -104,15 +78,13 @@ const AppRoutes = () => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
