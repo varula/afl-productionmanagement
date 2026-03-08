@@ -308,6 +308,7 @@ export default function HourlyEntry() {
 
   return (
     <div className="space-y-4">
+      {!canEdit && <ReadOnlyBanner />}
       {/* Header with Tabs */}
       <div className="flex items-center justify-between">
         <Tabs defaultValue="tracker" className="w-full">
