@@ -110,7 +110,10 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
               <th className="text-left px-3 py-2 font-semibold text-muted-foreground w-[110px] sticky left-0 bg-muted/30 z-10">Floor / Line</th>
               <th className="text-left px-3 py-2 font-semibold text-muted-foreground w-[120px]">Buyer · Style</th>
               {HOUR_HEADERS.map(h => (
-                <th key={h.slot} className="text-center px-1 py-2 font-semibold text-muted-foreground w-[52px]">
+                <th key={h.slot} className={cn(
+                  'text-center px-1 py-2 font-semibold w-[52px]',
+                  h.slot >= 9 ? 'text-warning bg-warning/10 border-l border-warning/30' : 'text-muted-foreground'
+                )}>
                   <div>{h.label}</div>
                   <div className="text-[9px] font-normal">{h.sub}</div>
                 </th>
@@ -145,7 +148,7 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
                     const record = plan.hourly_records.find(r => r.hour_slot === h.slot);
                     const qty = record?.produced_qty || 0;
                     return (
-                      <td key={h.slot} className="px-1 py-1.5 text-center">
+                      <td key={h.slot} className={cn('px-1 py-1.5 text-center', h.slot >= 9 && 'bg-warning/5 border-l border-warning/20')}>
                         <button
                           onClick={() => onCellClick?.(plan.id, h.slot)}
                           className={cn(
@@ -182,7 +185,7 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
                   return s + (rec?.produced_qty || 0);
                 }, 0);
                 return (
-                  <td key={h.slot} className="px-1 py-2 text-center text-foreground">
+                  <td key={h.slot} className={cn('px-1 py-2 text-center text-foreground', h.slot >= 9 && 'bg-warning/10 border-l border-warning/30')}>
                     {slotTotal > 0 ? slotTotal.toLocaleString() : '—'}
                   </td>
                 );
