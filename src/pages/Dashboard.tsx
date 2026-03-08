@@ -116,6 +116,14 @@ function getFilteredLines(filter: string): LineStatus[] {
       return [...demoLines].sort((a, b) => b.dhu - a.dhu);
     case 'dash-output':
       return [...demoLines].sort((a, b) => b.output - a.output);
+    case 'dash-shipments':
+      return demoLines.filter(l => l.status === 'on_track');
+    case 'dash-buyers':
+      return demoLines.filter(l => l.style.includes('Gap') || l.style.includes('Lager'));
+    case 'dash-machines':
+      return demoLines.filter(l => l.status !== 'on_track');
+    case 'dash-attendance':
+      return demoLines.filter(l => l.lineNumber <= 8);
     default:
       return demoLines;
   }
@@ -125,19 +133,104 @@ function getFilteredDowntime(filter: string) {
   if (filter === 'dash-machines') {
     return demoDowntimeData.filter(d => d.reason === 'machine_breakdown' || d.reason === 'maintenance');
   }
+  if (filter === 'dash-qcsummary') {
+    return demoDowntimeData.filter(d => d.reason === 'quality_issue');
+  }
+  if (filter === 'dash-delays') {
+    return demoDowntimeData.filter(d => d.reason === 'machine_breakdown' || d.reason === 'no_feeding' || d.reason === 'power_failure');
+  }
   return demoDowntimeData;
+}
+
+function getFilteredTrend(filter: string) {
+  if (filter === 'dash-delays') {
+    return demoTrendData.map(d => ({ ...d, efficiency: Math.max(70, d.efficiency - 4) }));
+  }
+  if (filter === 'dash-lineeff') {
+    return demoTrendData.map(d => ({ ...d, efficiency: Math.min(99, d.efficiency + 2) }));
+  }
+  if (filter === 'dash-machines') {
+    return demoTrendData.map(d => ({ ...d, efficiency: Math.max(70, d.efficiency - 3) }));
+  }
+  return demoTrendData;
+}
+
+function getFilterAdjustedInput(filter: string): KPIInput {
+  const base = { ...demoInput };
+
+  switch (filter) {
+    case 'dash-delays':
+      return {
+        ...base,
+        totalOutput: Math.round(base.totalOutput * 0.92),
+        totalDowntimeMinutes: Math.round(base.totalDowntimeMinutes * 1.35),
+        totalNptMinutes: Math.round(base.totalNptMinutes * 1.2),
+        totalDefects: Math.round(base.totalDefects * 1.15),
+      };
+    case 'dash-lineeff':
+      return {
+        ...base,
+        totalOutput: Math.round(base.totalOutput * 1.05),
+        totalDowntimeMinutes: Math.round(base.totalDowntimeMinutes * 0.8),
+        totalDefects: Math.round(base.totalDefects * 0.9),
+      };
+    case 'dash-attendance':
+      return {
+        ...base,
+        presentOperators: 1760,
+        totalManpower: 1760,
+      };
+    case 'dash-machines':
+      return {
+        ...base,
+        totalOutput: Math.round(base.totalOutput * 0.95),
+        totalDowntimeMinutes: Math.round(base.totalDowntimeMinutes * 1.6),
+        totalNptMinutes: Math.round(base.totalNptMinutes * 1.3),
+      };
+    case 'dash-qcsummary':
+      return {
+        ...base,
+        totalDefects: Math.round(base.totalDefects * 1.25),
+        totalRework: Math.round(base.totalRework * 1.2),
+      };
+    case 'dash-inventory':
+      return {
+        ...base,
+        totalOutput: Math.round(base.totalOutput * 0.94),
+        cutQty: Math.round(base.cutQty * 0.9),
+        shippedQty: Math.round(base.shippedQty * 0.92),
+      };
+    case 'dash-shipments':
+      return {
+        ...base,
+        shippedQty: Math.round(base.shippedQty * 0.95),
+        onTimeOrders: 52,
+      };
+    default:
+      return base;
+  }
 }
 
 function getFilteredTopStats(filter: string) {
   switch (filter) {
     case 'dash-orderstatus':
       return topStats.filter(s => s.label.includes('Order') || s.label.includes('Delivery') || s.label.includes('Shipment'));
+    case 'dash-shipments':
+      return topStats.filter(s => s.label.includes('Shipment') || s.label.includes('Delivery') || s.label.includes('Active Orders'));
+    case 'dash-delays':
+      return topStats.filter(s => s.label.includes('Delayed') || s.label.includes('Efficiency') || s.label.includes('Units Produced'));
+    case 'dash-lineeff':
+      return topStats.filter(s => s.label.includes('Line Efficiency') || s.label.includes('Units Produced'));
     case 'dash-attendance':
-      return topStats.filter(s => s.label.includes('Worker') || s.label.includes('Present'));
+      return topStats.filter(s => s.label.includes('Workers Present'));
     case 'dash-machines':
-      return topStats.filter(s => s.label.includes('Machine'));
+      return topStats.filter(s => s.label.includes('Machines Down'));
     case 'dash-qcsummary':
-      return topStats.filter(s => s.label.includes('QC'));
+      return topStats.filter(s => s.label.includes('QC Pass'));
+    case 'dash-buyers':
+      return topStats.filter(s => s.label.includes('On-Time Delivery') || s.label.includes('Active Orders') || s.label.includes('Units Produced'));
+    case 'dash-inventory':
+      return topStats.filter(s => s.label.includes('Units Produced') || s.label.includes('Delayed Shipments'));
     default:
       return topStats;
   }
