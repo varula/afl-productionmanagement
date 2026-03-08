@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { format } from 'date-fns';
-import { GaugeChart } from '@/components/charts/GaugeChart';
+import { KPIHeroCard } from '@/components/dashboard/KPIHeroCard';
+import { SectionHeader } from '@/components/dashboard/SectionHeader';
 import { EfficiencyTrendChart } from '@/components/charts/EfficiencyTrendChart';
 import { DHUTrendChart } from '@/components/charts/DHUTrendChart';
 import { DowntimeParetoChart } from '@/components/charts/DowntimeParetoChart';
@@ -12,20 +13,18 @@ import { TurnoverColumnChart } from '@/components/charts/TurnoverColumnChart';
 import { LineStatusTable } from '@/components/dashboard/LineStatusTable';
 import { DashboardSubPanel } from '@/components/dashboard/DashboardSubPanel';
 import { computeAllKPIs } from '@/lib/kpi';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3, CalendarIcon } from 'lucide-react';
+import { BarChart3, CalendarIcon, Activity, Zap, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { LineStatus } from '@/components/dashboard/LineStatusTable';
 import type { KPIInput } from '@/lib/kpi';
 
 const REPORT_CONFIG: Record<string, { title: string; subtitle: string }> = {
-  'dash-default': { title: 'Factory Command Center', subtitle: 'Real-time production overview' },
+  'dash-default': { title: 'Factory Command Center', subtitle: 'Real-time production intelligence' },
   'dash-output': { title: 'Daily Output Report', subtitle: 'Detailed output breakdown by line' },
   'dash-orderstatus': { title: 'Order Status Overview', subtitle: 'Active production plans' },
   'dash-shipments': { title: 'Shipment Tracker', subtitle: 'Shipment progress' },
@@ -54,16 +53,20 @@ const KPI_FILTER_MAP: Record<string, string[]> = {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-4">
-      <Skeleton className="h-8 w-64" />
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-10 w-72" />
+        <Skeleton className="h-8 w-24" />
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-[160px] rounded-xl" />
+          <Skeleton key={i} className="h-[140px] rounded-2xl" />
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <Skeleton className="h-[240px] rounded-xl" />
-        <Skeleton className="h-[240px] rounded-xl" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-[260px] rounded-xl" />
+        ))}
       </div>
     </div>
   );
@@ -71,14 +74,27 @@ function DashboardSkeleton() {
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-        <BarChart3 className="h-8 w-8 text-primary" />
+    <div className="flex flex-col items-center justify-center py-24 text-center">
+      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/20 to-purple/20 flex items-center justify-center mb-5 ring-1 ring-primary/10">
+        <BarChart3 className="h-10 w-10 text-primary" />
       </div>
-      <h2 className="text-lg font-bold text-foreground mb-1">No production data for today</h2>
-      <p className="text-sm text-muted-foreground max-w-md">
-        Create production plans for today to see live dashboard data. Go to Production Plan Entry to get started.
+      <h2 className="text-xl font-bold text-foreground mb-2">No production data for today</h2>
+      <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
+        Create production plans to activate the command center. Navigate to <span className="font-semibold text-foreground">Production Plan Entry</span> to get started.
       </p>
+    </div>
+  );
+}
+
+// Live pulse indicator
+function LiveBadge() {
+  return (
+    <div className="flex items-center gap-1.5 text-[9px] font-bold text-success bg-success/8 px-2 py-1 rounded-lg border border-success/15">
+      <span className="relative flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+      </span>
+      LIVE
     </div>
   );
 }
@@ -100,20 +116,14 @@ export default function Dashboard() {
 
   const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData(dateStr, factoryId);
 
-  const kpis = useMemo(() => {
-    const results = computeAllKPIs(kpiInput);
-    const allowedKeys = KPI_FILTER_MAP[currentFilter];
-    return allowedKeys ? results.filter(k => allowedKeys.includes(k.key)) : results;
-  }, [kpiInput, currentFilter]);
-
-  // Derive gauge KPIs for top section
+  // Top 6 hero KPIs
   const gaugeKPIs = useMemo(() => {
     const all = computeAllKPIs(kpiInput);
     const keys = ['factory_efficiency', 'labor_productivity', 'on_time_delivery', 'rft', 'dhu', 'lost_time'];
     return keys.map(k => all.find(kpi => kpi.key === k)).filter(Boolean) as typeof all;
   }, [kpiInput]);
 
-  // DHU trend data (from factory_daily_summary)
+  // DHU trend
   const dhuTrendData = useMemo(() => {
     return trendData.map(t => ({
       date: t.date,
@@ -121,7 +131,7 @@ export default function Dashboard() {
     }));
   }, [trendData]);
 
-  // Production funnel data
+  // Funnel
   const funnelData = useMemo(() => {
     const totalTarget = kpiInput.totalTarget || 1000;
     const cutQty = kpiInput.cutQty || totalTarget;
@@ -136,9 +146,8 @@ export default function Dashboard() {
     ];
   }, [kpiInput]);
 
-  // Labor productivity by department
+  // Labor by dept
   const laborDeptData = useMemo(() => {
-    const sewLines = lineStatuses.filter(l => true); // All lines treated as sewing for now
     const avgProd = kpiInput.presentOperators > 0 ? kpiInput.totalOutput / kpiInput.presentOperators : 0;
     return [
       { department: 'Sewing', productivity: Math.round(avgProd * 1.1) },
@@ -146,31 +155,36 @@ export default function Dashboard() {
       { department: 'Finishing', productivity: Math.round(avgProd * 0.9) },
       { department: 'Overall', productivity: Math.round(avgProd) },
     ];
-  }, [kpiInput, lineStatuses]);
+  }, [kpiInput]);
 
-  // Quality stacked data per line
+  // Quality per line
   const qualityData = useMemo(() => {
     return lineStatuses.slice(0, 8).map(l => {
       const checked = Math.max(l.output, 1);
       const defects = Math.round(checked * l.dhu / 100);
       const rework = Math.round(defects * 0.6);
-      const reject = defects - rework;
-      return {
-        line: `L${l.lineNumber}`,
-        pass: checked - defects,
-        rework,
-        reject,
-      };
+      return { line: `L${l.lineNumber}`, pass: checked - defects, rework, reject: defects - Math.round(defects * 0.6) };
     });
   }, [lineStatuses]);
 
-  // Turnover data (mock monthly)
+  // Turnover
   const turnoverData = useMemo(() => {
     return ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'].map(month => ({
       month,
-      turnover: 2 + Math.random() * 4,
+      turnover: +(2 + Math.random() * 4).toFixed(1),
     }));
   }, []);
+
+  // Summary stats for header
+  const summaryStats = useMemo(() => {
+    const eff = gaugeKPIs.find(k => k.key === 'factory_efficiency');
+    return {
+      lines: lineStatuses.length,
+      output: kpiInput.totalOutput,
+      target: kpiInput.totalTarget,
+      efficiency: eff?.value ?? 0,
+    };
+  }, [lineStatuses, kpiInput, gaugeKPIs]);
 
   if (isLoading) return <DashboardSkeleton />;
   if (isEmpty) return <EmptyState />;
@@ -178,83 +192,95 @@ export default function Dashboard() {
   const isDefault = currentFilter === 'dash-default';
 
   return (
-    <div key={currentFilter} className="space-y-4">
-      {/* Header */}
-      <div className="animate-fade-in flex items-start justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">{reportConfig.title}</h1>
-          <p className="text-sm text-muted-foreground">
-            {isToday ? reportConfig.subtitle : `Data for ${format(selectedDate, 'MMM dd, yyyy')}`}
-          </p>
+    <div key={currentFilter} className="space-y-5">
+      {/* ═══════════════════════ HEADER ══════════════════════ */}
+      <div className="animate-fade-in">
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1">
+              <h1 className="text-lg font-black text-foreground tracking-tight">{reportConfig.title}</h1>
+              {isToday && <LiveBadge />}
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {isToday ? reportConfig.subtitle : `Historical data — ${format(selectedDate, 'MMMM dd, yyyy')}`}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn('gap-1.5 text-[11px] h-8 rounded-lg', !isToday && 'border-primary text-primary')}>
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {isToday ? 'Today' : format(selectedDate, 'MMM dd')}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar mode="single" selected={selectedDate} onSelect={d => d && setSelectedDate(d)} disabled={date => date > new Date()} initialFocus className="p-3 pointer-events-auto" />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn('gap-1.5 text-xs', !isToday && 'border-primary text-primary')}>
-              <CalendarIcon className="h-3.5 w-3.5" />
-              {isToday ? 'Today' : format(selectedDate, 'MMM dd, yyyy')}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={d => d && setSelectedDate(d)}
-              disabled={date => date > new Date()}
-              initialFocus
-              className={cn('p-3 pointer-events-auto')}
-            />
-          </PopoverContent>
-        </Popover>
+
+        {/* Quick summary strip */}
+        {isDefault && (
+          <div className="flex items-center gap-4 text-[10px] font-medium text-muted-foreground pb-1">
+            <div className="flex items-center gap-1">
+              <Activity className="h-3 w-3" />
+              <span><span className="font-bold text-foreground">{summaryStats.lines}</span> active lines</span>
+            </div>
+            <div className="w-px h-3 bg-border" />
+            <div className="flex items-center gap-1">
+              <Zap className="h-3 w-3" />
+              <span><span className="font-bold text-foreground">{summaryStats.output.toLocaleString()}</span> / {summaryStats.target.toLocaleString()} pcs</span>
+            </div>
+            <div className="w-px h-3 bg-border" />
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              <span>Updated {format(new Date(), 'h:mm a')}</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ═══════════════════════════════════════════ */}
-      {/* 1️⃣ TOP SECTION — KPI Gauge Cards          */}
-      {/* ═══════════════════════════════════════════ */}
+      {/* ═══════════════════════ KPI HERO ROW ══════════════════════ */}
       {isDefault && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 animate-fade-in">
-          {gaugeKPIs.map((kpi) => (
-            <GaugeChart
-              key={kpi.key}
-              label={kpi.label}
-              value={kpi.value}
-              target={kpi.target ?? 0}
-              unit={kpi.unit}
-              status={kpi.status}
-            />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 animate-fade-in">
+          {gaugeKPIs.map((kpi, i) => (
+            <div key={kpi.key} style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'both' }} className="animate-fade-in">
+              <KPIHeroCard
+                label={kpi.label}
+                value={kpi.value}
+                target={kpi.target ?? 0}
+                unit={kpi.unit}
+                status={kpi.status}
+                trend={kpi.trend}
+              />
+            </div>
           ))}
         </div>
       )}
 
-      {/* Non-default: show sub-panel */}
+      {/* Sub-panel for filtered views */}
       {showSubPanel && (
         <DashboardSubPanel filter={currentFilter} lines={lineStatuses} onClose={handleClosePanel} />
       )}
 
-      {/* ═══════════════════════════════════════════ */}
-      {/* 2️⃣ MIDDLE SECTION — Trend Charts           */}
-      {/* ═══════════════════════════════════════════ */}
+      {/* ═══════════════════════ PRODUCTIVITY PANEL ══════════════════════ */}
       {isDefault && (
-        <div className="space-y-3">
-          {/* Panel Label */}
-          <div className="flex items-center gap-2 pt-1">
-            <div className="w-1 h-4 rounded-full bg-primary" />
-            <h2 className="text-[13px] font-bold text-foreground">Productivity Panel</h2>
-          </div>
-
+        <div className="space-y-2.5">
+          <SectionHeader title="Productivity & Trends" color="bg-primary" badge="Live">
+            <span className="text-[9px] text-muted-foreground">Last 7 days</span>
+          </SectionHeader>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            {/* Efficiency Trend */}
             {trendData.length > 0 && (
               <div className="animate-fade-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
                 <EfficiencyTrendChart data={trendData} />
               </div>
             )}
-            {/* DHU Trend with control limits */}
             {dhuTrendData.length > 0 && (
               <div className="animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
                 <DHUTrendChart data={dhuTrendData} />
               </div>
             )}
-            {/* Labor Productivity by Dept */}
             <div className="animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
               <LaborProductivityChart data={laborDeptData} />
             </div>
@@ -262,17 +288,10 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════ */}
-      {/* 3️⃣ BOTTOM SECTION — Advanced Charts        */}
-      {/* ═══════════════════════════════════════════ */}
+      {/* ═══════════════════════ PRODUCTION FLOW PANEL ══════════════════════ */}
       {isDefault && (
-        <div className="space-y-3">
-          {/* Production Flow Panel */}
-          <div className="flex items-center gap-2 pt-1">
-            <div className="w-1 h-4 rounded-full bg-accent" />
-            <h2 className="text-[13px] font-bold text-foreground">Production Flow Panel</h2>
-          </div>
-
+        <div className="space-y-2.5">
+          <SectionHeader title="Production Flow & Lost Time" color="bg-accent" />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <div className="animate-fade-in" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
               <ProductionFunnelChart stages={funnelData} />
@@ -283,13 +302,13 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+        </div>
+      )}
 
-          {/* Quality Panel */}
-          <div className="flex items-center gap-2 pt-1">
-            <div className="w-1 h-4 rounded-full bg-success" />
-            <h2 className="text-[13px] font-bold text-foreground">Quality Panel</h2>
-          </div>
-
+      {/* ═══════════════════════ QUALITY PANEL ══════════════════════ */}
+      {isDefault && (
+        <div className="space-y-2.5">
+          <SectionHeader title="Quality Intelligence" color="bg-success" badge="SPC" />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {qualityData.length > 0 && (
               <div className="animate-fade-in" style={{ animationDelay: '350ms', animationFillMode: 'both' }}>
@@ -302,18 +321,17 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+        </div>
+      )}
 
-          {/* Workforce Panel */}
-          <div className="flex items-center gap-2 pt-1">
-            <div className="w-1 h-4 rounded-full bg-purple" />
-            <h2 className="text-[13px] font-bold text-foreground">Workforce Panel</h2>
-          </div>
-
+      {/* ═══════════════════════ WORKFORCE PANEL ══════════════════════ */}
+      {isDefault && (
+        <div className="space-y-2.5">
+          <SectionHeader title="Workforce & Performance" color="bg-purple" />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <div className="animate-fade-in" style={{ animationDelay: '450ms', animationFillMode: 'both' }}>
               <TurnoverColumnChart data={turnoverData} />
             </div>
-            {/* Line Performance Table */}
             <div className="animate-fade-in" style={{ animationDelay: '500ms', animationFillMode: 'both' }}>
               <LineStatusTable lines={lineStatuses.slice(0, 8)} />
             </div>
