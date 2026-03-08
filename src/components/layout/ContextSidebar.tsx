@@ -300,16 +300,19 @@ function useHourlyEntrySidebar(): SidebarGroup[] {
 
   const viewByItems: SidebarItem[] = [
     { label: 'All Lines', key: 'hr-all', active: true },
+    { label: 'Sewing', key: 'hr-sewing' },
+    { label: 'Finishing', key: 'hr-finishing' },
+    { label: 'Cutting', key: 'hr-cutting' },
+    { label: 'Auxiliary (Bartack/Eyelet)', key: 'hr-auxiliary' },
   ];
 
   for (const floor of floorsWithLines) {
     const activeLines = (floor.lines || []).filter((l: any) => l.is_active);
     if (activeLines.length === 0) continue;
     const lineNums = activeLines.map((l: any) => l.line_number).sort((a: number, b: number) => a - b);
-    // Determine unit label based on line type
     const primaryType = activeLines[0]?.type || 'sewing';
-    const unitWord = primaryType === 'cutting' ? 'Table' : 'Line';
-    const unitWordPlural = primaryType === 'cutting' ? 'Tables' : 'Lines';
+    const unitWord = primaryType === 'cutting' ? 'Table' : primaryType === 'auxiliary' ? 'AX' : 'Line';
+    const unitWordPlural = primaryType === 'cutting' ? 'Tables' : primaryType === 'auxiliary' ? 'AX' : 'Lines';
     const rangeLabel = lineNums.length === 1
       ? `${unitWord} ${lineNums[0]}`
       : `${unitWordPlural} ${lineNums[0]}–${lineNums[lineNums.length - 1]}`;
