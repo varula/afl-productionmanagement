@@ -130,8 +130,15 @@ export default function HourlyEntry() {
       const payload = {
         plan_id: selectedPlanId,
         hour_slot: activeSlot,
-        ...form,
-        downtime_reason: form.downtime_reason || null,
+        produced_qty: form.produced_qty,
+        defects: form.defects,
+        rework: form.rework,
+        checked_qty: form.checked_qty,
+        downtime_minutes: form.downtime_minutes,
+        npt_minutes: form.npt_minutes,
+        operators_present: form.operators_present,
+        helpers_present: form.helpers_present,
+        downtime_reason: (form.downtime_reason || null) as DowntimeReason | null,
       };
 
       if (existing) {
@@ -143,7 +150,7 @@ export default function HourlyEntry() {
       } else {
         const { error } = await supabase
           .from('hourly_production')
-          .insert(payload);
+          .insert([payload]);
         if (error) throw error;
       }
     },
