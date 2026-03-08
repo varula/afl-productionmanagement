@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 interface FunnelStage {
@@ -15,41 +15,58 @@ export function ProductionFunnelChart({ stages }: ProductionFunnelChartProps) {
   const maxQty = Math.max(...stages.map(s => s.qty), 1);
 
   return (
-    <Card className="border-[1.5px]">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-[13px] font-bold">Production Flow — Cut → Ship</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {stages.map((stage, i) => {
-          const widthPct = Math.max((stage.qty / maxQty) * 100, 15);
-          const lossPct = i > 0 ? ((stages[i - 1].qty - stage.qty) / stages[i - 1].qty * 100) : 0;
-          return (
-            <div key={stage.stage} className="space-y-0.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-foreground">{stage.stage}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-foreground">{stage.qty.toLocaleString()} pcs</span>
-                  {i > 0 && lossPct > 0 && (
-                    <span className="text-[9px] font-semibold text-pink">-{lossPct.toFixed(1)}%</span>
-                  )}
+    <Card className="border border-border/60 shadow-sm hover:shadow-md transition-shadow">
+      <CardContent className="pt-4 pb-3">
+        <div className="mb-4">
+          <div className="text-[13px] font-bold text-foreground">Production Flow</div>
+          <div className="text-[10px] text-muted-foreground">Cut → Sew → Finish → Ship conversion</div>
+        </div>
+        <div className="space-y-3">
+          {stages.map((stage, i) => {
+            const widthPct = Math.max((stage.qty / maxQty) * 100, 20);
+            const lossPct = i > 0 ? ((stages[i - 1].qty - stage.qty) / stages[i - 1].qty * 100) : 0;
+            return (
+              <div key={stage.stage}>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <div className={cn('w-2 h-2 rounded-full', stage.color)} />
+                    <span className="text-[11px] font-semibold text-foreground">{stage.stage}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-foreground tabular-nums">
+                      {stage.qty.toLocaleString()}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground">pcs</span>
+                    {i > 0 && lossPct > 0 && (
+                      <span className="text-[8px] font-bold text-pink bg-pink/8 px-1.5 py-0.5 rounded-md">
+                        -{lossPct.toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="h-6 bg-muted rounded-lg overflow-hidden relative">
-                <div
-                  className={cn('h-full rounded-lg transition-all duration-700', stage.color)}
-                  style={{ width: `${widthPct}%` }}
-                />
-              </div>
-              {i < stages.length - 1 && (
-                <div className="flex justify-center">
-                  <svg width="12" height="12" viewBox="0 0 12 12" className="text-muted-foreground">
-                    <path d="M6 2 L6 10 M3 7 L6 10 L9 7" stroke="currentColor" fill="none" strokeWidth="1.5" />
-                  </svg>
+                <div className="h-3 w-full bg-muted/60 rounded-full overflow-hidden">
+                  <div
+                    className={cn('h-full rounded-full transition-all duration-1000 ease-out', stage.color)}
+                    style={{ width: `${widthPct}%`, opacity: 0.75 }}
+                  />
                 </div>
-              )}
-            </div>
-          );
-        })}
+                {i < stages.length - 1 && (
+                  <div className="flex justify-center my-1">
+                    <div className="w-px h-3 bg-border" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Summary row */}
+        <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between">
+          <span className="text-[10px] font-semibold text-muted-foreground">Overall Yield</span>
+          <span className="text-[12px] font-black text-foreground">
+            {stages.length >= 2 ? ((stages[stages.length - 1].qty / stages[0].qty) * 100).toFixed(1) : 100}%
+          </span>
+        </div>
       </CardContent>
     </Card>
   );

@@ -1,6 +1,6 @@
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface DowntimeData {
   reason: string;
@@ -34,21 +34,21 @@ export function DowntimeParetoChart({ data }: DowntimeParetoChartProps) {
     .map(d => ({ ...d, label: reasonLabels[d.reason] || d.reason }));
 
   return (
-    <Card className="border-[1.5px]">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-[13px] font-bold">Lost Time by Reason — Today</CardTitle>
-          <span className="text-[10px] text-muted-foreground border border-border rounded-[5px] px-2 py-0.5 cursor-pointer">Mar 2026</span>
+    <Card className="border border-border/60 shadow-sm hover:shadow-md transition-shadow">
+      <CardContent className="pt-4 pb-3">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <div className="text-[13px] font-bold text-foreground">Downtime Pareto</div>
+            <div className="text-[10px] text-muted-foreground">Top loss reasons ranked</div>
+          </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[180px] w-full">
-          <BarChart data={sorted} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-            <XAxis dataKey="label" className="text-[9px]" tick={{ fill: 'hsl(var(--muted-foreground))' }} angle={-15} textAnchor="end" height={50} />
-            <YAxis className="text-[10px]" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+        <ChartContainer config={chartConfig} className="h-[200px] w-full">
+          <BarChart data={sorted} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" vertical={false} />
+            <XAxis dataKey="label" className="text-[8px]" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 8 }} angle={-20} textAnchor="end" height={45} axisLine={false} tickLine={false} />
+            <YAxis className="text-[9px]" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9 }} axisLine={false} tickLine={false} />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar dataKey="minutes" fill="hsl(var(--chart-4))" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="minutes" fill="hsl(var(--chart-4))" radius={[6, 6, 0, 0]} opacity={0.8} barSize={28} />
           </BarChart>
         </ChartContainer>
       </CardContent>
