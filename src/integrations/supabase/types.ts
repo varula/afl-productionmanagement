@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_configurations: {
+        Row: {
+          alert_type: string
+          category: string
+          created_at: string
+          description: string
+          id: string
+          is_enabled: boolean
+          label: string
+          threshold_unit: string | null
+          threshold_value: number | null
+          updated_at: string
+          whatsapp_recipients: Json
+        }
+        Insert: {
+          alert_type: string
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_enabled?: boolean
+          label: string
+          threshold_unit?: string | null
+          threshold_value?: number | null
+          updated_at?: string
+          whatsapp_recipients?: Json
+        }
+        Update: {
+          alert_type?: string
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_enabled?: boolean
+          label?: string
+          threshold_unit?: string | null
+          threshold_value?: number | null
+          updated_at?: string
+          whatsapp_recipients?: Json
+        }
+        Relationships: []
+      }
       downtime: {
         Row: {
           created_at: string
