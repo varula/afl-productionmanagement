@@ -109,6 +109,7 @@ export default function HourlyEntry() {
       const lineType = plan.lines?.type || 'sewing';
       const floorId = plan.lines?.floors?.id;
 
+      if (activeFilter === 'hr-sewing') return lineType === 'sewing';
       if (activeFilter === 'hr-finishing') return lineType === 'finishing';
       if (activeFilter === 'hr-cutting') return lineType === 'cutting';
       if (activeFilter === 'hr-auxiliary') return lineType === 'auxiliary';
