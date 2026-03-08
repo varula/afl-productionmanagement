@@ -148,8 +148,8 @@ export default function OvertimePage() {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-lg font-black text-foreground tracking-tight">Overtime Management</h1>
-        <p className="text-[11px] text-muted-foreground">Track, analyze, and manage overtime across departments and floors</p>
+        <h1 className="text-xl font-bold text-foreground tracking-tight">Overtime Management</h1>
+        <p className="text-xs text-muted-foreground">Track, analyze, and manage overtime across departments and floors</p>
       </div>
 
       <Tabs defaultValue="analytics" className="space-y-4">
