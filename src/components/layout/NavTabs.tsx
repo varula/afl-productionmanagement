@@ -25,6 +25,7 @@ const tabs = [
   { title: 'Machines', path: '/machines', icon: Cpu },
   { title: 'Quality Control', path: '/qc', icon: Shield, badge: 5 },
   { title: 'Inventory', path: '/inventory', icon: Package },
+  { title: 'Shipments', path: '/shipments', icon: Ship },
   { title: 'Analytics', path: '/analytics', icon: LineChart },
   { title: 'MIS Reports', path: '/mis', icon: BarChart3 },
   { title: 'Settings', path: '/admin/settings', icon: Settings },
