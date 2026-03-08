@@ -28,7 +28,19 @@ const SECTION_ROUTES: Record<string, string> = {
 export default function MISPage() {
   const navigate = useNavigate();
   const factoryId = useFactoryId();
+  const activeFilter = useActiveFilter();
   const today = new Date().toISOString().split('T')[0];
+
+  // Map sidebar Report Type filters to MIS section keys
+  const REPORT_TYPE_FILTER: Record<string, string[]> = {
+    'rp-production': ['sewing_production', 'cutting_production', 'finishing_production'],
+    'rp-qc': ['cutting_quality', 'sewing_quality', 'finishing_quality'],
+    'rp-shipment': ['finishing_production', 'stores'],
+    'rp-attendance': ['general'],
+    'rp-inventory': ['stores'],
+    'rp-machine': ['general'],
+    'rp-buyer': ['pre_production'],
+  };
 
   // Factory daily summary - try factory filter, fallback to any
   const { data: summary } = useQuery({
