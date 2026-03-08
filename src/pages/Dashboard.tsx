@@ -62,7 +62,7 @@ function DashboardSkeleton() {
         <Skeleton className="h-10 w-72" />
         <Skeleton className="h-8 w-24" />
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-[140px] rounded-2xl" />
         ))}
