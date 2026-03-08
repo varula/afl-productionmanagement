@@ -148,7 +148,7 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
                     const record = plan.hourly_records.find(r => r.hour_slot === h.slot);
                     const qty = record?.produced_qty || 0;
                     return (
-                      <td key={h.slot} className="px-1 py-1.5 text-center">
+                      <td key={h.slot} className={cn('px-1 py-1.5 text-center', h.slot >= 9 && 'bg-warning/5 border-l border-warning/20')}>
                         <button
                           onClick={() => onCellClick?.(plan.id, h.slot)}
                           className={cn(
