@@ -55,6 +55,14 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function PendingApprovalRoute() {
+  const { session, loading, isApproved } = useAuth();
+  if (loading) return null;
+  if (!session) return <Navigate to="/auth" replace />;
+  if (isApproved) return <Navigate to="/dashboard" replace />;
+  return <PendingApprovalPage />;
+}
+
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
