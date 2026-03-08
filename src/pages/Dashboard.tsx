@@ -238,15 +238,10 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ═══ LINE PERFORMANCE TABLE + DOWNTIME ═══ */}
-      {isDefault && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 animate-fade-in">
-          <div className="lg:col-span-2">
-            <LineStatusTable lines={lineStatuses} />
-          </div>
-          {downtimeData.length > 0 && (
-            <DowntimeParetoChart data={downtimeData} />
-          )}
+      {/* ═══ DOWNTIME ═══ */}
+      {isDefault && downtimeData.length > 0 && (
+        <div className="animate-fade-in">
+          <DowntimeParetoChart data={downtimeData} />
         </div>
       )}
     </div>
