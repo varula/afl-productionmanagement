@@ -284,35 +284,46 @@ export default function HourlyEntry() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
+      {/* Header with Tabs */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Hourly Output</h1>
-          <p className="text-sm text-muted-foreground">Hourly Tracker — {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-        </div>
-        <div className="flex items-center gap-3 text-[10px]">
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-success/80" /> ≥100%</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-warning/70" /> 80–99%</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-pink/70" /> &lt;80%</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-muted/50" /> Pending</span>
-        </div>
-      </div>
+        <Tabs defaultValue="tracker" className="w-full">
+          <div className="flex items-center justify-between mb-4">
+            <TabsList>
+              <TabsTrigger value="tracker" className="gap-1.5">
+                <Clock className="h-3.5 w-3.5" /> Hourly Tracker
+              </TabsTrigger>
+              <TabsTrigger value="entry" className="gap-1.5">
+                <PenLine className="h-3.5 w-3.5" /> Hourly Entry
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-      {/* KPI Cards */}
-      <HourlyKPICards
-        totalOutput={kpis.totalOutput}
-        totalTarget={kpis.totalTarget}
-        overallEfficiency={kpis.overallEfficiency}
-        pcsShort={kpis.pcsShort}
-        linesBelowTarget={kpis.linesBelowTarget}
-        currentHour={kpis.currentHour}
-        currentHourLabel={`Hour ${kpis.currentHour} of 9 (${HOUR_LABELS[kpis.currentHour - 1] || ''})`}
-      />
+          {/* Tracker Tab */}
+          <TabsContent value="tracker" className="space-y-4 mt-0">
+            {/* KPI Cards */}
+            <HourlyKPICards
+              totalOutput={kpis.totalOutput}
+              totalTarget={kpis.totalTarget}
+              overallEfficiency={kpis.overallEfficiency}
+              pcsShort={kpis.pcsShort}
+              linesBelowTarget={kpis.linesBelowTarget}
+              currentHour={kpis.currentHour}
+              currentHourLabel={`Hour ${kpis.currentHour} of 9 (${HOUR_LABELS[kpis.currentHour - 1] || ''})`}
+            />
 
-      {/* Target summary */}
-      <div className="text-right text-[11px] text-muted-foreground">
-        Target: Sewing {sewingPlans.length > 0 ? Math.round(sewingPlans[0].target_qty / (sewingPlans[0].working_hours || 8)) : 0} pcs/hr · Finishing {finishingPlans.length > 0 ? Math.round(finishingPlans[0].target_qty / (finishingPlans[0].working_hours || 8)) : 0} pcs/hr
-      </div>
+            {/* Legend + Target */}
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-4 text-[10px]">
+                <span className="text-xs font-medium text-muted-foreground">Hourly Tracker — {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-success/80" /> ≥100%</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-warning/70" /> 80–99%</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-pink/70" /> &lt;80%</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-muted/50" /> Pending</span>
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                Target: Sewing {sewingPlans.length > 0 ? Math.round(sewingPlans[0].target_qty / (sewingPlans[0].working_hours || 8)) : 0} pcs/hr · Finishing {finishingPlans.length > 0 ? Math.round(finishingPlans[0].target_qty / (finishingPlans[0].working_hours || 8)) : 0} pcs/hr
+              </div>
+            </div>
 
       {/* Sewing Lines Table */}
       {sewingPlans.length > 0 && (
