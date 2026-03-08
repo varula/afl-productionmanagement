@@ -17,6 +17,7 @@ import { LineStatusTable } from '@/components/dashboard/LineStatusTable';
 import { DashboardSubPanel } from '@/components/dashboard/DashboardSubPanel';
 import { computeAllKPIs } from '@/lib/kpi';
 import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
