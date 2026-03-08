@@ -331,6 +331,72 @@ export type Database = {
           },
         ]
       }
+      mis_documents: {
+        Row: {
+          created_at: string
+          created_by: string
+          data: Json
+          date: string
+          document_number: number
+          document_type: string
+          id: string
+          line_id: string | null
+          remarks: string | null
+          section: Database["public"]["Enums"]["mis_section"]
+          status: string
+          style_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          data?: Json
+          date?: string
+          document_number?: number
+          document_type: string
+          id?: string
+          line_id?: string | null
+          remarks?: string | null
+          section: Database["public"]["Enums"]["mis_section"]
+          status?: string
+          style_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          data?: Json
+          date?: string
+          document_number?: number
+          document_type?: string
+          id?: string
+          line_id?: string | null
+          remarks?: string | null
+          section?: Database["public"]["Enums"]["mis_section"]
+          status?: string
+          style_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mis_documents_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mis_documents_style_id_fkey"
+            columns: ["style_id"]
+            isOneToOne: false
+            referencedRelation: "styles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operators: {
         Row: {
           created_at: string
@@ -644,6 +710,16 @@ export type Database = {
         | "meeting"
         | "maintenance"
         | "other"
+      mis_section:
+        | "pre_production"
+        | "cutting_production"
+        | "cutting_quality"
+        | "sewing_production"
+        | "sewing_quality"
+        | "finishing_production"
+        | "finishing_quality"
+        | "general"
+        | "stores"
       operator_grade: "A" | "B" | "C" | "D"
       product_category:
         | "basic_5pkt_pants_shorts"
@@ -796,6 +872,17 @@ export const Constants = {
         "meeting",
         "maintenance",
         "other",
+      ],
+      mis_section: [
+        "pre_production",
+        "cutting_production",
+        "cutting_quality",
+        "sewing_production",
+        "sewing_quality",
+        "finishing_production",
+        "finishing_quality",
+        "general",
+        "stores",
       ],
       operator_grade: ["A", "B", "C", "D"],
       product_category: [
