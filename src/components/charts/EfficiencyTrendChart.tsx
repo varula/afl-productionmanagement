@@ -23,15 +23,15 @@ export function EfficiencyTrendChart({ data }: EfficiencyTrendChartProps) {
       <CardContent className="p-5 flex flex-col h-full">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <div className="text-[15px] font-semibold text-foreground leading-tight tracking-tight">Efficiency Trend</div>
-            <div className="text-[12px] text-muted-foreground mt-0.5">Daily efficiency vs target</div>
+            <div className="text-base font-semibold text-foreground leading-tight tracking-tight">Efficiency Trend</div>
+            <div className="text-xs text-muted-foreground mt-0.5">Daily efficiency vs target</div>
           </div>
           <div className="flex items-center gap-4 shrink-0">
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <div className="w-2 h-2 rounded-full bg-primary" />Actual
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="w-2.5 h-2.5 rounded-full bg-primary" />Actual
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />Target
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="w-2.5 h-2.5 rounded-full bg-muted-foreground/30" />Target
             </div>
           </div>
         </div>
