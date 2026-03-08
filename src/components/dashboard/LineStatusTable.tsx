@@ -59,7 +59,7 @@ export function LineStatusTable({ lines }: LineStatusTableProps) {
                 const config = statusConfig[line.status];
                 const shortfall = line.output - line.target;
                 return (
-                  <TableRow key={line.lineNumber} className="hover:bg-muted/50 cursor-pointer">
+                  <TableRow key={`${line.lineNumber}-${index}`} className="hover:bg-muted/50 cursor-pointer">
                     <TableCell className="font-bold text-foreground text-[11.5px]">Line {line.lineNumber}</TableCell>
                     <TableCell className="text-muted-foreground text-[11.5px]">{line.style}</TableCell>
                     <TableCell className="text-right text-[11.5px] font-medium">{line.target.toLocaleString()}</TableCell>
