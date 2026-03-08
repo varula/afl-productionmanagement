@@ -9,7 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Clock, Save, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp } from 'lucide-react';
-import type { Tables } from '@/integrations/supabase/types';
+import type { Tables, Database } from '@/integrations/supabase/types';
+
+type DowntimeReason = Database['public']['Enums']['downtime_reason_type'];
 
 const HOUR_SLOTS = Array.from({ length: 10 }, (_, i) => i + 1);
 
