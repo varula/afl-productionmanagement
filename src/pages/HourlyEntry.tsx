@@ -58,6 +58,7 @@ const emptyForm: FormData = {
 export default function HourlyEntry() {
   const queryClient = useQueryClient();
   const today = new Date().toISOString().split('T')[0];
+  const activeFilter = useActiveFilter();
 
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
   const [activeSlot, setActiveSlot] = useState(1);
