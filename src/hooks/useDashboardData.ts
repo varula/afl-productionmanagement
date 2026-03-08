@@ -303,7 +303,24 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
     { stage: 'Auxiliary', qty: `${(typeOutputMap.get('auxiliary') ?? 0).toLocaleString()} pcs`, color: 'bg-accent' },
   ];
 
-  return { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty };
+  // OT by section (line type)
+  const otBySectionMap = new Map<string, { ot: number; working: number }>();
+  for (const plan of (plans ?? [])) {
+    const line = plan.lines as any;
+    const hourly = hourlyByPlan.get(plan.id);
+    const section = line.type || 'sewing';
+    const existing = otBySectionMap.get(section) ?? { ot: 0, working: 0 };
+    existing.ot += hourly?.ot ?? 0;
+    existing.working += (plan.working_hours ?? 8) * 60 * (hourly?.operators || plan.planned_operators);
+    otBySectionMap.set(section, existing);
+  }
+  const otBySection = Array.from(otBySectionMap.entries()).map(([section, { ot, working }]) => ({
+    section: section.charAt(0).toUpperCase() + section.slice(1),
+    otMinutes: ot,
+    otPct: working > 0 ? (ot / working) * 100 : 0,
+  }));
+
+  return { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, totalOTMinutes, otBySection, isLoading, isEmpty };
 }
 
 // Filter helpers for sidebar reports - operate on live data
