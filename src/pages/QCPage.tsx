@@ -1,36 +1,11 @@
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Shield } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
 import { useActiveFilter } from '@/hooks/useActiveFilter';
-
-const defectTypes = [
-  { type: 'Broken Stitch', key: 'qcd-stitchskip', count: 312, floor: 'SF-01' },
-  { type: 'Skip Stitch', key: 'qcd-stitchskip', count: 198, floor: 'SF-02' },
-  { type: 'Oil Stain', key: 'qcd-shade', count: 156, floor: 'SF-01' },
-  { type: 'Uneven Hem', key: 'qcd-measurement', count: 134, floor: 'SF-03' },
-  { type: 'Puckering', key: 'qcd-thread', count: 112, floor: 'SF-02' },
-  { type: 'Wrong Measurement', key: 'qcd-measurement', count: 88, floor: 'FF-01' },
-];
-
-const inspections = [
-  { id: 1, line: 'Line 1', floor: 'SF-01', floorKey: 'qcf-sf01', checked: 4280, defects: 68, status: 'passed' },
-  { id: 2, line: 'Line 2', floor: 'SF-01', floorKey: 'qcf-sf01', checked: 3640, defects: 76, status: 'passed' },
-  { id: 3, line: 'Line 3', floor: 'SF-01', floorKey: 'qcf-sf01', checked: 3560, defects: 114, status: 'failed' },
-  { id: 4, line: 'Line 5', floor: 'SF-02', floorKey: 'qcf-sf02', checked: 3720, defects: 74, status: 'passed' },
-  { id: 5, line: 'Line 6', floor: 'SF-02', floorKey: 'qcf-sf02', checked: 3520, defects: 99, status: 'failed' },
-  { id: 6, line: 'Line 8', floor: 'SF-03', floorKey: 'qcf-sf03', checked: 2960, defects: 192, status: 'failed' },
-  { id: 7, line: 'Line 9', floor: 'SF-03', floorKey: 'qcf-sf03', checked: 3680, defects: 70, status: 'passed' },
-  { id: 8, line: 'Line 10', floor: 'FF-01', floorKey: 'qcf-ff01', checked: 3400, defects: 129, status: 'pending' },
-  { id: 9, line: 'Line 11', floor: 'FF-01', floorKey: 'qcf-ff01', checked: 3600, defects: 72, status: 'passed' },
-  { id: 10, line: 'Line 12', floor: 'FF-01', floorKey: 'qcf-ff01', checked: 3520, defects: 88, status: 'on_hold' },
-];
-
-const dhuTrend = [
-  { day: 'Mon', dhu: 2.4 }, { day: 'Tue', dhu: 2.1 }, { day: 'Wed', dhu: 2.3 },
-  { day: 'Thu', dhu: 1.9 }, { day: 'Fri', dhu: 2.0 }, { day: 'Sat', dhu: 2.2 },
-];
 
 const statusColors: Record<string, string> = {
   passed: 'bg-success/15 text-success border-success/30',
@@ -41,6 +16,86 @@ const statusColors: Record<string, string> = {
 
 export default function QCPage() {
   const activeFilter = useActiveFilter();
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data: plans = [] } = useQuery({
+    queryKey: ['qc-plans', today],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('production_plans')
+        .select('id, line_id, lines(line_number, type, floor_id, floors(name))')
+        .eq('date', today);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const planIds = (plans as any[]).map(p => p.id);
+  const { data: hourly = [] } = useQuery({
+    queryKey: ['qc-hourly', planIds],
+    queryFn: async () => {
+      if (planIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from('hourly_production')
+        .select('plan_id, checked_qty, defects, rework')
+        .in('plan_id', planIds);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: planIds.length > 0,
+  });
+
+  const { data: summaries = [] } = useQuery({
+    queryKey: ['qc-trend'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('factory_daily_summary')
+        .select('date, dhu_pct')
+        .order('date', { ascending: true })
+        .limit(7);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const inspections = useMemo(() => {
+    return (plans as any[]).map(plan => {
+      const records = hourly.filter(h => h.plan_id === plan.id);
+      const checked = records.reduce((s, r) => s + r.checked_qty, 0);
+      const defects = records.reduce((s, r) => s + r.defects, 0);
+      const dhu = checked > 0 ? (defects / checked) * 100 : 0;
+      const floorName = (plan.lines as any)?.floors?.name || '';
+      const floorKey = `qcf-${floorName.toLowerCase().replace(/[-\s]/g, '')}`;
+      let status = 'passed';
+      if (dhu > 4) status = 'failed';
+      else if (dhu > 3) status = 'on_hold';
+      else if (records.length === 0) status = 'pending';
+
+      return {
+        id: plan.id,
+        line: `${(plan.lines as any)?.type === 'cutting' ? 'Table' : 'Line'} ${(plan.lines as any)?.line_number}`,
+        floor: floorName,
+        floorKey,
+        checked,
+        defects,
+        dhu: Math.round(dhu * 10) / 10,
+        status,
+      };
+    }).sort((a, b) => a.line.localeCompare(b.line));
+  }, [plans, hourly]);
+
+  // Defect types summary
+  const defectData = useMemo(() => {
+    const byLine = inspections.filter(i => i.defects > 0).sort((a, b) => b.defects - a.defects).slice(0, 6);
+    return byLine.map(i => ({ type: i.line, count: i.defects }));
+  }, [inspections]);
+
+  const dhuTrend = useMemo(() => {
+    return (summaries as any[]).map(s => ({
+      day: new Date(s.date).toLocaleDateString('en-US', { weekday: 'short' }),
+      dhu: Number(s.dhu_pct) || 0,
+    }));
+  }, [summaries]);
 
   const filteredInspections = useMemo(() => {
     if (!activeFilter || activeFilter === 'qc-all' || activeFilter === 'qc-today') return inspections;
@@ -48,10 +103,8 @@ export default function QCPage() {
     if (activeFilter === 'qc-failed') return inspections.filter(i => i.status === 'failed');
     if (activeFilter === 'qc-passed') return inspections.filter(i => i.status === 'passed');
     if (activeFilter === 'qc-hold') return inspections.filter(i => i.status === 'on_hold');
-    // Floor filter
-    const floorKey = activeFilter;
-    return inspections.filter(i => i.floorKey === floorKey);
-  }, [activeFilter]);
+    return inspections.filter(i => i.floorKey === activeFilter);
+  }, [activeFilter, inspections]);
 
   const totalChecked = filteredInspections.reduce((s, i) => s + i.checked, 0);
   const totalDefects = filteredInspections.reduce((s, i) => s + i.defects, 0);
@@ -83,7 +136,6 @@ export default function QCPage() {
         ))}
       </div>
 
-      {/* Inspections list */}
       <Card className="border-[1.5px]">
         <CardHeader className="pb-2"><CardTitle className="text-[13px] font-bold">Inspections</CardTitle></CardHeader>
         <CardContent>
@@ -106,7 +158,7 @@ export default function QCPage() {
                     <td className="py-2.5 px-3 text-muted-foreground">{insp.floor}</td>
                     <td className="py-2.5 px-3 text-right font-bold text-foreground">{insp.checked.toLocaleString()}</td>
                     <td className="py-2.5 px-3 text-right text-foreground">{insp.defects}</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-foreground">{((insp.defects / insp.checked) * 100).toFixed(1)}%</td>
+                    <td className="py-2.5 px-3 text-right font-bold text-foreground">{insp.dhu}%</td>
                     <td className="py-2.5 px-3 text-center">
                       <Badge variant="outline" className={`text-[10px] capitalize ${statusColors[insp.status] || ''}`}>{insp.status.replace('_', ' ')}</Badge>
                     </td>
@@ -123,10 +175,10 @@ export default function QCPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <Card className="border-[1.5px]">
-          <CardHeader className="pb-2"><CardTitle className="text-[13px] font-bold">Top Defect Types</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-[13px] font-bold">Defects by Line</CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={defectTypes}>
+              <BarChart data={defectData}>
                 <XAxis dataKey="type" tick={{ fontSize: 9 }} angle={-20} textAnchor="end" height={50} />
                 <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip />

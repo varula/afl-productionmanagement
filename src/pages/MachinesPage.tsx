@@ -1,66 +1,96 @@
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Cpu, AlertTriangle, CheckCircle2, Wrench } from 'lucide-react';
 import { useActiveFilter } from '@/hooks/useActiveFilter';
 
-const allMachines = [
-  { id: 'SN-042', type: 'Overlock', line: 'Line 8', floor: 'SF-03', issue: 'Motor failure', since: '09:15', severity: 'critical', status: 'breakdown' },
-  { id: 'SN-118', type: 'Flatlock', line: 'Line 3', floor: 'SF-01', issue: 'Needle break', since: '10:40', severity: 'warning', status: 'breakdown' },
-  { id: 'SN-205', type: 'Lockstitch', line: 'Line 10', floor: 'FF-01', issue: 'Feed dog jam', since: '11:20', severity: 'critical', status: 'breakdown' },
-  { id: 'SN-087', type: 'Lockstitch', line: 'Line 6', floor: 'SF-02', issue: 'Thread tension', since: '13:10', severity: 'warning', status: 'maintenance' },
-  { id: 'SN-301', type: 'Pressing', line: 'Line 12', floor: 'FF-01', issue: 'Temp control', since: '14:00', severity: 'warning', status: 'maintenance' },
-  { id: 'SN-150', type: 'Overlock', line: 'Line 1', floor: 'SF-01', issue: 'Looper timing', since: '15:00', severity: 'warning', status: 'maintenance' },
-  { id: 'SN-220', type: 'Flatlock', line: 'Line 5', floor: 'SF-02', issue: 'Cover stitch skip', since: '08:30', severity: 'warning', status: 'maintenance' },
-  { id: 'SN-330', type: 'Cutting', line: 'CF-01', floor: 'CF-01', issue: 'Blade dull', since: '09:45', severity: 'warning', status: 'maintenance' },
-];
-
-const floorUtilization = [
-  { floor: 'SF-01', key: 'mc-sf01', total: 156, running: 154 },
-  { floor: 'SF-02', key: 'mc-sf02', total: 152, running: 150 },
-  { floor: 'SF-03', key: 'mc-sf03', total: 148, running: 147 },
-  { floor: 'FF-01', key: 'mc-ff01', total: 68, running: 66 },
-  { floor: 'FF-02', key: 'mc-ff02', total: 62, running: 61 },
-  { floor: 'CF-01', key: 'mc-cf01', total: 62, running: 60 },
-];
-
-const floorFilterMap: Record<string, string> = {
-  'mc-sf01': 'SF-01', 'mc-sf02': 'SF-02', 'mc-sf03': 'SF-03',
-  'mc-ff01': 'FF-01', 'mc-ff02': 'FF-02', 'mc-cf01': 'CF-01',
-};
-
-const typeFilterMap: Record<string, string> = {
-  'mct-lockstitch': 'Lockstitch', 'mct-overlock': 'Overlock', 'mct-flatlock': 'Flatlock',
-  'mct-cutting': 'Cutting', 'mct-pressing': 'Pressing', 'mct-embroidery': 'Embroidery',
-};
-
-const sevColors: Record<string, string> = {
-  critical: 'bg-pink/15 text-pink border-pink/30',
-  warning: 'bg-warning/15 text-warning border-warning/30',
-};
-
 export default function MachinesPage() {
   const activeFilter = useActiveFilter();
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data: floors = [] } = useQuery({
+    queryKey: ['machines-floors'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('floors')
+        .select('id, name, lines(id, line_number, machine_count, type, is_active)')
+        .order('floor_index');
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: downtimeEvents = [] } = useQuery({
+    queryKey: ['machines-downtime', today],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('downtime')
+        .select('*, lines(line_number, type, floor_id, floors(name))')
+        .gte('occurred_at', `${today}T00:00:00`)
+        .lte('occurred_at', `${today}T23:59:59`)
+        .order('occurred_at', { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const floorUtilization = useMemo(() => {
+    return (floors as any[]).map(floor => {
+      const lines = (floor.lines || []).filter((l: any) => l.is_active);
+      const total = lines.reduce((s: number, l: any) => s + l.machine_count, 0);
+      const floorDowntime = (downtimeEvents as any[]).filter(d => (d.lines as any)?.floors?.name === floor.name);
+      const downCount = new Set(floorDowntime.map((d: any) => d.line_id)).size;
+      return {
+        floor: floor.name,
+        key: `mc-${floor.name.toLowerCase().replace(/[-\s]/g, '')}`,
+        total,
+        running: Math.max(0, total - downCount),
+      };
+    });
+  }, [floors, downtimeEvents]);
+
+  const machines = useMemo(() => {
+    return (downtimeEvents as any[]).map(d => ({
+      id: `DT-${d.id.slice(0, 4).toUpperCase()}`,
+      type: d.reason,
+      line: `${(d.lines as any)?.type === 'cutting' ? 'Table' : 'Line'} ${(d.lines as any)?.line_number}`,
+      floor: (d.lines as any)?.floors?.name || 'Unknown',
+      issue: d.notes || d.reason.replace(/_/g, ' '),
+      since: new Date(d.occurred_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      severity: d.reason === 'machine_breakdown' ? 'critical' : 'warning',
+      status: d.reason === 'machine_breakdown' ? 'breakdown' : 'maintenance',
+      minutes: d.minutes,
+    }));
+  }, [downtimeEvents]);
+
+  const floorFilterMap: Record<string, string> = {};
+  for (const f of floorUtilization) floorFilterMap[f.key] = f.floor;
 
   const filteredMachines = useMemo(() => {
-    if (!activeFilter || activeFilter === 'mc-all') return allMachines;
+    if (!activeFilter || activeFilter === 'mc-all') return machines;
     if (activeFilter === 'mcs-running') return [];
-    if (activeFilter === 'mcs-maint') return allMachines.filter(m => m.status === 'maintenance');
-    if (activeFilter === 'mcs-breakdown') return allMachines.filter(m => m.status === 'breakdown');
+    if (activeFilter === 'mcs-maint') return machines.filter(m => m.status === 'maintenance');
+    if (activeFilter === 'mcs-breakdown') return machines.filter(m => m.status === 'breakdown');
     if (activeFilter === 'mcs-idle') return [];
-    if (floorFilterMap[activeFilter]) return allMachines.filter(m => m.floor === floorFilterMap[activeFilter]);
-    if (typeFilterMap[activeFilter]) return allMachines.filter(m => m.type === typeFilterMap[activeFilter]);
-    return allMachines;
-  }, [activeFilter]);
+    if (floorFilterMap[activeFilter]) return machines.filter(m => m.floor === floorFilterMap[activeFilter]);
+    return machines;
+  }, [activeFilter, machines, floorFilterMap]);
 
   const filteredFloors = useMemo(() => {
     if (!activeFilter || activeFilter === 'mc-all') return floorUtilization;
     if (floorFilterMap[activeFilter]) return floorUtilization.filter(f => f.key === activeFilter);
     return floorUtilization;
-  }, [activeFilter]);
+  }, [activeFilter, floorUtilization, floorFilterMap]);
 
   const totalMachines = filteredFloors.reduce((s, f) => s + f.total, 0);
   const totalRunning = filteredFloors.reduce((s, f) => s + f.running, 0);
+
+  const sevColors: Record<string, string> = {
+    critical: 'bg-pink/15 text-pink border-pink/30',
+    warning: 'bg-warning/15 text-warning border-warning/30',
+  };
 
   return (
     <div className="space-y-4">
@@ -68,7 +98,7 @@ export default function MachinesPage() {
         <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
           <Cpu className="h-5 w-5 text-accent" /> Machine Tracker
         </h1>
-        <p className="text-sm text-muted-foreground">{totalMachines} machines · {filteredMachines.length} issues shown</p>
+        <p className="text-sm text-muted-foreground">{totalMachines} machines · {filteredMachines.length} issues</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -89,14 +119,14 @@ export default function MachinesPage() {
 
       {filteredMachines.length > 0 && (
         <Card className="border-[1.5px]">
-          <CardHeader className="pb-2"><CardTitle className="text-[13px] font-bold flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-pink" /> Machines Down / Maintenance</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-[13px] font-bold flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-pink" /> Downtime Events</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {filteredMachines.map(m => (
-              <div key={m.id} className="flex items-center gap-3 rounded-lg border border-border p-3 bg-muted/20 hover:shadow-sm transition-shadow">
+            {filteredMachines.map((m, i) => (
+              <div key={i} className="flex items-center gap-3 rounded-lg border border-border p-3 bg-muted/20 hover:shadow-sm transition-shadow animate-pop-in" style={{ animationDelay: `${i * 40}ms` }}>
                 <Wrench className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-foreground">{m.id} — {m.type}</p>
-                  <p className="text-[10px] text-muted-foreground">{m.line} · {m.floor} · {m.issue} · Down since {m.since}</p>
+                  <p className="text-xs font-bold text-foreground">{m.line} — {m.type.replace(/_/g, ' ')}</p>
+                  <p className="text-[10px] text-muted-foreground">{m.floor} · {m.issue} · {m.minutes} min · {m.since}</p>
                 </div>
                 <Badge variant="outline" className={`text-[10px] ${sevColors[m.severity]}`}>{m.severity}</Badge>
               </div>
@@ -112,7 +142,7 @@ export default function MachinesPage() {
             {filteredFloors.map(f => (
               <div key={f.floor} className="rounded-xl border border-border bg-muted/30 p-3 text-center">
                 <p className="text-sm font-bold text-foreground">{f.floor}</p>
-                <p className="text-lg font-extrabold text-success">{Math.round((f.running / f.total) * 100)}%</p>
+                <p className="text-lg font-extrabold text-success">{f.total > 0 ? Math.round((f.running / f.total) * 100) : 0}%</p>
                 <p className="text-[10px] text-muted-foreground">{f.running}/{f.total} running</p>
               </div>
             ))}
