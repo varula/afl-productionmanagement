@@ -1,64 +1,42 @@
-import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { KPIResult } from '@/lib/kpi';
 
-const statusColors = {
-  success: 'border-l-4 border-l-success',
-  warning: 'border-l-4 border-l-warning',
-  danger: 'border-l-4 border-l-destructive',
-};
-
-const statusBg = {
-  success: 'bg-success/10 text-success',
-  warning: 'bg-warning/10 text-warning',
-  danger: 'bg-destructive/10 text-destructive',
-};
+const iconColors = [
+  'bg-success/10 text-success',
+  'bg-primary/10 text-primary',
+  'bg-accent/10 text-accent',
+  'bg-purple/10 text-purple',
+  'bg-warning/10 text-warning',
+  'bg-pink/10 text-pink',
+];
 
 interface KPICardProps {
   kpi: KPIResult;
+  index?: number;
 }
 
-export function KPICard({ kpi }: KPICardProps) {
+export function KPICard({ kpi, index = 0 }: KPICardProps) {
   const TrendIcon = kpi.trend === 'up' ? TrendingUp : kpi.trend === 'down' ? TrendingDown : Minus;
+  const trendColor = kpi.trend === 'up' ? 'text-success' : kpi.trend === 'down' ? 'text-pink' : 'text-muted-foreground';
+  const colorClass = iconColors[index % iconColors.length];
 
   return (
-    <Card className={cn('transition-shadow hover:shadow-md', statusColors[kpi.status])}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide leading-tight">
-            {kpi.label}
-          </p>
-          {kpi.trend && (
-            <div className={cn('rounded-full p-1', statusBg[kpi.status])}>
-              <TrendIcon className="h-3 w-3" />
-            </div>
-          )}
+    <div className="rounded-xl border-[1.5px] border-border bg-card p-3 flex items-start gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer animate-pop-in">
+      <div className={cn('w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0', colorClass)}>
+        <TrendIcon className="h-4.5 w-4.5" />
+      </div>
+      <div className="min-w-0">
+        <div className="text-[17px] font-extrabold text-foreground tracking-tight leading-tight">
+          {kpi.value}<span className="text-xs font-semibold text-muted-foreground ml-0.5">{kpi.unit}</span>
         </div>
-        <div className="flex items-baseline gap-1 mb-1">
-          <span className="text-2xl font-bold text-card-foreground">
-            {kpi.value}
-          </span>
-          <span className="text-sm text-muted-foreground">{kpi.unit}</span>
-        </div>
+        <div className="text-[10.5px] text-muted-foreground font-medium mt-0.5 truncate">{kpi.label}</div>
         {kpi.target !== undefined && (
-          <div className="flex items-center gap-2">
-            <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-              <div
-                className={cn(
-                  'h-full rounded-full transition-all',
-                  kpi.status === 'success' ? 'bg-success' : kpi.status === 'warning' ? 'bg-warning' : 'bg-destructive'
-                )}
-                style={{ width: `${Math.min((kpi.value / kpi.target) * 100, 100)}%` }}
-              />
-            </div>
-            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-              Target: {kpi.target}{kpi.unit}
-            </span>
+          <div className={cn('text-[10px] font-semibold mt-0.5', trendColor)}>
+            Target: {kpi.target}{kpi.unit}
           </div>
         )}
-        <p className="text-[10px] text-muted-foreground mt-1">{kpi.description}</p>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
