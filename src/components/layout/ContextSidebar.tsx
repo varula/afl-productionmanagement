@@ -328,8 +328,14 @@ function useHourlyEntrySidebar(): SidebarGroup[] {
     key: `hr-h${i + 1}`,
   }));
 
+  const performanceItems: SidebarItem[] = [
+    { label: 'Below Target (<100%)', key: 'hr-below-target' },
+    { label: 'On/Above Target (≥100%)', key: 'hr-on-target' },
+  ];
+
   return [
     { title: 'View By', items: viewByItems },
+    { title: 'Performance', items: performanceItems },
     { title: 'Hour', items: hourItems },
   ];
 }

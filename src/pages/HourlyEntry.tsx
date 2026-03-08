@@ -105,6 +105,20 @@ export default function HourlyEntry() {
     if (!activeFilter || activeFilter === 'hr-all') return plansWithHourly;
     if (activeFilter.startsWith('hr-h')) return plansWithHourly;
 
+    // Performance filters
+    if (activeFilter === 'hr-below-target' || activeFilter === 'hr-on-target') {
+      return plansWithHourly.filter((plan: any) => {
+        const records = plan.hourly_records || [];
+        if (records.length === 0) return activeFilter === 'hr-below-target'; // no data = below target
+        const achieved = records.reduce((s: number, r: any) => s + r.produced_qty, 0);
+        const filledHours = Math.max(...records.map((r: any) => r.hour_slot));
+        const hourlyTarget = Math.round(plan.target_qty / (plan.working_hours || 8));
+        const tgtUptoHr = hourlyTarget * filledHours;
+        const pct = tgtUptoHr > 0 ? (achieved / tgtUptoHr) * 100 : 0;
+        return activeFilter === 'hr-on-target' ? pct >= 100 : pct < 100;
+      });
+    }
+
     return plansWithHourly.filter((plan: any) => {
       const lineType = plan.lines?.type || 'sewing';
       const floorId = plan.lines?.floors?.id;
