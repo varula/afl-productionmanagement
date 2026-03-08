@@ -185,7 +185,7 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
                   return s + (rec?.produced_qty || 0);
                 }, 0);
                 return (
-                  <td key={h.slot} className="px-1 py-2 text-center text-foreground">
+                  <td key={h.slot} className={cn('px-1 py-2 text-center text-foreground', h.slot >= 9 && 'bg-warning/10 border-l border-warning/30')}>
                     {slotTotal > 0 ? slotTotal.toLocaleString() : '—'}
                   </td>
                 );
