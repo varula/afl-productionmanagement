@@ -29,8 +29,8 @@ export default function Auth() {
           password,
           options: {
             data: { full_name: fullName },
-            emailRedirectTo: window.location.origin,
-          },
+            emailRedirectTo: window.location.origin
+          }
         });
         if (error) throw error;
         toast({ title: 'Account created', description: 'Check your email for verification.' });
@@ -56,19 +56,19 @@ export default function Auth() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
+            {!isLogin &&
+            <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
-                <Input id="name" value={fullName} onChange={e => setFullName(e.target.value)} required />
+                <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
               </div>
-            )}
+            }
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
@@ -82,6 +82,6 @@ export default function Auth() {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 }
