@@ -5,30 +5,37 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, TrendingUp, UserCheck, UserX } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { useActiveFilter } from '@/hooks/useActiveFilter';
+import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 
 export default function WorkersPage() {
   const activeFilter = useActiveFilter();
+  const factoryId = useFactoryId();
 
   const { data: operators = [] } = useQuery({
-    queryKey: ['workers-operators'],
+    queryKey: ['workers-operators', factoryId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('operators')
         .select('id, name, employee_no, grade, is_active, line_id, lines(line_number, type, floor_id, floors(name))')
         .order('employee_no');
+      if (factoryId) query = query.eq('factory_id', factoryId);
+      const { data, error } = await query;
       if (error) throw error;
       return data ?? [];
     },
+    enabled: !!factoryId,
   });
 
   const { data: floors = [] } = useQuery({
-    queryKey: ['workers-floors'],
+    queryKey: ['workers-floors', factoryId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('floors').select('id, name').order('floor_index');
+      let query = supabase.from('floors').select('id, name').order('floor_index');
+      if (factoryId) query = query.eq('factory_id', factoryId);
+      const { data, error } = await query;
       if (error) throw error;
       return data ?? [];
     },
+    enabled: !!factoryId,
   });
 
   // Grade distribution

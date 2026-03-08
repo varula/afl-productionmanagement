@@ -4,22 +4,26 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Cpu, AlertTriangle, CheckCircle2, Wrench } from 'lucide-react';
-import { useActiveFilter } from '@/hooks/useActiveFilter';
+import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 
 export default function MachinesPage() {
   const activeFilter = useActiveFilter();
+  const factoryId = useFactoryId();
   const today = new Date().toISOString().split('T')[0];
 
   const { data: floors = [] } = useQuery({
-    queryKey: ['machines-floors'],
+    queryKey: ['machines-floors', factoryId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('floors')
         .select('id, name, lines(id, line_number, machine_count, type, is_active)')
         .order('floor_index');
+      if (factoryId) query = query.eq('factory_id', factoryId);
+      const { data, error } = await query;
       if (error) throw error;
       return data ?? [];
     },
+    enabled: !!factoryId,
   });
 
   const { data: downtimeEvents = [] } = useQuery({

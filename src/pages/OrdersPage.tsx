@@ -7,7 +7,7 @@ import { ClipboardList, Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { useActiveFilter } from '@/hooks/useActiveFilter';
+import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 
 const stageColors: Record<string, string> = {
   Cutting: 'bg-primary/15 text-primary border-primary/30',
