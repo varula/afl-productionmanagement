@@ -120,12 +120,36 @@ export default function Dashboard() {
 
   const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData(dateStr, factoryId);
 
-  // Top 6 hero KPIs
+  // Top 4 hero KPIs — only the most important
   const gaugeKPIs = useMemo(() => {
     const all = computeAllKPIs(kpiInput);
-    const keys = ['factory_efficiency', 'labor_productivity', 'on_time_delivery', 'rft', 'dhu', 'lost_time'];
-    return keys.map(k => all.find(kpi => kpi.key === k)).filter(Boolean) as typeof all;
-  }, [kpiInput]);
+    const keys = ['factory_efficiency', 'dhu', 'lost_time'];
+    const found = keys.map(k => all.find(kpi => kpi.key === k)).filter(Boolean) as typeof all;
+    // Add achievement as a custom KPI
+    const achievementPct = kpiInput.totalTarget > 0 ? (kpiInput.totalOutput / kpiInput.totalTarget) * 100 : 0;
+    found.unshift({
+      key: 'achievement',
+      label: 'Achievement',
+      value: Math.round(achievementPct * 10) / 10,
+      unit: '%',
+      target: 100,
+      status: achievementPct >= 90 ? 'success' : achievementPct >= 70 ? 'warning' : 'danger',
+      trend: achievementPct >= 90 ? 'up' : 'down',
+      description: 'Output vs target',
+    });
+    // Add OT Hours KPI
+    found.push({
+      key: 'ot_hours',
+      label: 'OT Hours',
+      value: Math.round(totalOTMinutes / 60 * 10) / 10,
+      unit: 'hrs',
+      target: maxOTHours,
+      status: totalOTMinutes / 60 <= maxOTHours * 0.7 ? 'success' : totalOTMinutes / 60 <= maxOTHours ? 'warning' : 'danger',
+      trend: totalOTMinutes > 0 ? 'up' : 'flat',
+      description: 'Total overtime hours today',
+    });
+    return found;
+  }, [kpiInput, totalOTMinutes]);
 
   // DHU trend
   const dhuTrendData = useMemo(() => {
