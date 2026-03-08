@@ -191,7 +191,7 @@ export default function OvertimePage() {
                           <span className="font-semibold text-foreground">{s.section}</span>
                           <div className="flex items-center gap-3">
                             <span className="font-bold tabular-nums text-foreground">{hrs} hrs</span>
-                            <span className={cn('text-[10px] font-bold tabular-nums', Number(pct) > 10 ? 'text-pink' : Number(pct) > 5 ? 'text-warning' : 'text-success')}>{pct}%</span>
+                            <span className={cn('text-xs font-bold tabular-nums', Number(pct) > 10 ? 'text-pink' : Number(pct) > 5 ? 'text-warning' : 'text-success')}>{pct}%</span>
                           </div>
                         </div>
                         <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
