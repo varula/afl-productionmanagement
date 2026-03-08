@@ -32,6 +32,7 @@ const HOUR_HEADERS = [
 
 function getFloorCode(floorName: string, lineType: string, lineNum: number): string {
   if (lineType === 'cutting') return 'CT';
+  if (lineType === 'auxiliary') return 'AUX';
   if (lineType === 'finishing') return lineNum <= 2 ? 'FF-01' : 'FF-02';
   if (lineNum <= 4) return 'SF-01';
   if (lineNum <= 8) return 'SF-02';

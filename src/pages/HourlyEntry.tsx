@@ -330,6 +330,17 @@ export default function HourlyEntry() {
         />
       )}
 
+      {/* Auxiliary Lines (Bartack & Eyelet) */}
+      {auxiliaryPlans.length > 0 && (
+        <HourlyTrackerTable
+          plans={auxiliaryPlans}
+          title="Auxiliary Lines — Bartack & Eyelet (pcs/line)"
+          icon="⚙️"
+          defaultHourlyTarget={auxiliaryPlans.length > 0 ? Math.round(auxiliaryPlans[0].target_qty / (auxiliaryPlans[0].working_hours || 8)) : 100}
+          onCellClick={handleCellClick}
+        />
+      )}
+
       {plans.length === 0 && (
         <Card>
           <CardContent className="py-12 text-center">
