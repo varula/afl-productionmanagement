@@ -160,6 +160,8 @@ export default function ProductionPlanEntry() {
 
   return (
     <div className="space-y-4 p-4 md:p-6 max-w-4xl">
+      {!canManage && <ReadOnlyBanner message="You have view-only access to production plans. Contact an Admin or Manager to create or modify plans." />}
+
       {/* Date Picker */}
       <div className="flex items-center gap-3">
         <CalendarDays className="h-5 w-5 text-muted-foreground" />
