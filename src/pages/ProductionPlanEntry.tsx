@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Plus, Trash2, CalendarDays, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
+import { useFactoryId } from '@/hooks/useActiveFilter';
 
 interface PlanFormData {
   line_id: string;
@@ -35,22 +36,28 @@ const emptyPlan: PlanFormData = {
 
 export default function ProductionPlanEntry() {
   const queryClient = useQueryClient();
+  const factoryId = useFactoryId();
   const today = format(new Date(), 'yyyy-MM-dd');
   const [selectedDate, setSelectedDate] = useState(today);
   const [form, setForm] = useState<PlanFormData>({ ...emptyPlan });
 
-  // Fetch lines with floor info
+  // Fetch lines with floor info, filtered by factory
   const { data: lines = [] } = useQuery({
-    queryKey: ['lines-for-plans'],
+    queryKey: ['lines-for-plans', factoryId],
     queryFn: async () => {
+      // Get factory floors first
+      const { data: floors } = await supabase.from('floors').select('id').eq('factory_id', factoryId);
+      if (!floors || floors.length === 0) return [];
       const { data, error } = await supabase
         .from('lines')
         .select('id, line_number, floor_id, floors(name)')
         .eq('is_active', true)
+        .in('floor_id', floors.map(f => f.id))
         .order('line_number');
       if (error) throw error;
       return data ?? [];
     },
+    enabled: !!factoryId,
   });
 
   // Fetch styles
