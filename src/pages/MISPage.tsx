@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { BarChart3, TrendingUp, TrendingDown, ChevronRight, FileCheck, Scissors, Shield, Shirt, PackageCheck, ClipboardCheck, Building, Warehouse, CalendarDays } from 'lucide-react';
 import { useMemo } from 'react';
 import { MIS_SECTIONS } from '@/lib/mis-form-configs';
-import { useFactoryId } from '@/hooks/useActiveFilter';
+import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 
 const ICON_MAP: Record<string, any> = {
   FileCheck, Scissors, ShieldCheck: Shield, Shirt, Shield, PackageCheck, ClipboardCheck, Building, Warehouse,
@@ -28,7 +28,19 @@ const SECTION_ROUTES: Record<string, string> = {
 export default function MISPage() {
   const navigate = useNavigate();
   const factoryId = useFactoryId();
+  const activeFilter = useActiveFilter();
   const today = new Date().toISOString().split('T')[0];
+
+  // Map sidebar Report Type filters to MIS section keys
+  const REPORT_TYPE_FILTER: Record<string, string[]> = {
+    'rp-production': ['sewing_production', 'cutting_production', 'finishing_production'],
+    'rp-qc': ['cutting_quality', 'sewing_quality', 'finishing_quality'],
+    'rp-shipment': ['finishing_production', 'stores'],
+    'rp-attendance': ['general'],
+    'rp-inventory': ['stores'],
+    'rp-machine': ['general'],
+    'rp-buyer': ['pre_production'],
+  };
 
   // Factory daily summary - try factory filter, fallback to any
   const { data: summary } = useQuery({
@@ -118,6 +130,12 @@ export default function MISPage() {
 
   const totalDocs = Object.values(docCounts as Record<string, number>).reduce((a, b) => a + b, 0);
 
+  // Filter sections based on sidebar Report Type selection
+  const allowedSections = REPORT_TYPE_FILTER[activeFilter] ?? null;
+  const filteredSections = allowedSections
+    ? MIS_SECTIONS.filter(s => allowedSections.includes(s.key))
+    : MIS_SECTIONS;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -172,9 +190,16 @@ export default function MISPage() {
 
       {/* Section Navigation */}
       <div>
-        <h2 className="text-sm font-bold text-foreground mb-3">Document Modules</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-foreground">Document Modules</h2>
+          {allowedSections && (
+            <Badge variant="outline" className="text-[10px]">
+              Filtered: {filteredSections.length} of {MIS_SECTIONS.length} modules
+            </Badge>
+          )}
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {MIS_SECTIONS.map((section) => {
+          {filteredSections.map((section) => {
             const Icon = ICON_MAP[section.icon] || FileCheck;
             const count = (docCounts as Record<string, number>)[section.key] || 0;
             const route = SECTION_ROUTES[section.key];
