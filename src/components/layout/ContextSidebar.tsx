@@ -218,25 +218,6 @@ const STATIC_SIDEBAR_CONFIG: SidebarConfig = {
       { label: 'YTD 2026', key: 'anp-ytd' },
     ]},
   ],
-  '/reports': [
-    { title: 'By Type', items: [
-      { label: 'All Reports', key: 'rp-all', active: true },
-      { label: 'Daily Production', key: 'rp-production' },
-      { label: 'QC Reports', key: 'rp-qc' },
-      { label: 'Shipment', key: 'rp-shipment' },
-      { label: 'Attendance', key: 'rp-attendance' },
-      { label: 'Inventory', key: 'rp-inventory' },
-      { label: 'Machine', key: 'rp-machine' },
-      { label: 'Finance', key: 'rp-finance' },
-      { label: 'Buyer Reports', key: 'rp-buyer' },
-    ]},
-    { title: 'Scheduled', items: [
-      { label: 'Daily Auto (16)', key: 'rps-daily' },
-      { label: 'Weekly KPI', key: 'rps-weekly' },
-      { label: 'Monthly Summary', key: 'rps-monthly' },
-      { label: 'Director Reports', key: 'rps-director' },
-    ]},
-  ],
   '/mis': [
     { title: 'Reports', items: [
       { label: 'All MIS Reports', key: 'mis-all', active: true },
@@ -244,6 +225,15 @@ const STATIC_SIDEBAR_CONFIG: SidebarConfig = {
       { label: 'SAM Earned', key: 'mis-sam' },
       { label: 'Revenue per Line', key: 'mis-revenue' },
       { label: 'Waste %', key: 'mis-waste' },
+    ]},
+    { title: 'Report Type', items: [
+      { label: 'Daily Production', key: 'rp-production' },
+      { label: 'QC Reports', key: 'rp-qc' },
+      { label: 'Shipment', key: 'rp-shipment' },
+      { label: 'Attendance', key: 'rp-attendance' },
+      { label: 'Inventory', key: 'rp-inventory' },
+      { label: 'Machine', key: 'rp-machine' },
+      { label: 'Buyer Reports', key: 'rp-buyer' },
     ]},
     { title: 'Period', items: [
       { label: 'This Week', key: 'misp-week' },
