@@ -325,6 +325,7 @@ function LinesTab() {
                   <SelectItem value="sewing">Sewing</SelectItem>
                   <SelectItem value="cutting">Cutting</SelectItem>
                   <SelectItem value="finishing">Finishing</SelectItem>
+                  <SelectItem value="auxiliary">Auxiliary (Bartack/Eyelet)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
