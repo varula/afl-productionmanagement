@@ -217,9 +217,9 @@ export default function Dashboard() {
   if (isEmpty) return <EmptyState />;
 
   return (
-    <div className="space-y-4">
+    <div key={currentFilter} className="space-y-4">
       {/* Report Header */}
-      <div>
+      <div className="animate-fade-in">
         <h1 className="text-xl font-bold text-foreground">{reportConfig.title}</h1>
         <p className="text-sm text-muted-foreground">{reportConfig.subtitle}</p>
       </div>
@@ -231,8 +231,8 @@ export default function Dashboard() {
           return (
             <div
               key={`${stat.label}-${i}`}
-              className={`rounded-xl border-[1.5px] ${colors.border} bg-card p-3.5 flex items-start gap-3 transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer animate-pop-in`}
-              style={{ animationDelay: `${i * 50}ms` }}
+              className={`rounded-xl border-[1.5px] ${colors.border} bg-card p-3.5 flex items-start gap-3 transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer animate-fade-in`}
+              style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'both' }}
             >
               <div className={`w-10 h-10 rounded-[10px] ${colors.bg} flex items-center justify-center shrink-0`}>
                 <div className={`w-5 h-5 rounded-full ${colors.bg}`} />
@@ -252,20 +252,28 @@ export default function Dashboard() {
       {/* Charts */}
       {(filteredTrend.length > 0 || filteredDowntime.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {filteredTrend.length > 0 && <EfficiencyTrendChart data={filteredTrend} />}
-          {filteredDowntime.length > 0 && <DowntimeParetoChart data={filteredDowntime} />}
+          {filteredTrend.length > 0 && (
+            <div className="animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+              <EfficiencyTrendChart data={filteredTrend} />
+            </div>
+          )}
+          {filteredDowntime.length > 0 && (
+            <div className="animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+              <DowntimeParetoChart data={filteredDowntime} />
+            </div>
+          )}
         </div>
       )}
 
       {/* Production Pipeline */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 animate-fade-in" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
         <Card className="border-[1.5px]">
           <CardHeader className="pb-2">
             <CardTitle className="text-[13px] font-bold">Production Pipeline</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {pipeline.map(item => (
-              <div key={item.stage} className="flex items-center gap-2 bg-muted rounded-lg border border-border px-3 py-2">
+            {pipeline.map((item, i) => (
+              <div key={item.stage} className="flex items-center gap-2 bg-muted rounded-lg border border-border px-3 py-2 animate-fade-in" style={{ animationDelay: `${280 + i * 40}ms`, animationFillMode: 'both' }}>
                 <div className={`w-2 h-2 rounded-full ${item.color} shrink-0`} />
                 <span className="text-[11.5px] font-semibold text-foreground flex-1">{item.stage}</span>
                 <span className="text-xs font-extrabold text-foreground">{item.qty}</span>
@@ -275,13 +283,15 @@ export default function Dashboard() {
         </Card>
 
         {/* KPI Summary Cards */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 animate-fade-in" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
           <KPIGrid kpis={kpis} />
         </div>
       </div>
 
       {/* Line Status */}
-      <LineStatusTable lines={filteredLines} />
+      <div className="animate-fade-in" style={{ animationDelay: '350ms', animationFillMode: 'both' }}>
+        <LineStatusTable lines={filteredLines} />
+      </div>
     </div>
   );
 }
