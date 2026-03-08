@@ -163,6 +163,7 @@ function EmptyState() {
 
 export default function Dashboard() {
   const activeFilter = useActiveFilter();
+  const factoryId = useFactoryId();
   const currentFilter = activeFilter || 'dash-default';
   const reportConfig = REPORT_CONFIG[currentFilter] || REPORT_CONFIG['dash-default'];
   const [panelClosed, setPanelClosed] = useState(false);
@@ -176,7 +177,7 @@ export default function Dashboard() {
   const handleClosePanel = useCallback(() => setPanelClosed(true), []);
   useEffect(() => { setPanelClosed(false); }, [currentFilter]);
 
-  const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData(dateStr);
+  const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData(dateStr, factoryId);
 
   // Filter lines first — then derive everything else from filtered lines
   const filteredLines = useMemo(() => filterLineStatuses(lineStatuses, currentFilter), [lineStatuses, currentFilter]);
