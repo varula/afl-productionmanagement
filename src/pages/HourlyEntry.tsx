@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import { Save, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2, Clock, PenLine } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
+import { useUserRole } from '@/hooks/useUserRole';
+import { ReadOnlyBanner } from '@/components/ui/read-only-banner';
 import { HourlyKPICards } from '@/components/hourly/HourlyKPICards';
 import { HourlyTrackerTable } from '@/components/hourly/HourlyTrackerTable';
 import { HourlyEntryForm } from '@/components/hourly/HourlyEntryForm';
