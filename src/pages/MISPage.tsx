@@ -130,6 +130,12 @@ export default function MISPage() {
 
   const totalDocs = Object.values(docCounts as Record<string, number>).reduce((a, b) => a + b, 0);
 
+  // Filter sections based on sidebar Report Type selection
+  const allowedSections = REPORT_TYPE_FILTER[activeFilter] ?? null;
+  const filteredSections = allowedSections
+    ? MIS_SECTIONS.filter(s => allowedSections.includes(s.key))
+    : MIS_SECTIONS;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
