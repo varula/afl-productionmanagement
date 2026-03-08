@@ -103,6 +103,7 @@ function LiveBadge() {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const activeFilter = useActiveFilter();
   const factoryId = useFactoryId();
   const currentFilter = activeFilter || 'dash-default';
