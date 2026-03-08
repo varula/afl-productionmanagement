@@ -311,13 +311,13 @@ export default function OvertimePage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-[11px]">Date</TableHead>
-                    <TableHead className="text-[11px]">Department</TableHead>
-                    <TableHead className="text-[11px]">Floor</TableHead>
-                    <TableHead className="text-[11px]">Requested Hours</TableHead>
-                    <TableHead className="text-[11px]">Reason</TableHead>
-                    <TableHead className="text-[11px]">Status</TableHead>
-                    <TableHead className="text-[11px]">Actions</TableHead>
+                    <TableHead className="text-xs">Date</TableHead>
+                    <TableHead className="text-xs">Department</TableHead>
+                    <TableHead className="text-xs">Floor</TableHead>
+                    <TableHead className="text-xs">Requested Hours</TableHead>
+                    <TableHead className="text-xs">Reason</TableHead>
+                    <TableHead className="text-xs">Status</TableHead>
+                    <TableHead className="text-xs">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
