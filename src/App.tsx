@@ -41,9 +41,10 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useAuth();
+  const { session, loading, isApproved } = useAuth();
   if (loading) return null;
   if (!session) return <Navigate to="/auth" replace />;
+  if (!isApproved) return <Navigate to="/pending-approval" replace />;
   return <>{children}</>;
 }
 
