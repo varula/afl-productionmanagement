@@ -46,7 +46,7 @@ export function AppLayout() {
               onFilterChange={setActiveFilter}
               factoryId={selectedFactoryId}
             />
-            <main className="flex-1 overflow-y-auto custom-scrollbar p-3 md:p-5">
+            <main className="flex-1 min-w-0 overflow-y-auto custom-scrollbar p-3 md:p-5">
               <Outlet context={{ activeFilter, factoryId: selectedFactoryId }} />
             </main>
           </div>
