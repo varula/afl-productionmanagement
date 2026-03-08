@@ -139,19 +139,8 @@ export default function Dashboard() {
       trend: achievementPct >= 90 ? 'up' : 'down',
       description: 'Output vs target',
     });
-    // Add OT Hours KPI
-    found.push({
-      key: 'ot_hours',
-      label: 'OT Hours',
-      value: Math.round(totalOTMinutes / 60 * 10) / 10,
-      unit: 'hrs',
-      target: maxOTHours,
-      status: totalOTMinutes / 60 <= maxOTHours * 0.7 ? 'success' : totalOTMinutes / 60 <= maxOTHours ? 'warning' : 'danger',
-      trend: totalOTMinutes > 0 ? 'up' : 'flat',
-      description: 'Total overtime hours today',
-    });
     return found;
-  }, [kpiInput, totalOTMinutes]);
+  }, [kpiInput]);
 
   // DHU trend
   const dhuTrendData = useMemo(() => {
