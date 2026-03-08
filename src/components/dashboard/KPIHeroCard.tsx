@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react';
 
 interface KPIHeroCardProps {
   label: string;
@@ -17,35 +17,47 @@ const statusColors = {
   danger: 'text-pink',
 };
 
+const statusBg = {
+  success: 'bg-success',
+  warning: 'bg-warning',
+  danger: 'bg-pink',
+};
+
 export function KPIHeroCard({ label, value, target, unit = '%', status, trend = 'flat' }: KPIHeroCardProps) {
   const pct = target > 0 ? Math.min((value / target) * 100, 100) : 0;
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
 
   return (
-    <div className="rounded-2xl bg-card border border-border/60 p-4 transition-all hover:shadow-md">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-semibold text-muted-foreground tracking-wide">{label}</span>
-        <TrendIcon className={cn('h-4 w-4', statusColors[status])} />
+    <div className="rounded-2xl bg-card border border-border/60 p-5 transition-all hover:shadow-md">
+      {/* Card header */}
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-sm font-semibold text-foreground">{label}</span>
+        <ArrowRight className="h-4 w-4 text-muted-foreground" />
       </div>
 
-      <div className="flex items-baseline gap-1 mb-4">
+      {/* Value */}
+      <div className="flex items-baseline gap-1.5 mb-1">
         <span className="text-3xl font-bold leading-none tracking-tight text-foreground">
           {value >= 100 ? Math.round(value) : value.toFixed(1)}
         </span>
         <span className="text-sm font-medium text-muted-foreground">{unit}</span>
+        <TrendIcon className={cn('h-4 w-4 ml-auto', statusColors[status])} />
       </div>
 
-      <div className="h-[3px] w-full bg-muted rounded-full overflow-hidden mb-2">
+      {/* Target label */}
+      <div className="text-xs text-muted-foreground mb-3">
+        Target: {target}{unit}
+      </div>
+
+      {/* Progress bar */}
+      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
         <div
-          className={cn('h-full rounded-full transition-all duration-700 ease-out',
-            status === 'success' ? 'bg-success' : status === 'warning' ? 'bg-warning' : 'bg-pink'
-          )}
+          className={cn('h-full rounded-full transition-all duration-700 ease-out', statusBg[status])}
           style={{ width: `${pct}%` }}
         />
       </div>
 
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">Target {target}{unit}</span>
+      <div className="flex items-center justify-end mt-2">
         <span className={cn('text-xs font-semibold', statusColors[status])}>
           {pct.toFixed(0)}%
         </span>
