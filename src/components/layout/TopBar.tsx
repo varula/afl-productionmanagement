@@ -59,7 +59,7 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
       <div className="relative shrink-0" ref={factoryRef}>
         <button
           onClick={() => setFactoryOpen(!factoryOpen)}
-          className="flex items-center gap-2 border border-border/50 rounded-xl px-3 py-2 bg-muted/40 text-[13px] font-medium text-foreground hover:bg-muted/70 transition-colors"
+          className="flex items-center gap-2 border border-border/50 rounded-xl px-3 py-2 bg-muted/40 text-sm font-medium text-foreground hover:bg-muted/70 transition-colors"
         >
           <div className="w-2 h-2 rounded-full bg-success shrink-0" />
           <span className="hidden sm:inline max-w-[160px] truncate">
