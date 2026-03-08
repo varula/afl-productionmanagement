@@ -9,11 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Save, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Save, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2, Clock, PenLine } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { useActiveFilter } from '@/hooks/useActiveFilter';
 import { HourlyKPICards } from '@/components/hourly/HourlyKPICards';
 import { HourlyTrackerTable } from '@/components/hourly/HourlyTrackerTable';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 type DowntimeReason = Database['public']['Enums']['downtime_reason_type'];
 
