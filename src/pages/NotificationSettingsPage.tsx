@@ -45,8 +45,7 @@ interface AlertConfig {
 }
 
 export default function NotificationSettingsPage() {
-  const { role } = useUserRole();
-  const isAdmin = role === 'admin';
+  const { isAdmin } = useUserRole();
   const queryClient = useQueryClient();
   const [editingRecipient, setEditingRecipient] = useState<string | null>(null);
   const [newPhone, setNewPhone] = useState('');
