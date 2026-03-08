@@ -330,6 +330,18 @@ export function HourlyEntryForm({ plans, planIds }: Props) {
                             placeholder=""
                           />
                         </td>
+                        <td className="px-4 py-2 text-center">
+                          <Input
+                            type="number"
+                            min={0}
+                            max={120}
+                            value={entry.ot}
+                            onChange={e => updateEntry(plan.id, 'ot', e.target.value)}
+                            onBlur={() => entry.actual && handleSaveRow(plan.id)}
+                            className="h-8 w-[60px] mx-auto text-center text-xs"
+                            placeholder=""
+                          />
+                        </td>
                         <td className="px-4 py-3 text-center">
                           {eff ? (
                             <span className={cn(
