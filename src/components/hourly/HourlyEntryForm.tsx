@@ -283,6 +283,7 @@ export function HourlyEntryForm({ plans, planIds }: Props) {
                     <th className="text-right px-4 py-2 font-semibold text-primary w-[80px]">Target/hr</th>
                     <th className="text-center px-4 py-2 font-semibold text-primary w-[90px]">Actual</th>
                     <th className="text-center px-4 py-2 font-semibold text-primary w-[90px]">Rejects</th>
+                    <th className="text-center px-4 py-2 font-semibold text-primary w-[70px]">OT (min)</th>
                     <th className="text-center px-4 py-2 font-semibold text-primary w-[60px]">Eff%</th>
                     <th className="text-center px-4 py-2 font-semibold text-primary w-[110px]">Remarks</th>
                   </tr>
