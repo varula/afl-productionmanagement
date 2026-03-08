@@ -569,6 +569,105 @@ export type Database = {
           },
         ]
       }
+      shipments: {
+        Row: {
+          actual_delivery: string | null
+          buyer: string
+          carrier: string | null
+          created_at: string
+          delay_days: number
+          delay_reason: string | null
+          delivered_at: string | null
+          destination: string
+          dispatched_at: string | null
+          expected_delivery: string | null
+          factory_id: string | null
+          id: string
+          in_transit_at: string | null
+          order_ref: string
+          packed_at: string | null
+          packed_qty: number
+          production_complete_at: string | null
+          quantity: number
+          remarks: string | null
+          ship_date: string | null
+          shipped_qty: number
+          status: Database["public"]["Enums"]["shipment_status"]
+          style_id: string | null
+          tracking_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_delivery?: string | null
+          buyer: string
+          carrier?: string | null
+          created_at?: string
+          delay_days?: number
+          delay_reason?: string | null
+          delivered_at?: string | null
+          destination?: string
+          dispatched_at?: string | null
+          expected_delivery?: string | null
+          factory_id?: string | null
+          id?: string
+          in_transit_at?: string | null
+          order_ref: string
+          packed_at?: string | null
+          packed_qty?: number
+          production_complete_at?: string | null
+          quantity?: number
+          remarks?: string | null
+          ship_date?: string | null
+          shipped_qty?: number
+          status?: Database["public"]["Enums"]["shipment_status"]
+          style_id?: string | null
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_delivery?: string | null
+          buyer?: string
+          carrier?: string | null
+          created_at?: string
+          delay_days?: number
+          delay_reason?: string | null
+          delivered_at?: string | null
+          destination?: string
+          dispatched_at?: string | null
+          expected_delivery?: string | null
+          factory_id?: string | null
+          id?: string
+          in_transit_at?: string | null
+          order_ref?: string
+          packed_at?: string | null
+          packed_qty?: number
+          production_complete_at?: string | null
+          quantity?: number
+          remarks?: string | null
+          ship_date?: string | null
+          shipped_qty?: number
+          status?: Database["public"]["Enums"]["shipment_status"]
+          style_id?: string | null
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipments_factory_id_fkey"
+            columns: ["factory_id"]
+            isOneToOne: false
+            referencedRelation: "factories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipments_style_id_fkey"
+            columns: ["style_id"]
+            isOneToOne: false
+            referencedRelation: "styles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       style_changeovers: {
         Row: {
           changeover_date: string
@@ -733,6 +832,13 @@ export type Database = {
         | "jackets_coats"
         | "dresses"
         | "others"
+      shipment_status:
+        | "pending"
+        | "packed"
+        | "dispatched"
+        | "in_transit"
+        | "delivered"
+        | "delayed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -897,6 +1003,14 @@ export const Constants = {
         "jackets_coats",
         "dresses",
         "others",
+      ],
+      shipment_status: [
+        "pending",
+        "packed",
+        "dispatched",
+        "in_transit",
+        "delivered",
+        "delayed",
       ],
     },
   },

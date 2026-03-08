@@ -254,6 +254,22 @@ const STATIC_SIDEBAR_CONFIG: SidebarConfig = {
       { label: 'Backup & Export', key: 'st-backup' },
     ]},
   ],
+  '/shipments': [
+    { title: 'Status', items: [
+      { label: 'All Shipments', key: 'sh-all', active: true },
+      { label: 'Pending / Packed', key: 'sh-pending' },
+      { label: 'In Transit', key: 'sh-intransit' },
+      { label: 'Delivered', key: 'sh-delivered' },
+      { label: 'Delayed', key: 'sh-delayed', badge: 2 },
+    ]},
+    { title: 'By Buyer', items: [
+      { label: 'Gap', key: 'sh-gap' },
+      { label: 'Lager 157', key: 'sh-lager157' },
+      { label: 'UCB', key: 'sh-ucb' },
+      { label: 'ZXY', key: 'sh-zxy' },
+      { label: 'Cubus', key: 'sh-cubus' },
+    ]},
+  ],
   '/admin/factories': [
     { title: 'Setup', items: [
       { label: 'All Factories', key: 'fs-all', active: true },
