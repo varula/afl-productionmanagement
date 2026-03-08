@@ -14,9 +14,16 @@ export interface DashboardData {
   topStats: TopStat[];
   pipeline: PipelineStage[];
   totalOTMinutes: number;
-  otBySection: { section: string; otMinutes: number; otPct: number }[];
+  otBySection: OTBreakdown[];
+  otByFloor: OTBreakdown[];
   isLoading: boolean;
   isEmpty: boolean;
+}
+
+export interface OTBreakdown {
+  section: string;
+  otMinutes: number;
+  otPct: number;
 }
 
 export interface TopStat {
