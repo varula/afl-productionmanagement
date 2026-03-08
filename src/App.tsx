@@ -35,6 +35,7 @@ import FactorySetupPage from "./pages/FactorySetupPage";
 import NotificationSettingsPage from "./pages/NotificationSettingsPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
 import PlanningModule from "./pages/PlanningModule";
+import PendingApprovalPage from "./pages/PendingApprovalPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
