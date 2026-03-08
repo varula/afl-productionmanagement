@@ -39,6 +39,7 @@ const emptyPlan: PlanFormData = {
 export default function ProductionPlanEntry() {
   const queryClient = useQueryClient();
   const factoryId = useFactoryId();
+  const { canManage } = useUserRole();
   const today = format(new Date(), 'yyyy-MM-dd');
   const [selectedDate, setSelectedDate] = useState(today);
   const [form, setForm] = useState<PlanFormData>({ ...emptyPlan });
