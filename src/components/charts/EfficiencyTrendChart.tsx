@@ -45,8 +45,8 @@ export function EfficiencyTrendChart({ data }: EfficiencyTrendChartProps) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="0" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis domain={['auto', 'auto']} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis domain={['auto', 'auto']} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Area type="monotone" dataKey="efficiency" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="url(#effGradient)" dot={{ r: 3, fill: 'hsl(var(--card))', stroke: 'hsl(var(--chart-1))', strokeWidth: 2 }} activeDot={{ r: 4, fill: 'hsl(var(--chart-1))' }} />
               <Line type="monotone" dataKey="target" stroke="hsl(var(--muted-foreground))" strokeWidth={1} strokeDasharray="4 4" dot={false} opacity={0.3} />
