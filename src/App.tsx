@@ -21,6 +21,7 @@ import ReportsPage from "./pages/ReportsPage";
 import MISPage from "./pages/MISPage";
 import SettingsPage from "./pages/SettingsPage";
 import FactorySetupPage from "./pages/FactorySetupPage";
+import ProductionPlanEntry from "./pages/ProductionPlanEntry";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ const AppRoutes = () => (
       <Route path="/analytics" element={<AnalyticsPage />} />
       <Route path="/reports" element={<ReportsPage />} />
       <Route path="/mis" element={<MISPage />} />
+      <Route path="/plans/new" element={<ProductionPlanEntry />} />
       <Route path="/admin/factories" element={<FactorySetupPage />} />
       <Route path="/admin/settings" element={<SettingsPage />} />
     </Route>
