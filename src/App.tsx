@@ -22,6 +22,7 @@ import MISPage from "./pages/MISPage";
 import SettingsPage from "./pages/SettingsPage";
 import FactorySetupPage from "./pages/FactorySetupPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
+import PlanningModule from "./pages/PlanningModule";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
