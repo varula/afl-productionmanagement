@@ -29,6 +29,7 @@ import FinishingQualityPage from "./pages/FinishingQualityPage";
 import GeneralActivitiesPage from "./pages/GeneralActivitiesPage";
 import StoresActivitiesPage from "./pages/StoresActivitiesPage";
 import SettingsPage from "./pages/SettingsPage";
+import ShipmentsPage from "./pages/ShipmentsPage";
 import FactorySetupPage from "./pages/FactorySetupPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
 import PlanningModule from "./pages/PlanningModule";
