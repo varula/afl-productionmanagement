@@ -64,18 +64,49 @@ export default function HourlyEntry() {
   const [activeSlot, setActiveSlot] = useState(1);
   const [form, setForm] = useState<FormData>({ ...emptyForm });
 
-  // Fetch today's production plans with line + style info
+  // Fetch today's production plans with line + style + floor info
   const { data: plans = [] } = useQuery({
     queryKey: ['production-plans', today],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('production_plans')
-        .select('*, lines!production_plans_line_id_fkey(line_number, floor_id, type), styles!production_plans_style_id_fkey(style_no, smv)')
+        .select('*, lines!production_plans_line_id_fkey(line_number, floor_id, type, floors(id, name)), styles!production_plans_style_id_fkey(style_no, smv)')
         .eq('date', today);
       if (error) throw error;
       return data as any[];
     },
   });
+
+  // Filter plans based on sidebar selection
+  const filteredPlans = useMemo(() => {
+    if (!activeFilter || activeFilter === 'hr-all') return plans;
+
+    // Hour filters — don't filter plans, just jump to slot
+    if (activeFilter.startsWith('hr-h')) return plans;
+
+    // Floor/line group filters
+    return plans.filter((plan: any) => {
+      const lineNum = plan.lines?.line_number;
+      const lineType = plan.lines?.type || 'sewing';
+      const floorId = plan.lines?.floors?.id;
+
+      if (activeFilter === 'hr-finishing') return lineType === 'finishing';
+      if (activeFilter === 'hr-cutting') return lineType === 'cutting';
+
+      // Floor-based filters: match by floor_id
+      if (activeFilter.startsWith('hr-floor-')) {
+        const filterId = activeFilter.replace('hr-floor-', '');
+        return floorId === filterId;
+      }
+
+      // Legacy static keys
+      if (activeFilter === 'hr-sf01') return lineType === 'sewing' && lineNum >= 1 && lineNum <= 4;
+      if (activeFilter === 'hr-sf02') return lineType === 'sewing' && lineNum >= 5 && lineNum <= 8;
+      if (activeFilter === 'hr-sf03') return lineType === 'sewing' && lineNum >= 9 && lineNum <= 12;
+
+      return true;
+    });
+  }, [plans, activeFilter]);
 
   // Fetch hourly records for the selected plan
   const { data: hourlyRecords = [] } = useQuery({
@@ -93,12 +124,25 @@ export default function HourlyEntry() {
     enabled: !!selectedPlanId,
   });
 
-  // Auto-select first plan
+  // Auto-select first filtered plan
   useEffect(() => {
-    if (plans.length > 0 && !selectedPlanId) {
-      setSelectedPlanId(plans[0].id);
+    if (filteredPlans.length > 0) {
+      const currentStillValid = filteredPlans.some((p: any) => p.id === selectedPlanId);
+      if (!currentStillValid) {
+        setSelectedPlanId(filteredPlans[0].id);
+      }
     }
-  }, [plans, selectedPlanId]);
+  }, [filteredPlans, selectedPlanId]);
+
+  // Handle hour slot clicks from sidebar
+  useEffect(() => {
+    if (activeFilter?.startsWith('hr-h')) {
+      const hourNum = parseInt(activeFilter.replace('hr-h', ''));
+      if (hourNum >= 1 && hourNum <= 10) {
+        setActiveSlot(hourNum);
+      }
+    }
+  }, [activeFilter]);
 
   // Load existing record into form when slot changes
   useEffect(() => {
