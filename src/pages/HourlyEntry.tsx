@@ -202,6 +202,7 @@ export default function HourlyEntry() {
 
   // Handle cell click to open entry dialog
   const handleCellClick = (planId: string, hourSlot: number) => {
+    if (!canEdit) return; // read-only for operators
     setEditingPlanId(planId);
     setEditingSlot(hourSlot);
 
