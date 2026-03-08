@@ -175,7 +175,7 @@ export default function Dashboard() {
           </div>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className={cn('gap-1.5 text-[11px] h-8 rounded-lg', !isToday && 'border-primary text-primary')}>
+              <Button variant="outline" size="sm" className={cn('gap-1.5 text-sm h-9 rounded-lg', !isToday && 'border-primary text-primary')}>
                 <CalendarIcon className="h-3.5 w-3.5" />
                 {isToday ? 'Today' : format(selectedDate, 'MMM dd')}
               </Button>
