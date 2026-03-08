@@ -15,6 +15,7 @@ import {
   Ship,
   Scissors,
   Factory,
+  Timer,
 } from 'lucide-react';
 
 interface TabDef {
