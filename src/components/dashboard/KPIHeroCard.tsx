@@ -45,11 +45,9 @@ export function KPIHeroCard({ label, value, target, unit = '%', status, trend = 
 
   return (
     <div className={cn(
-      'group relative rounded-2xl border border-border/60 bg-card p-4 transition-all duration-300',
-      'hover:border-border hover:-translate-y-1',
-      s.glow,
-      'ring-1',
-      s.ring,
+      'group relative rounded-xl border bg-card p-3.5 transition-all duration-300',
+      'hover:-translate-y-0.5',
+      `border-${status === 'success' ? 'success' : status === 'warning' ? 'warning' : 'pink'}/30`,
     )}>
       {/* Subtle gradient overlay */}
       <div className={cn('absolute inset-0 rounded-2xl opacity-[0.03]', s.bar)} />
