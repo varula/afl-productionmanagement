@@ -441,7 +441,7 @@ export default function HourlyEntry() {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="flex gap-1">
-              {Array.from({ length: 9 }, (_, i) => i + 1).map(slot => {
+              {Array.from({ length: 10 }, (_, i) => i + 1).map(slot => {
                 const filled = editingPlan?.hourly_records?.some((r: any) => r.hour_slot === slot);
                 return (
                   <button key={slot} onClick={() => setEditingSlot(slot)}
