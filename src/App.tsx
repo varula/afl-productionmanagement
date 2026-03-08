@@ -85,6 +85,7 @@ const AppRoutes = () => (
       <Route path="/admin/factories" element={<FactorySetupPage />} />
       <Route path="/admin/settings" element={<SettingsPage />} />
       <Route path="/admin/users" element={<UserManagementPage />} />
+      <Route path="/admin/notifications" element={<NotificationSettingsPage />} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
