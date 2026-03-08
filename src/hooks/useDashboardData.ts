@@ -153,7 +153,7 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
     existing.npt += h.npt_minutes;
     existing.operators = Math.max(existing.operators, h.operators_present);
     existing.helpers = Math.max(existing.helpers, h.helpers_present);
-    existing.ot += (h as any).overtime_minutes ?? 0;
+    existing.ot += h.overtime_minutes ?? 0;
     hourlyByPlan.set(h.plan_id, existing);
   }
 
