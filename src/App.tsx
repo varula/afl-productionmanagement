@@ -59,6 +59,7 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
     <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+    <Route path="/pending-approval" element={<PendingApprovalRoute />} />
     <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/plans" element={<OrdersPage />} />
