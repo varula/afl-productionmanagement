@@ -306,9 +306,15 @@ function useHourlyEntrySidebar(): SidebarGroup[] {
     const activeLines = (floor.lines || []).filter((l: any) => l.is_active);
     if (activeLines.length === 0) continue;
     const lineNums = activeLines.map((l: any) => l.line_number).sort((a: number, b: number) => a - b);
-    const rangeLabel = lineNums.length === 1 ? `Line ${lineNums[0]}` : `Lines ${lineNums[0]}–${lineNums[lineNums.length - 1]}`;
+    // Determine unit label based on line type
+    const primaryType = activeLines[0]?.type || 'sewing';
+    const unitWord = primaryType === 'cutting' ? 'Table' : 'Line';
+    const unitWordPlural = primaryType === 'cutting' ? 'Tables' : 'Lines';
+    const rangeLabel = lineNums.length === 1
+      ? `${unitWord} ${lineNums[0]}`
+      : `${unitWordPlural} ${lineNums[0]}–${lineNums[lineNums.length - 1]}`;
     viewByItems.push({
-      label: `${floor.name} ${rangeLabel}`,
+      label: `${floor.name} (${rangeLabel})`,
       key: `hr-floor-${floor.id}`,
       badge: activeLines.length,
     });
