@@ -53,7 +53,7 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
       {/* Brand */}
       <div className="flex items-center gap-2 shrink-0">
         <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-primary to-purple flex items-center justify-center shrink-0">
-          <span className="text-[11px] font-extrabold text-primary-foreground tracking-tight">AA</span>
+          <span className="text-[11px] font-extrabold text-primary-foreground tracking-tight">AG</span>
         </div>
         <div className="hidden md:block">
           <div className="text-[13px] font-extrabold text-foreground leading-tight">{selectedFactory?.name || 'Select Factory'}</div>
