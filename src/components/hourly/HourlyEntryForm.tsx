@@ -121,10 +121,11 @@ export function HourlyEntryForm({ plans, planIds }: Props) {
       return {
         actual: existing.produced_qty > 0 ? String(existing.produced_qty) : '',
         rejects: existing.defects > 0 ? String(existing.defects) : '',
+        ot: existing.overtime_minutes > 0 ? String(existing.overtime_minutes) : '',
         remarks: '',
       };
     }
-    return { actual: '', rejects: '', remarks: '' };
+    return { actual: '', rejects: '', ot: '', remarks: '' };
   }, [entries, plans, selectedSlot]);
 
   const updateEntry = useCallback((planId: string, field: keyof InlineEntry, value: string) => {
