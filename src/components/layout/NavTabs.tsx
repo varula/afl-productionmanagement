@@ -15,6 +15,7 @@ import {
   Ship,
   Scissors,
   Factory,
+  Timer,
 } from 'lucide-react';
 
 interface TabDef {
@@ -35,6 +36,7 @@ const tabs: TabDef[] = [
   { title: 'Quality Control', path: '/qc', icon: Shield, badge: 5 },
   { title: 'Inventory', path: '/inventory', icon: Package },
   { title: 'Shipments', path: '/shipments', icon: Ship },
+  { title: 'Overtime', path: '/overtime', icon: Timer },
   { title: 'Analytics', path: '/analytics', icon: LineChart },
   { title: 'MIS Reports', path: '/mis', icon: BarChart3 },
   { title: 'Settings', path: '/admin/settings', icon: Settings },

@@ -32,6 +32,7 @@ import NotificationSettingsPage from "./pages/NotificationSettingsPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
 import PlanningModule from "./pages/PlanningModule";
 import DepartmentDashboard from "./pages/DepartmentDashboard";
+import OvertimePage from "./pages/OvertimePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -67,6 +68,7 @@ const AppRoutes = () => (
       <Route path="/mis/stores" element={<StoresActivitiesPage />} />
       <Route path="/plans/new" element={<ProductionPlanEntry />} />
       <Route path="/planning" element={<PlanningModule />} />
+      <Route path="/overtime" element={<OvertimePage />} />
       <Route path="/admin/factories" element={<FactorySetupPage />} />
       <Route path="/admin/settings" element={<SettingsPage />} />
       <Route path="/admin/users" element={<UserManagementPage />} />
