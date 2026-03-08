@@ -328,7 +328,7 @@ export default function HourlyEntry() {
               pcsShort={kpis.pcsShort}
               linesBelowTarget={kpis.linesBelowTarget}
               currentHour={kpis.currentHour}
-              currentHourLabel={`Hour ${kpis.currentHour} of 9 (${HOUR_LABELS[kpis.currentHour - 1] || ''})`}
+              currentHourLabel={`Hour ${kpis.currentHour} of 10 (${HOUR_LABELS[kpis.currentHour - 1] || ''})`}
             />
 
             {/* Legend + Target */}
