@@ -277,16 +277,11 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* KPI + Line Status — only on default dashboard */}
+      {/* KPI — only on default dashboard */}
       {currentFilter === 'dash-default' && (
-        <>
-          <div className="lg:col-span-2 animate-fade-in" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
-            <KPIGrid kpis={kpis} />
-          </div>
-          <div className="animate-fade-in" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
-            <LineStatusTable lines={filteredLines} />
-          </div>
-        </>
+        <div className="lg:col-span-2 animate-fade-in" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
+          <KPIGrid kpis={kpis} />
+        </div>
       )}
     </div>
   );
