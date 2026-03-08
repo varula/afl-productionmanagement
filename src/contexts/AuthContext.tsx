@@ -2,9 +2,15 @@ import React, { createContext, useContext } from 'react';
 
 type AppRole = 'admin' | 'manager' | 'line_chief' | 'operator';
 
+interface MockUser {
+  id: string;
+  email: string;
+  user_metadata: { full_name: string };
+}
+
 interface AuthContextType {
-  session: null;
-  user: null;
+  session: any;
+  user: MockUser | null;
   roles: AppRole[];
   isApproved: boolean;
   loading: boolean;
@@ -12,9 +18,15 @@ interface AuthContextType {
   hasRole: (role: AppRole) => boolean;
 }
 
+const mockUser: MockUser = {
+  id: 'system-user',
+  email: 'admin@armana.com',
+  user_metadata: { full_name: 'System Admin' },
+};
+
 const AuthContext = createContext<AuthContextType>({
-  session: null,
-  user: null,
+  session: {},
+  user: mockUser,
   roles: ['admin'],
   isApproved: true,
   loading: false,
@@ -24,8 +36,8 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value: AuthContextType = {
-    session: null,
-    user: null,
+    session: {},
+    user: mockUser,
     roles: ['admin'],
     isApproved: true,
     loading: false,
