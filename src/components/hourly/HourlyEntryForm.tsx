@@ -19,8 +19,7 @@ const HOUR_OPTIONS = [
   { slot: 6, label: '2:00–3:00' },
   { slot: 7, label: '3:00–4:00' },
   { slot: 8, label: '4:00–5:00' },
-  { slot: 9, label: '5:00–6:00' },
-  { slot: 10, label: '6:00–7:00' },
+  { slot: 9, label: 'OT 5:00–7:00' },
 ];
 
 interface HourlyRecord {
@@ -85,8 +84,8 @@ export function HourlyEntryForm({ plans, planIds }: Props) {
   const queryClient = useQueryClient();
   const [selectedSlot, setSelectedSlot] = useState(() => {
     const hour = new Date().getHours();
-    let slot = Math.max(1, Math.min(10, hour - 7));
-    if (hour >= 13) slot = Math.max(1, Math.min(10, hour - 8));
+    let slot = Math.max(1, Math.min(9, hour - 7));
+    if (hour >= 13) slot = Math.max(1, Math.min(9, hour - 8));
     return slot;
   });
   const [activeDept, setActiveDept] = useState<'sewing' | 'finishing'>('sewing');

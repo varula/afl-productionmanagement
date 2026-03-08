@@ -34,7 +34,7 @@ const DOWNTIME_REASONS = [
 
 const HOUR_LABELS = [
   '8–9 AM', '9–10 AM', '10–11 AM', '11–12 PM',
-  '12–1 PM', '2–3 PM', '3–4 PM', '4–5 PM', '5–6 PM', '6–7 PM',
+  '12–1 PM', '2–3 PM', '3–4 PM', '4–5 PM', 'OT 5–7 PM',
 ];
 
 interface FormData {
@@ -191,8 +191,8 @@ export default function HourlyEntry() {
     // Current hour based on time
     const now = new Date();
     const hour = now.getHours();
-    let currentHour = Math.max(1, Math.min(10, hour - 7));
-    if (hour >= 13) currentHour = Math.max(1, Math.min(10, hour - 8)); // lunch break offset
+    let currentHour = Math.max(1, Math.min(9, hour - 7));
+    if (hour >= 13) currentHour = Math.max(1, Math.min(9, hour - 8)); // lunch break offset
 
     return { totalOutput, totalTarget, overallEfficiency, pcsShort, linesBelowTarget, currentHour };
   }, [filteredPlans]);
@@ -271,7 +271,7 @@ export default function HourlyEntry() {
   const handleSave = () => saveMutation.mutate();
   const handleSaveAndNext = () => {
     saveMutation.mutate();
-    if (editingSlot < 10) setTimeout(() => setEditingSlot(prev => prev + 1), 300);
+    if (editingSlot < 9) setTimeout(() => setEditingSlot(prev => prev + 1), 300);
   };
 
   const updateField = (field: keyof FormData, value: number | string) => {
@@ -328,7 +328,7 @@ export default function HourlyEntry() {
               pcsShort={kpis.pcsShort}
               linesBelowTarget={kpis.linesBelowTarget}
               currentHour={kpis.currentHour}
-              currentHourLabel={`Hour ${kpis.currentHour} of 10 (${HOUR_LABELS[kpis.currentHour - 1] || ''})`}
+              currentHourLabel={`Hour ${kpis.currentHour} of 9 (${HOUR_LABELS[kpis.currentHour - 1] || ''})`}
             />
 
             {/* Legend + Target */}
@@ -436,7 +436,7 @@ export default function HourlyEntry() {
                 );
               })}
             </div>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingSlot(s => Math.min(10, s + 1))} disabled={editingSlot === 10}>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingSlot(s => Math.min(9, s + 1))} disabled={editingSlot === 9}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
