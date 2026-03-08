@@ -1,9 +1,11 @@
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ClipboardList, Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useActiveFilter } from '@/hooks/useActiveFilter';
 
 const demoOrders = [
   { id: 'AAF-3101', buyer: 'Gap', style: "Men's Fleece Hoodie", pcs: 142400, stage: 'Cutting', progress: 22, priority: 'high', status: 'active' },
@@ -29,7 +31,55 @@ const priorityColors: Record<string, string> = {
   low: 'bg-muted text-muted-foreground border-border',
 };
 
+const buyerFilterMap: Record<string, string> = {
+  'ord-gap': 'Gap',
+  'ord-lager157': 'Lager 157',
+  'ord-ucb': 'UCB',
+  'ord-zxy': 'ZXY',
+  'ord-cubus': 'Cubus',
+};
+
+const stageFilterMap: Record<string, string> = {
+  'stg-cutting': 'Cutting',
+  'stg-sewing': 'Sewing',
+  'stg-qchold': 'QC',
+  'stg-finishing': 'Finishing',
+  'stg-packing': 'Packing',
+  'stg-delayed': '__delayed__',
+};
+
+const priorityFilterMap: Record<string, string> = {
+  'pri-high': 'high',
+  'pri-medium': 'medium',
+  'pri-low': 'low',
+};
+
 export default function OrdersPage() {
+  const activeFilter = useActiveFilter();
+
+  const filteredOrders = useMemo(() => {
+    if (!activeFilter || activeFilter === 'ord-all' || activeFilter === 'stg-all') return demoOrders;
+
+    if (buyerFilterMap[activeFilter]) {
+      return demoOrders.filter(o => o.buyer === buyerFilterMap[activeFilter]);
+    }
+    if (activeFilter === 'stg-delayed') {
+      return demoOrders.filter(o => o.status === 'delayed');
+    }
+    if (stageFilterMap[activeFilter]) {
+      return demoOrders.filter(o => o.stage === stageFilterMap[activeFilter]);
+    }
+    if (priorityFilterMap[activeFilter]) {
+      return demoOrders.filter(o => o.priority === priorityFilterMap[activeFilter]);
+    }
+    return demoOrders;
+  }, [activeFilter]);
+
+  const avgProgress = filteredOrders.length > 0
+    ? Math.round(filteredOrders.reduce((s, o) => s + o.progress, 0) / filteredOrders.length)
+    : 0;
+  const delayed = filteredOrders.filter(o => o.status === 'delayed').length;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -37,7 +87,7 @@ export default function OrdersPage() {
           <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
             <ClipboardList className="h-5 w-5 text-primary" /> Active Orders
           </h1>
-          <p className="text-sm text-muted-foreground">7 orders · 4 buyers</p>
+          <p className="text-sm text-muted-foreground">{filteredOrders.length} orders shown</p>
         </div>
         <div className="flex gap-2">
           <div className="relative">
@@ -48,13 +98,12 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Summary stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Total Orders', value: '18', color: 'border-primary/20' },
-          { label: 'Active', value: '14', color: 'border-success/20' },
-          { label: 'Delayed', value: '4', color: 'border-pink/20' },
-          { label: 'Avg Progress', value: '48%', color: 'border-accent/20' },
+          { label: 'Showing', value: String(filteredOrders.length), color: 'border-primary/20' },
+          { label: 'Active', value: String(filteredOrders.filter(o => o.status === 'active').length), color: 'border-success/20' },
+          { label: 'Delayed', value: String(delayed), color: 'border-pink/20' },
+          { label: 'Avg Progress', value: `${avgProgress}%`, color: 'border-accent/20' },
         ].map(s => (
           <Card key={s.label} className={`border-[1.5px] ${s.color}`}>
             <CardContent className="p-3 text-center">
@@ -65,7 +114,6 @@ export default function OrdersPage() {
         ))}
       </div>
 
-      {/* Orders Table */}
       <Card className="border-[1.5px]">
         <CardHeader className="pb-2">
           <CardTitle className="text-[13px] font-bold">Order Pipeline</CardTitle>
@@ -85,7 +133,7 @@ export default function OrdersPage() {
                 </tr>
               </thead>
               <tbody>
-                {demoOrders.map((order, i) => (
+                {filteredOrders.map((order, i) => (
                   <tr key={order.id} className="border-b border-border/50 hover:bg-muted/30 animate-pop-in" style={{ animationDelay: `${i * 40}ms` }}>
                     <td className="py-2.5 px-3 font-bold text-foreground">{order.id}</td>
                     <td className="py-2.5 px-3 text-muted-foreground">{order.buyer}</td>
@@ -105,6 +153,9 @@ export default function OrdersPage() {
                     </td>
                   </tr>
                 ))}
+                {filteredOrders.length === 0 && (
+                  <tr><td colSpan={7} className="py-8 text-center text-muted-foreground text-sm">No orders match this filter</td></tr>
+                )}
               </tbody>
             </table>
           </div>
