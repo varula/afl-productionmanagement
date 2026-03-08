@@ -118,7 +118,8 @@ export default function Dashboard() {
   const handleClosePanel = useCallback(() => setPanelClosed(true), []);
   useEffect(() => { setPanelClosed(false); }, [currentFilter]);
 
-  const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData(dateStr, factoryId);
+  const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, totalOTMinutes, otBySection, isLoading, isEmpty } = useDashboardData(dateStr, factoryId);
+  const maxOTHours = 20; // daily OT budget in hours
 
   // Top 4 hero KPIs — only the most important
   const gaugeKPIs = useMemo(() => {
