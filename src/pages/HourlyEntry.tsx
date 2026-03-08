@@ -58,23 +58,42 @@ export default function HourlyEntry() {
   const queryClient = useQueryClient();
   const today = new Date().toISOString().split('T')[0];
   const activeFilter = useActiveFilter();
+  const factoryId = useFactoryId();
 
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [editingSlot, setEditingSlot] = useState(1);
   const [form, setForm] = useState<FormData>({ ...emptyForm });
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Fetch today's plans with hourly records
-  const { data: plans = [] } = useQuery({
-    queryKey: ['production-plans-hourly', today],
+  // Get factory's line IDs for filtering
+  const { data: factoryLineIds } = useQuery({
+    queryKey: ['hourly-factory-lines', factoryId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: floors } = await supabase.from('floors').select('id').eq('factory_id', factoryId);
+      if (!floors || floors.length === 0) return [];
+      const { data: lines } = await supabase.from('lines').select('id').in('floor_id', floors.map(f => f.id));
+      return lines?.map(l => l.id) ?? [];
+    },
+    enabled: !!factoryId,
+    staleTime: 60_000,
+  });
+
+  // Fetch today's plans with hourly records, filtered by factory
+  const { data: plans = [] } = useQuery({
+    queryKey: ['production-plans-hourly', today, factoryLineIds],
+    queryFn: async () => {
+      let query = supabase
         .from('production_plans')
         .select('*, lines!production_plans_line_id_fkey(line_number, floor_id, type, floors(id, name)), styles!production_plans_style_id_fkey(style_no, smv, buyer)')
         .eq('date', today);
+      if (factoryLineIds && factoryLineIds.length > 0) {
+        query = query.in('line_id', factoryLineIds);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data as any[];
     },
+    enabled: !factoryId || (!!factoryLineIds && factoryLineIds.length > 0),
   });
 
   // Fetch ALL hourly records for today's plans
