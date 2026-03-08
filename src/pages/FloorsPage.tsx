@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Layers, Users, Cpu } from 'lucide-react';
-import { useActiveFilter } from '@/hooks/useActiveFilter';
+import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 
 const statusBadge = (eff: number) =>
   eff >= 90
@@ -16,18 +16,22 @@ const statusBadge = (eff: number) =>
 
 export default function FloorsPage() {
   const activeFilter = useActiveFilter();
+  const factoryId = useFactoryId();
   const today = new Date().toISOString().split('T')[0];
 
   const { data: floors = [] } = useQuery({
-    queryKey: ['floors-page'],
+    queryKey: ['floors-page', factoryId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('floors')
         .select('id, name, floor_index, lines(id, line_number, type, operator_count, helper_count, machine_count, is_active, supervisor)')
         .order('floor_index');
+      if (factoryId) query = query.eq('factory_id', factoryId);
+      const { data, error } = await query;
       if (error) throw error;
       return data ?? [];
     },
+    enabled: !!factoryId,
   });
 
   const { data: plans = [] } = useQuery({

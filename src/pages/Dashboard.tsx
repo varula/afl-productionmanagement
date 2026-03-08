@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { useActiveFilter } from '@/hooks/useActiveFilter';
+import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart3, CalendarIcon } from 'lucide-react';
@@ -163,6 +163,7 @@ function EmptyState() {
 
 export default function Dashboard() {
   const activeFilter = useActiveFilter();
+  const factoryId = useFactoryId();
   const currentFilter = activeFilter || 'dash-default';
   const reportConfig = REPORT_CONFIG[currentFilter] || REPORT_CONFIG['dash-default'];
   const [panelClosed, setPanelClosed] = useState(false);
@@ -176,7 +177,7 @@ export default function Dashboard() {
   const handleClosePanel = useCallback(() => setPanelClosed(true), []);
   useEffect(() => { setPanelClosed(false); }, [currentFilter]);
 
-  const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData(dateStr);
+  const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData(dateStr, factoryId);
 
   // Filter lines first — then derive everything else from filtered lines
   const filteredLines = useMemo(() => filterLineStatuses(lineStatuses, currentFilter), [lineStatuses, currentFilter]);
