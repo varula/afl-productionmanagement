@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { BarChart3, TrendingUp, TrendingDown, ChevronRight, FileCheck, Scissors, Shield, Shirt, PackageCheck, ClipboardCheck, Building, Warehouse, CalendarDays } from 'lucide-react';
 import { useMemo } from 'react';
 import { MIS_SECTIONS } from '@/lib/mis-form-configs';
-import { useFactoryId } from '@/hooks/useActiveFilter';
+import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 
 const ICON_MAP: Record<string, any> = {
   FileCheck, Scissors, ShieldCheck: Shield, Shirt, Shield, PackageCheck, ClipboardCheck, Building, Warehouse,
