@@ -74,7 +74,7 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
     queryFn: async () => {
       let query = supabase
         .from('production_plans')
-        .select('*, lines!inner(id, line_number, type, machine_count, operator_count, helper_count, is_active, supervisor), styles!inner(style_no, buyer, smv, sam, target_efficiency)')
+        .select('*, lines!inner(id, line_number, type, machine_count, operator_count, helper_count, is_active, supervisor, floor_id, floors!inner(id, name)), styles!inner(style_no, buyer, smv, sam, target_efficiency)')
         .eq('date', todayStr);
       if (factoryLineIds && factoryLineIds.length > 0) {
         query = query.in('line_id', factoryLineIds);
