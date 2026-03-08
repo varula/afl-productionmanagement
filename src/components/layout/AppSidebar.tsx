@@ -35,6 +35,7 @@ import { Button } from '@/components/ui/button';
 const mainNav = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Orders', url: '/plans', icon: ClipboardList },
+  { title: 'New Plan', url: '/plans/new', icon: PenLine },
   { title: 'Floors & Lines', url: '/floors', icon: Layers },
   { title: 'Hourly Output', url: '/hourly-entry', icon: PenLine },
   { title: 'Lost Time', url: '/lost-time', icon: AlertTriangle },
