@@ -27,7 +27,8 @@ const HOUR_HEADERS = [
   { slot: 6, label: 'Hr 6', sub: '2–3' },
   { slot: 7, label: 'Hr 7', sub: '3–4' },
   { slot: 8, label: 'Hr 8', sub: '4–5' },
-  { slot: 9, label: 'OT', sub: '5–7' },
+  { slot: 9, label: 'OT 1', sub: '5–6' },
+  { slot: 10, label: 'OT 2', sub: '6–7' },
 ];
 
 function getFloorCode(floorName: string, lineType: string, lineNum: number): string {
