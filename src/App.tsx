@@ -21,6 +21,7 @@ import ReportsPage from "./pages/ReportsPage";
 import MISPage from "./pages/MISPage";
 import PreProductionPage from "./pages/PreProductionPage";
 import CuttingProductionPage from "./pages/CuttingProductionPage";
+import CuttingQualityPage from "./pages/CuttingQualityPage";
 import SettingsPage from "./pages/SettingsPage";
 import FactorySetupPage from "./pages/FactorySetupPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
@@ -62,6 +63,7 @@ const AppRoutes = () => (
       <Route path="/mis" element={<MISPage />} />
       <Route path="/mis/pre-production" element={<PreProductionPage />} />
       <Route path="/mis/cutting-production" element={<CuttingProductionPage />} />
+      <Route path="/mis/cutting-quality" element={<CuttingQualityPage />} />
       <Route path="/plans/new" element={<ProductionPlanEntry />} />
       <Route path="/planning" element={<PlanningModule />} />
       <Route path="/admin/factories" element={<FactorySetupPage />} />

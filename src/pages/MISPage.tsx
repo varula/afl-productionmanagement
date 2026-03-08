@@ -124,7 +124,7 @@ export default function MISPage() {
             const Icon = ICON_MAP[section.icon] || FileCheck;
             const count = (docCounts as Record<string, number>)[section.key] || 0;
             const route = SECTION_ROUTES[section.key];
-            const isEnabled = section.key === 'pre_production' || section.key === 'cutting_production';
+            const isEnabled = section.key === 'pre_production' || section.key === 'cutting_production' || section.key === 'cutting_quality';
 
             return (
               <Card
