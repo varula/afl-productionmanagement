@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { Plus, Trash2, CalendarDays, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
 import { useFactoryId } from '@/hooks/useActiveFilter';
+import { useUserRole } from '@/hooks/useUserRole';
+import { ReadOnlyBanner } from '@/components/ui/read-only-banner';
 
 interface PlanFormData {
   line_id: string;
