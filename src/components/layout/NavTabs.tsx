@@ -13,6 +13,7 @@ import {
   Shield,
   Package,
   LineChart,
+  Ship,
 } from 'lucide-react';
 
 const tabs = [

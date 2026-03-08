@@ -66,6 +66,7 @@ const AppRoutes = () => (
       <Route path="/qc" element={<QCPage />} />
       <Route path="/inventory" element={<InventoryPage />} />
       <Route path="/analytics" element={<AnalyticsPage />} />
+      <Route path="/shipments" element={<ShipmentsPage />} />
       <Route path="/reports" element={<Navigate to="/mis" replace />} />
       <Route path="/mis" element={<MISPage />} />
       <Route path="/mis/pre-production" element={<PreProductionPage />} />
