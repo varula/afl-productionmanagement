@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { KPIGrid } from '@/components/kpi/KPIGrid';
 import { EfficiencyTrendChart } from '@/components/charts/EfficiencyTrendChart';
 import { DowntimeParetoChart } from '@/components/charts/DowntimeParetoChart';
 import { LineStatusTable } from '@/components/dashboard/LineStatusTable';
+import { DashboardSubPanel } from '@/components/dashboard/DashboardSubPanel';
 import { computeAllKPIs } from '@/lib/kpi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useActiveFilter } from '@/hooks/useActiveFilter';
