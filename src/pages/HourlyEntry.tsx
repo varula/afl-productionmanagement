@@ -14,6 +14,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { useActiveFilter } from '@/hooks/useActiveFilter';
 import { HourlyKPICards } from '@/components/hourly/HourlyKPICards';
 import { HourlyTrackerTable } from '@/components/hourly/HourlyTrackerTable';
+import { HourlyEntryForm } from '@/components/hourly/HourlyEntryForm';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 type DowntimeReason = Database['public']['Enums']['downtime_reason_type'];
@@ -379,46 +380,7 @@ export default function HourlyEntry() {
 
           {/* Entry Tab - shows same tables but emphasizes data entry */}
           <TabsContent value="entry" className="space-y-4 mt-0">
-            <HourlyKPICards
-              totalOutput={kpis.totalOutput}
-              totalTarget={kpis.totalTarget}
-              overallEfficiency={kpis.overallEfficiency}
-              pcsShort={kpis.pcsShort}
-              linesBelowTarget={kpis.linesBelowTarget}
-              currentHour={kpis.currentHour}
-              currentHourLabel={`Hour ${kpis.currentHour} of 10 (${HOUR_LABELS[kpis.currentHour - 1] || ''})`}
-            />
-
-            <p className="text-xs text-muted-foreground">Click any cell in the tables above (Tracker tab) or select a line below to enter hourly data.</p>
-
-            {sewingPlans.length > 0 && (
-              <HourlyTrackerTable
-                plans={sewingPlans}
-                title="Sewing Lines — Hourly Output (pcs/line)"
-                icon="🧵"
-                defaultHourlyTarget={sewingPlans.length > 0 ? Math.round(sewingPlans[0].target_qty / (sewingPlans[0].working_hours || 8)) : 50}
-                onCellClick={handleCellClick}
-              />
-            )}
-
-            {finishingPlans.length > 0 && (
-              <HourlyTrackerTable
-                plans={finishingPlans}
-                title="Finishing Lines — Hourly Output (pcs/line)"
-                icon="✂️"
-                defaultHourlyTarget={finishingPlans.length > 0 ? Math.round(finishingPlans[0].target_qty / (finishingPlans[0].working_hours || 8)) : 100}
-                onCellClick={handleCellClick}
-              />
-            )}
-
-            {plans.length === 0 && (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <AlertTriangle className="h-10 w-10 text-warning mx-auto mb-3" />
-                  <p className="text-muted-foreground">No production plans found for today.</p>
-                </CardContent>
-              </Card>
-            )}
+            <HourlyEntryForm plans={plansWithHourly} planIds={planIds} />
           </TabsContent>
         </Tabs>
       </div>
