@@ -35,14 +35,16 @@ import FactorySetupPage from "./pages/FactorySetupPage";
 import NotificationSettingsPage from "./pages/NotificationSettingsPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
 import PlanningModule from "./pages/PlanningModule";
+import PendingApprovalPage from "./pages/PendingApprovalPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useAuth();
+  const { session, loading, isApproved } = useAuth();
   if (loading) return null;
   if (!session) return <Navigate to="/auth" replace />;
+  if (!isApproved) return <Navigate to="/pending-approval" replace />;
   return <>{children}</>;
 }
 
@@ -53,10 +55,19 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function PendingApprovalRoute() {
+  const { session, loading, isApproved } = useAuth();
+  if (loading) return null;
+  if (!session) return <Navigate to="/auth" replace />;
+  if (isApproved) return <Navigate to="/dashboard" replace />;
+  return <PendingApprovalPage />;
+}
+
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
     <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+    <Route path="/pending-approval" element={<PendingApprovalRoute />} />
     <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/plans" element={<OrdersPage />} />
