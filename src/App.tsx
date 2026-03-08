@@ -32,6 +32,7 @@ import SettingsPage from "./pages/SettingsPage";
 import ShipmentsPage from "./pages/ShipmentsPage";
 import UserManagementPage from "./pages/UserManagementPage";
 import FactorySetupPage from "./pages/FactorySetupPage";
+import NotificationSettingsPage from "./pages/NotificationSettingsPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
 import PlanningModule from "./pages/PlanningModule";
 import NotFound from "./pages/NotFound";
