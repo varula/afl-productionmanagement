@@ -57,6 +57,7 @@ interface Props {
 interface InlineEntry {
   actual: string;
   rejects: string;
+  ot: string;
   remarks: string;
 }
 
