@@ -211,7 +211,7 @@ export default function HourlyEntry() {
   useEffect(() => {
     if (activeFilter?.startsWith('hr-h')) {
       const hourNum = parseInt(activeFilter.replace('hr-h', ''));
-      if (hourNum >= 1 && hourNum <= 9) setEditingSlot(hourNum);
+      if (hourNum >= 1 && hourNum <= 10) setEditingSlot(hourNum);
     }
   }, [activeFilter]);
 
