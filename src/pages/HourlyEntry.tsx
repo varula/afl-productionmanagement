@@ -68,7 +68,7 @@ export default function HourlyEntry() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('production_plans')
-        .select('*, lines!production_plans_line_id_fkey(line_number, floor_id), styles!production_plans_style_id_fkey(style_no, smv)')
+        .select('*, lines!production_plans_line_id_fkey(line_number, floor_id, type), styles!production_plans_style_id_fkey(style_no, smv)')
         .eq('date', today);
       if (error) throw error;
       return data as any[];
