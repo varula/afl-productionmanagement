@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { KPIGrid } from '@/components/kpi/KPIGrid';
 import { EfficiencyTrendChart } from '@/components/charts/EfficiencyTrendChart';
 import { DowntimeParetoChart } from '@/components/charts/DowntimeParetoChart';
 import { LineStatusTable } from '@/components/dashboard/LineStatusTable';
+import { DashboardSubPanel } from '@/components/dashboard/DashboardSubPanel';
 import { computeAllKPIs } from '@/lib/kpi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useActiveFilter } from '@/hooks/useActiveFilter';
@@ -159,6 +160,12 @@ export default function Dashboard() {
   const activeFilter = useActiveFilter();
   const currentFilter = activeFilter || 'dash-default';
   const reportConfig = REPORT_CONFIG[currentFilter] || REPORT_CONFIG['dash-default'];
+  const [panelClosed, setPanelClosed] = useState(false);
+
+  // Reset panel closed state when filter changes
+  const showSubPanel = currentFilter !== 'dash-default' && !panelClosed;
+  const handleClosePanel = useCallback(() => setPanelClosed(true), []);
+  useEffect(() => { setPanelClosed(false); }, [currentFilter]);
 
   const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData();
 
@@ -248,6 +255,11 @@ export default function Dashboard() {
           );
         })}
       </div>
+
+      {/* Sub-Panel — detailed data table for active filter */}
+      {showSubPanel && (
+        <DashboardSubPanel filter={currentFilter} lines={lineStatuses} onClose={handleClosePanel} />
+      )}
 
       {/* Charts */}
       {(filteredTrend.length > 0 || filteredDowntime.length > 0) && (
