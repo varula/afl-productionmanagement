@@ -290,7 +290,7 @@ export default function Dashboard() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <EfficiencyTrendChart data={demoTrendData} />
+        <EfficiencyTrendChart data={filteredTrend} />
         <DowntimeParetoChart data={filteredDowntime} />
       </div>
 
