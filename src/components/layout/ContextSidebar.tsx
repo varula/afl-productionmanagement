@@ -1,7 +1,8 @@
 import { useLocation } from 'react-router-dom';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SidebarItem {
   label: string;
@@ -17,7 +18,7 @@ interface SidebarGroup {
 
 type SidebarConfig = Record<string, SidebarGroup[]>;
 
-const SIDEBAR_CONFIG: SidebarConfig = {
+const STATIC_SIDEBAR_CONFIG: SidebarConfig = {
   '/dashboard': [
     { title: 'Quick Reports', items: [
       { label: 'Production Summary', key: 'dash-default', active: true },
@@ -76,32 +77,6 @@ const SIDEBAR_CONFIG: SidebarConfig = {
       { label: 'All Running', key: 'lstat-running' },
       { label: 'Delayed', key: 'lstat-delayed', badge: 1 },
       { label: 'QC Hold', key: 'lstat-qchold', badge: 1 },
-    ]},
-  ],
-  '/hourly-entry': [
-    { title: 'View By', items: [
-      { label: 'All Lines', key: 'hr-all', active: true },
-      { label: 'SF-01 Lines 1–4', key: 'hr-sf01' },
-      { label: 'SF-02 Lines 5–8', key: 'hr-sf02' },
-      { label: 'SF-03 Lines 9–12', key: 'hr-sf03' },
-      { label: 'Finishing F1–F4', key: 'hr-finishing' },
-    ]},
-    { title: 'Filter', items: [
-      { label: 'Below Target (<80%)', key: 'hr-below', badge: 3 },
-      { label: 'Acceptable (80–99%)', key: 'hr-ok' },
-      { label: 'On/Above Target', key: 'hr-above' },
-      { label: 'QC Hold Lines', key: 'hr-qchold', badge: 1 },
-      { label: 'Delayed Lines', key: 'hr-delayed', badge: 1 },
-    ]},
-    { title: 'Hour', items: [
-      { label: '8–9 AM', key: 'hr-h1' },
-      { label: '9–10 AM', key: 'hr-h2' },
-      { label: '10–11 AM', key: 'hr-h3' },
-      { label: '11–12 AM', key: 'hr-h4' },
-      { label: '12–1 PM', key: 'hr-h5' },
-      { label: '1–2 PM', key: 'hr-h6' },
-      { label: '2–3 PM', key: 'hr-h7' },
-      { label: '3–4 PM', key: 'hr-h8' },
     ]},
   ],
   '/lost-time': [
@@ -299,6 +274,57 @@ const SIDEBAR_CONFIG: SidebarConfig = {
   ],
 };
 
+const HOUR_LABELS = [
+  '8–9 AM', '9–10 AM', '10–11 AM', '11–12 AM',
+  '12–1 PM', '1–2 PM', '2–3 PM', '3–4 PM', '4–5 PM', '5–6 PM',
+];
+
+/** Build dynamic sidebar groups for /hourly-entry from actual floor/line data */
+function useHourlyEntrySidebar(): SidebarGroup[] {
+  const { data: floorsWithLines } = useQuery({
+    queryKey: ['sidebar-floors-lines'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('floors')
+        .select('id, name, lines(id, line_number, type, is_active)')
+        .order('floor_index');
+      if (error) throw error;
+      return data as any[];
+    },
+    staleTime: 60_000,
+  });
+
+  if (!floorsWithLines || floorsWithLines.length === 0) {
+    return STATIC_SIDEBAR_CONFIG['/hourly-entry'] || [];
+  }
+
+  const viewByItems: SidebarItem[] = [
+    { label: 'All Lines', key: 'hr-all', active: true },
+  ];
+
+  for (const floor of floorsWithLines) {
+    const activeLines = (floor.lines || []).filter((l: any) => l.is_active);
+    if (activeLines.length === 0) continue;
+    const lineNums = activeLines.map((l: any) => l.line_number).sort((a: number, b: number) => a - b);
+    const rangeLabel = lineNums.length === 1 ? `Line ${lineNums[0]}` : `Lines ${lineNums[0]}–${lineNums[lineNums.length - 1]}`;
+    viewByItems.push({
+      label: `${floor.name} ${rangeLabel}`,
+      key: `hr-floor-${floor.id}`,
+      badge: activeLines.length,
+    });
+  }
+
+  const hourItems: SidebarItem[] = HOUR_LABELS.map((label, i) => ({
+    label,
+    key: `hr-h${i + 1}`,
+  }));
+
+  return [
+    { title: 'View By', items: viewByItems },
+    { title: 'Hour', items: hourItems },
+  ];
+}
+
 interface ContextSidebarProps {
   activeFilter: string;
   onFilterChange: (key: string) => void;
@@ -306,7 +332,10 @@ interface ContextSidebarProps {
 
 export function ContextSidebar({ activeFilter, onFilterChange }: ContextSidebarProps) {
   const location = useLocation();
-  const groups = SIDEBAR_CONFIG[location.pathname] || [];
+  const hourlyGroups = useHourlyEntrySidebar();
+
+  const isHourlyEntry = location.pathname === '/hourly-entry';
+  const groups = isHourlyEntry ? hourlyGroups : (STATIC_SIDEBAR_CONFIG[location.pathname] || []);
 
   if (groups.length === 0) return null;
 
@@ -355,7 +384,8 @@ export function ContextSidebar({ activeFilter, onFilterChange }: ContextSidebarP
 }
 
 export function getDefaultFilter(pathname: string): string {
-  const groups = SIDEBAR_CONFIG[pathname] || [];
+  if (pathname === '/hourly-entry') return 'hr-all';
+  const groups = STATIC_SIDEBAR_CONFIG[pathname] || [];
   for (const group of groups) {
     for (const item of group.items) {
       if (item.active) return item.key;
