@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, ChevronDown, LogOut, Factory } from 'lucide-react';
+import { Search, ChevronDown, LogOut, Factory, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface TopBarProps {
@@ -39,20 +39,20 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
   }, []);
 
   return (
-    <div className="flex items-center gap-3 px-5 py-2.5 border-b border-border shrink-0">
+    <div className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2.5 border-b border-border shrink-0">
       {/* Brand */}
-      <div className="flex items-center gap-2.5 shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-primary to-purple flex items-center justify-center shrink-0">
-          <Factory className="h-4 w-4 text-primary-foreground" />
+          <span className="text-[11px] font-extrabold text-primary-foreground tracking-tight">AA</span>
         </div>
         <div className="hidden md:block">
-          <div className="text-[13px] font-extrabold text-foreground leading-tight">GarmentIQ</div>
+          <div className="text-[13px] font-extrabold text-foreground leading-tight">Armana Apparels / Fashions Ltd.</div>
           <div className="text-[9px] text-muted-foreground font-medium">Integrated Production Management System</div>
         </div>
       </div>
 
       {/* Search */}
-      <div className="hidden md:flex flex-1 max-w-[240px] items-center gap-2 bg-muted border border-border rounded-[9px] px-3 py-1.5">
+      <div className="hidden lg:flex flex-1 max-w-[240px] items-center gap-2 bg-muted border border-border rounded-[9px] px-3 py-1.5">
         <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         <input
           type="text"
@@ -65,10 +65,10 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
       <div className="relative shrink-0" ref={factoryRef}>
         <button
           onClick={() => setFactoryOpen(!factoryOpen)}
-          className="flex items-center gap-2 border border-border rounded-[9px] px-2.5 py-1.5 bg-muted text-xs font-medium text-foreground hover:border-primary transition-colors"
+          className="flex items-center gap-2 border border-border rounded-[9px] px-2 md:px-2.5 py-1.5 bg-muted text-xs font-medium text-foreground hover:border-primary transition-colors"
         >
           <div className="w-2 h-2 rounded-full bg-success shrink-0" />
-          <span className="hidden sm:inline max-w-[180px] truncate">
+          <span className="hidden sm:inline max-w-[140px] md:max-w-[180px] truncate">
             {selectedFactory?.name || 'Select Factory'}
           </span>
           <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -105,12 +105,12 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
       <div className="relative shrink-0" ref={userRef}>
         <button
           onClick={() => setUserOpen(!userOpen)}
-          className="flex items-center gap-2 border border-border rounded-[9px] px-2.5 py-1 bg-muted hover:border-primary transition-colors"
+          className="flex items-center gap-2 border border-border rounded-[9px] px-2 md:px-2.5 py-1 bg-muted hover:border-primary transition-colors"
         >
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-purple flex items-center justify-center text-[11px] font-bold text-primary-foreground shrink-0">
             {initials}
           </div>
-          <div className="hidden sm:block text-left">
+          <div className="hidden md:block text-left">
             <div className="text-[9px] text-muted-foreground">Welcome back,</div>
             <div className="text-xs font-bold text-foreground">{displayName}</div>
           </div>
