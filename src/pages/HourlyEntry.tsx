@@ -326,58 +326,102 @@ export default function HourlyEntry() {
             </div>
 
       {/* Sewing Lines Table */}
-      {sewingPlans.length > 0 && (
-        <HourlyTrackerTable
-          plans={sewingPlans}
-          title="Sewing Lines — Hourly Output (pcs/line)"
-          icon="🧵"
-          defaultHourlyTarget={sewingPlans.length > 0 ? Math.round(sewingPlans[0].target_qty / (sewingPlans[0].working_hours || 8)) : 50}
-          onCellClick={handleCellClick}
-        />
-      )}
+            {sewingPlans.length > 0 && (
+              <HourlyTrackerTable
+                plans={sewingPlans}
+                title="Sewing Lines — Hourly Output (pcs/line)"
+                icon="🧵"
+                defaultHourlyTarget={sewingPlans.length > 0 ? Math.round(sewingPlans[0].target_qty / (sewingPlans[0].working_hours || 8)) : 50}
+                onCellClick={handleCellClick}
+              />
+            )}
 
-      {/* Finishing Lines Table */}
-      {finishingPlans.length > 0 && (
-        <HourlyTrackerTable
-          plans={finishingPlans}
-          title="Finishing Lines — Hourly Output (pcs/line)"
-          icon="✂️"
-          defaultHourlyTarget={finishingPlans.length > 0 ? Math.round(finishingPlans[0].target_qty / (finishingPlans[0].working_hours || 8)) : 100}
-          onCellClick={handleCellClick}
-        />
-      )}
+            {finishingPlans.length > 0 && (
+              <HourlyTrackerTable
+                plans={finishingPlans}
+                title="Finishing Lines — Hourly Output (pcs/line)"
+                icon="✂️"
+                defaultHourlyTarget={finishingPlans.length > 0 ? Math.round(finishingPlans[0].target_qty / (finishingPlans[0].working_hours || 8)) : 100}
+                onCellClick={handleCellClick}
+              />
+            )}
 
-      {/* Cutting Tables */}
-      {cuttingPlans.length > 0 && (
-        <HourlyTrackerTable
-          plans={cuttingPlans}
-          title="Cutting Tables — Hourly Output (pcs/table)"
-          icon="🔪"
-          defaultHourlyTarget={cuttingPlans.length > 0 ? Math.round(cuttingPlans[0].target_qty / (cuttingPlans[0].working_hours || 8)) : 75}
-          onCellClick={handleCellClick}
-        />
-      )}
+            {cuttingPlans.length > 0 && (
+              <HourlyTrackerTable
+                plans={cuttingPlans}
+                title="Cutting Tables — Hourly Output (pcs/table)"
+                icon="🔪"
+                defaultHourlyTarget={cuttingPlans.length > 0 ? Math.round(cuttingPlans[0].target_qty / (cuttingPlans[0].working_hours || 8)) : 75}
+                onCellClick={handleCellClick}
+              />
+            )}
 
-      {/* Auxiliary Lines (Bartack & Eyelet) */}
-      {auxiliaryPlans.length > 0 && (
-        <HourlyTrackerTable
-          plans={auxiliaryPlans}
-          title="Auxiliary Lines — Bartack & Eyelet (pcs/line)"
-          icon="⚙️"
-          defaultHourlyTarget={auxiliaryPlans.length > 0 ? Math.round(auxiliaryPlans[0].target_qty / (auxiliaryPlans[0].working_hours || 8)) : 100}
-          onCellClick={handleCellClick}
-        />
-      )}
+            {auxiliaryPlans.length > 0 && (
+              <HourlyTrackerTable
+                plans={auxiliaryPlans}
+                title="Auxiliary Lines — Bartack & Eyelet (pcs/line)"
+                icon="⚙️"
+                defaultHourlyTarget={auxiliaryPlans.length > 0 ? Math.round(auxiliaryPlans[0].target_qty / (auxiliaryPlans[0].working_hours || 8)) : 100}
+                onCellClick={handleCellClick}
+              />
+            )}
 
-      {plans.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <AlertTriangle className="h-10 w-10 text-warning mx-auto mb-3" />
-            <p className="text-muted-foreground">No production plans found for today.</p>
-            <p className="text-xs text-muted-foreground mt-1">Create a plan first from the Production Plans page.</p>
-          </CardContent>
-        </Card>
-      )}
+            {plans.length === 0 && (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <AlertTriangle className="h-10 w-10 text-warning mx-auto mb-3" />
+                  <p className="text-muted-foreground">No production plans found for today.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Create a plan first from the Production Plans page.</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Entry Tab - shows same tables but emphasizes data entry */}
+          <TabsContent value="entry" className="space-y-4 mt-0">
+            <HourlyKPICards
+              totalOutput={kpis.totalOutput}
+              totalTarget={kpis.totalTarget}
+              overallEfficiency={kpis.overallEfficiency}
+              pcsShort={kpis.pcsShort}
+              linesBelowTarget={kpis.linesBelowTarget}
+              currentHour={kpis.currentHour}
+              currentHourLabel={`Hour ${kpis.currentHour} of 9 (${HOUR_LABELS[kpis.currentHour - 1] || ''})`}
+            />
+
+            <p className="text-xs text-muted-foreground">Click any cell in the tables above (Tracker tab) or select a line below to enter hourly data.</p>
+
+            {sewingPlans.length > 0 && (
+              <HourlyTrackerTable
+                plans={sewingPlans}
+                title="Sewing Lines — Hourly Output (pcs/line)"
+                icon="🧵"
+                defaultHourlyTarget={sewingPlans.length > 0 ? Math.round(sewingPlans[0].target_qty / (sewingPlans[0].working_hours || 8)) : 50}
+                onCellClick={handleCellClick}
+              />
+            )}
+
+            {finishingPlans.length > 0 && (
+              <HourlyTrackerTable
+                plans={finishingPlans}
+                title="Finishing Lines — Hourly Output (pcs/line)"
+                icon="✂️"
+                defaultHourlyTarget={finishingPlans.length > 0 ? Math.round(finishingPlans[0].target_qty / (finishingPlans[0].working_hours || 8)) : 100}
+                onCellClick={handleCellClick}
+              />
+            )}
+
+            {plans.length === 0 && (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <AlertTriangle className="h-10 w-10 text-warning mx-auto mb-3" />
+                  <p className="text-muted-foreground">No production plans found for today.</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
 
       {/* Entry Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
