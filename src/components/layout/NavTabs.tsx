@@ -36,7 +36,9 @@ export function NavTabs() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center gap-0.5 px-3 md:px-5 py-2 border-b border-border shrink-0 overflow-x-auto custom-scrollbar">
+    <div className="flex items-center gap-0.5 px-3 md:px-5 py-2 border-b border-border shrink-0 overflow-x-auto custom-scrollbar"
+      style={{ scrollbarWidth: 'thin' }}
+    >
       {tabs.map(tab => {
         const active = location.pathname === tab.path || location.pathname.startsWith(tab.path + '/');
         return (
@@ -46,7 +48,7 @@ export function NavTabs() {
             className={`nav-tab ${active ? 'active' : ''}`}
           >
             <tab.icon className="h-3.5 w-3.5 shrink-0" />
-            <span className="hidden sm:inline">{tab.title}</span>
+            <span className="whitespace-nowrap">{tab.title}</span>
             {tab.badge !== undefined && (
               <span className={`text-[9px] font-bold px-1.5 py-0 rounded-full ml-0.5 ${
                 active ? 'bg-primary-foreground/30 text-primary-foreground' : 'bg-pink text-white'
