@@ -436,7 +436,7 @@ export default function HourlyEntry() {
                 );
               })}
             </div>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingSlot(s => Math.min(10, s + 1))} disabled={editingSlot === 10}>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingSlot(s => Math.min(9, s + 1))} disabled={editingSlot === 9}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

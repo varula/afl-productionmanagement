@@ -95,7 +95,7 @@ export default function QCPage() {
     mutationFn: async () => {
       const now = new Date();
       const hour = now.getHours();
-      let slot = Math.max(1, Math.min(10, hour >= 13 ? hour - 8 : hour - 7));
+      let slot = Math.max(1, Math.min(9, hour >= 13 ? hour - 8 : hour - 7));
       const { data: existing } = await supabase.from('hourly_production').select('id').eq('plan_id', selectedPlanId).eq('hour_slot', slot).maybeSingle();
       if (existing) {
         const { error } = await supabase.from('hourly_production').update({ checked_qty: checkedQty, defects, rework }).eq('id', existing.id);

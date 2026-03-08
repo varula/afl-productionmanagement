@@ -84,8 +84,8 @@ export function HourlyEntryForm({ plans, planIds }: Props) {
   const queryClient = useQueryClient();
   const [selectedSlot, setSelectedSlot] = useState(() => {
     const hour = new Date().getHours();
-    let slot = Math.max(1, Math.min(10, hour - 7));
-    if (hour >= 13) slot = Math.max(1, Math.min(10, hour - 8));
+    let slot = Math.max(1, Math.min(9, hour - 7));
+    if (hour >= 13) slot = Math.max(1, Math.min(9, hour - 8));
     return slot;
   });
   const [activeDept, setActiveDept] = useState<'sewing' | 'finishing'>('sewing');
