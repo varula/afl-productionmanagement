@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Clock, Save, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2, TrendingUp } from 'lucide-react';
 import type { Tables, Database } from '@/integrations/supabase/types';
+import { useActiveFilter } from '@/hooks/useActiveFilter';
 
 type DowntimeReason = Database['public']['Enums']['downtime_reason_type'];
 
