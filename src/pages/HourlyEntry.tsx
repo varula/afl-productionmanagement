@@ -171,7 +171,7 @@ export default function HourlyEntry() {
     // Current hour based on time
     const now = new Date();
     const hour = now.getHours();
-    let currentHour = Math.max(1, Math.min(9, hour - 7));
+    let currentHour = Math.max(1, Math.min(10, hour - 7));
     if (hour >= 13) currentHour = Math.max(1, Math.min(9, hour - 8)); // lunch break offset
 
     return { totalOutput, totalTarget, overallEfficiency, pcsShort, linesBelowTarget, currentHour };
