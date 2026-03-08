@@ -1,6 +1,6 @@
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface DHUData {
   date: string;
@@ -20,34 +20,29 @@ const chartConfig = {
 
 export function DHUTrendChart({ data, ucl = 5, lcl = 1, target = 3 }: DHUTrendChartProps) {
   return (
-    <Card className="border-[1.5px]">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-[13px] font-bold">DHU % Trend — Control Chart</CardTitle>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
-              <div className="w-2 h-2 rounded-full" style={{ background: 'hsl(var(--chart-4))' }} />DHU
-            </div>
-            <div className="flex items-center gap-1 text-[9px] text-pink">
-              <div className="w-4 h-0 border-t border-dashed border-pink" />UCL
-            </div>
-            <div className="flex items-center gap-1 text-[9px] text-success">
-              <div className="w-4 h-0 border-t border-dashed border-success" />Target
-            </div>
+    <Card className="border border-border/60 shadow-sm hover:shadow-md transition-shadow">
+      <CardContent className="pt-4 pb-3">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <div className="text-[13px] font-bold text-foreground">DHU % Control Chart</div>
+            <div className="text-[10px] text-muted-foreground">Statistical process control limits</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[8px] font-semibold text-pink bg-pink/10 px-1.5 py-0.5 rounded border border-pink/20">UCL {ucl}%</span>
+            <span className="text-[8px] font-semibold text-success bg-success/10 px-1.5 py-0.5 rounded border border-success/20">Target {target}%</span>
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[180px] w-full">
-          <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-            <XAxis dataKey="date" className="text-[10px]" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-            <YAxis domain={[0, 'auto']} className="text-[10px]" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+        <ChartContainer config={chartConfig} className="h-[200px] w-full">
+          <LineChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+            <XAxis dataKey="date" className="text-[9px]" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9 }} axisLine={false} tickLine={false} />
+            <YAxis domain={[0, 'auto']} className="text-[9px]" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9 }} axisLine={false} tickLine={false} />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <ReferenceLine y={ucl} stroke="hsl(var(--pink))" strokeDasharray="5 5" strokeWidth={1.5} />
-            <ReferenceLine y={target} stroke="hsl(var(--success))" strokeDasharray="5 5" strokeWidth={1.5} />
-            <ReferenceLine y={lcl} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" strokeWidth={1} />
-            <Line type="monotone" dataKey="dhu" stroke="hsl(var(--chart-4))" strokeWidth={2.5} dot={{ r: 3.5, fill: 'hsl(var(--chart-4))' }} activeDot={{ r: 5 }} />
+            {/* Control limit bands */}
+            <ReferenceLine y={ucl} stroke="hsl(var(--pink))" strokeDasharray="6 4" strokeWidth={1} opacity={0.6} />
+            <ReferenceLine y={target} stroke="hsl(var(--success))" strokeDasharray="6 4" strokeWidth={1} opacity={0.6} />
+            <ReferenceLine y={lcl} stroke="hsl(var(--border))" strokeDasharray="4 4" strokeWidth={1} opacity={0.4} />
+            <Line type="monotone" dataKey="dhu" stroke="hsl(var(--chart-4))" strokeWidth={2.5} dot={{ r: 3, fill: 'hsl(var(--card))', stroke: 'hsl(var(--chart-4))', strokeWidth: 2 }} activeDot={{ r: 5, fill: 'hsl(var(--chart-4))' }} />
           </LineChart>
         </ChartContainer>
       </CardContent>
