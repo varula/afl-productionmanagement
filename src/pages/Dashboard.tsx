@@ -160,6 +160,15 @@ export default function Dashboard() {
   const activeFilter = useActiveFilter();
   const currentFilter = activeFilter || 'dash-default';
   const reportConfig = REPORT_CONFIG[currentFilter] || REPORT_CONFIG['dash-default'];
+  const [panelClosed, setPanelClosed] = useState(false);
+
+  // Reset panel closed state when filter changes
+  const showSubPanel = currentFilter !== 'dash-default' && !panelClosed;
+  const handleClosePanel = useCallback(() => setPanelClosed(true), []);
+
+  // Reset when filter changes
+  const prevFilter = useMemo(() => currentFilter, [currentFilter]);
+  useMemo(() => { setPanelClosed(false); }, [currentFilter]);
 
   const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData();
 
