@@ -28,7 +28,7 @@ export function KPIHeroCard({ label, value, target, unit = '%', status, trend = 
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
 
   return (
-    <div className="rounded-2xl bg-card border border-border/60 p-5 transition-all hover:shadow-md">
+    <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-out">
       {/* Card header */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-sm font-semibold text-foreground">{label}</span>
