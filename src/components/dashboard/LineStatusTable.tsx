@@ -55,11 +55,11 @@ export function LineStatusTable({ lines }: LineStatusTableProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {lines.map((line) => {
+              {lines.map((line, idx) => {
                 const config = statusConfig[line.status];
                 const shortfall = line.output - line.target;
                 return (
-                  <TableRow key={line.lineNumber} className="hover:bg-muted/50 cursor-pointer">
+                  <TableRow key={`${line.lineNumber}-${idx}`} className="hover:bg-muted/50 cursor-pointer">
                     <TableCell className="font-bold text-foreground text-[11.5px]">Line {line.lineNumber}</TableCell>
                     <TableCell className="text-muted-foreground text-[11.5px]">{line.style}</TableCell>
                     <TableCell className="text-right text-[11.5px] font-medium">{line.target.toLocaleString()}</TableCell>
