@@ -346,7 +346,7 @@ export function ContextSidebar({ activeFilter, onFilterChange }: ContextSidebarP
   if (groups.length === 0) return null;
 
   return (
-    <div className="hidden md:block w-[188px] shrink-0 border-r border-border overflow-hidden">
+    <div className="hidden sm:block w-[168px] shrink-0 border-r border-border overflow-hidden">
       <ScrollArea className="h-full py-3">
         {groups.map((group, gi) => (
           <div key={gi} className="mb-2">
