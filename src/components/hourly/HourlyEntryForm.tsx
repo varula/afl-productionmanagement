@@ -32,6 +32,7 @@ interface HourlyRecord {
   checked_qty: number;
   downtime_minutes: number;
   npt_minutes: number;
+  overtime_minutes: number;
   operators_present: number;
   helpers_present: number;
   downtime_reason: string | null;
