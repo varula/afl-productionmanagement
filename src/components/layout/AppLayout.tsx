@@ -3,11 +3,28 @@ import { TopBar } from './TopBar';
 import { NavTabs } from './NavTabs';
 import { ContextSidebar, getDefaultFilter } from './ContextSidebar';
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export function AppLayout() {
   const [selectedFactoryId, setSelectedFactoryId] = useState('');
   const [activeFilter, setActiveFilter] = useState('');
   const location = useLocation();
+
+  // Auto-select first factory
+  const { data: factories } = useQuery({
+    queryKey: ['factories-init'],
+    queryFn: async () => {
+      const { data } = await supabase.from('factories').select('id').order('name').limit(1);
+      return data ?? [];
+    },
+  });
+
+  useEffect(() => {
+    if (!selectedFactoryId && factories && factories.length > 0) {
+      setSelectedFactoryId(factories[0].id);
+    }
+  }, [factories, selectedFactoryId]);
 
   // Reset filter when route changes
   useEffect(() => {
@@ -27,9 +44,10 @@ export function AppLayout() {
             <ContextSidebar
               activeFilter={activeFilter}
               onFilterChange={setActiveFilter}
+              factoryId={selectedFactoryId}
             />
             <main className="flex-1 overflow-y-auto custom-scrollbar p-3 md:p-5">
-              <Outlet context={{ activeFilter }} />
+              <Outlet context={{ activeFilter, factoryId: selectedFactoryId }} />
             </main>
           </div>
         </div>
