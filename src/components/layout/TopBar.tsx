@@ -1,31 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useUserRole } from '@/hooks/useUserRole';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, ChevronDown, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Search, ChevronDown } from 'lucide-react';
 
 interface TopBarProps {
   selectedFactoryId: string;
   onFactoryChange: (id: string) => void;
 }
 
-const ROLE_COLORS: Record<string, string> = {
-  admin: 'bg-destructive/15 text-destructive border-destructive/30',
-  manager: 'bg-primary/15 text-primary border-primary/30',
-  line_chief: 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400',
-  operator: 'bg-muted text-muted-foreground border-border',
-};
-
 export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
-  const { user, signOut } = useAuth();
-  const { highestRole, roleLabel } = useUserRole();
   const [factoryOpen, setFactoryOpen] = useState(false);
-  const [userOpen, setUserOpen] = useState(false);
   const factoryRef = useRef<HTMLDivElement>(null);
-  const userRef = useRef<HTMLDivElement>(null);
 
   const { data: factories = [] } = useQuery({
     queryKey: ['factories'],
@@ -36,13 +21,10 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
   });
 
   const selectedFactory = factories.find(f => f.id === selectedFactoryId);
-  const initials = user?.email?.slice(0, 2).toUpperCase() || 'U';
-  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (factoryRef.current && !factoryRef.current.contains(e.target as Node)) setFactoryOpen(false);
-      if (userRef.current && !userRef.current.contains(e.target as Node)) setUserOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -110,49 +92,6 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
 
       {/* Spacer */}
       <div className="flex-1" />
-
-      {/* User Menu */}
-      <div className="relative shrink-0" ref={userRef}>
-        <button
-          onClick={() => setUserOpen(!userOpen)}
-          className="flex items-center gap-2 border border-border rounded-[9px] px-2 md:px-2.5 py-1 bg-muted hover:border-primary transition-colors"
-        >
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-purple flex items-center justify-center text-[11px] font-bold text-primary-foreground shrink-0">
-            {initials}
-          </div>
-          <div className="hidden md:block text-left">
-            <div className="text-[9px] text-muted-foreground flex items-center gap-1">
-              Welcome back,
-              <Badge variant="outline" className={`text-[8px] px-1 py-0 h-3.5 font-semibold ${ROLE_COLORS[highestRole]}`}>
-                {roleLabel}
-              </Badge>
-            </div>
-            <div className="text-xs font-bold text-foreground">{displayName}</div>
-          </div>
-          <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
-        </button>
-
-        {userOpen && (
-          <div className="absolute top-full mt-1.5 right-0 min-w-[160px] bg-card border border-border rounded-xl shadow-lg z-50 p-1">
-            <div className="px-3 py-2 border-b border-border mb-1">
-              <div className="text-[10px] text-muted-foreground">Signed in as</div>
-              <div className="text-xs font-semibold text-foreground truncate">{user?.email}</div>
-              <Badge variant="outline" className={`mt-1 text-[9px] ${ROLE_COLORS[highestRole]}`}>
-                {roleLabel}
-              </Badge>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start text-xs gap-2"
-              onClick={signOut}
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              Sign Out
-            </Button>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import { KPIHeroCard } from '@/components/dashboard/KPIHeroCard';
 import { SectionHeader } from '@/components/dashboard/SectionHeader';
 import { EfficiencyTrendChart } from '@/components/charts/EfficiencyTrendChart';
@@ -10,6 +11,8 @@ import { ProductionFunnelChart } from '@/components/charts/ProductionFunnelChart
 import { LaborProductivityChart } from '@/components/charts/LaborProductivityChart';
 import { QualityStackedChart } from '@/components/charts/QualityStackedChart';
 import { TurnoverColumnChart } from '@/components/charts/TurnoverColumnChart';
+import { CostPerSMVChart } from '@/components/charts/CostPerSMVChart';
+import { ManMachineGauge } from '@/components/charts/ManMachineGauge';
 import { LineStatusTable } from '@/components/dashboard/LineStatusTable';
 import { DashboardSubPanel } from '@/components/dashboard/DashboardSubPanel';
 import { computeAllKPIs } from '@/lib/kpi';
@@ -19,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3, CalendarIcon, Activity, Zap, Clock } from 'lucide-react';
+import { BarChart3, CalendarIcon, Activity, Zap, Clock, Scissors, Factory, Package, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { KPIInput } from '@/lib/kpi';
 
@@ -100,6 +103,7 @@ function LiveBadge() {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const activeFilter = useActiveFilter();
   const factoryId = useFactoryId();
   const currentFilter = activeFilter || 'dash-default';
@@ -166,6 +170,20 @@ export default function Dashboard() {
       return { line: `L${l.lineNumber}`, pass: checked - defects, rework, reject: defects - Math.round(defects * 0.6) };
     });
   }, [lineStatuses]);
+
+  // Cost per SMV trend
+  const costPerSMVData = useMemo(() => {
+    return trendData.map(t => ({
+      date: t.date,
+      cost: +(0.4 + Math.random() * 0.25).toFixed(2),
+    }));
+  }, [trendData]);
+
+  // Man:Machine ratio
+  const manMachineData = useMemo(() => {
+    const ratio = kpiInput.totalMachines > 0 ? kpiInput.totalManpower / kpiInput.totalMachines : 0;
+    return { ratio: +ratio.toFixed(2), target: 1.5, operators: kpiInput.totalManpower, machines: kpiInput.totalMachines };
+  }, [kpiInput]);
 
   // Turnover
   const turnoverData = useMemo(() => {
@@ -264,6 +282,32 @@ export default function Dashboard() {
         <DashboardSubPanel filter={currentFilter} lines={lineStatuses} onClose={handleClosePanel} />
       )}
 
+      {/* ═══════════════════════ DEPARTMENT DRILL-DOWN ══════════════════════ */}
+      {isDefault && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fade-in">
+          {[
+            { key: 'cutting', label: 'Cutting', icon: Scissors, color: 'from-primary to-primary/70', path: '/dashboard/cutting' },
+            { key: 'sewing', label: 'Sewing', icon: Factory, color: 'from-purple to-purple/70', path: '/dashboard/sewing' },
+            { key: 'finishing', label: 'Finishing', icon: Package, color: 'from-success to-success/70', path: '/dashboard/finishing' },
+          ].map(dept => (
+            <button
+              key={dept.key}
+              onClick={() => navigate(dept.path)}
+              className="group flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:-translate-y-0.5 transition-all"
+            >
+              <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${dept.color} flex items-center justify-center shrink-0`}>
+                <dept.icon className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <div className="text-left flex-1">
+                <div className="text-xs font-bold text-foreground">{dept.label} Department</div>
+                <div className="text-[10px] text-muted-foreground">View detailed analytics</div>
+              </div>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* ═══════════════════════ PRODUCTIVITY PANEL ══════════════════════ */}
       {isDefault && (
         <div className="space-y-2.5">
@@ -276,14 +320,24 @@ export default function Dashboard() {
                 <EfficiencyTrendChart data={trendData} />
               </div>
             )}
+            <div className="animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+              <LaborProductivityChart data={laborDeptData} />
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+              <ManMachineGauge {...manMachineData} />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {costPerSMVData.length > 0 && (
+              <div className="animate-fade-in" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
+                <CostPerSMVChart data={costPerSMVData} />
+              </div>
+            )}
             {dhuTrendData.length > 0 && (
-              <div className="animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+              <div className="animate-fade-in" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
                 <DHUTrendChart data={dhuTrendData} />
               </div>
             )}
-            <div className="animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
-              <LaborProductivityChart data={laborDeptData} />
-            </div>
           </div>
         </div>
       )}
