@@ -1,10 +1,30 @@
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, TrendingUp, TrendingDown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { BarChart3, TrendingUp, TrendingDown, ChevronRight, FileCheck, Scissors, Shield, Shirt, PackageCheck, ClipboardCheck, Building, Warehouse } from 'lucide-react';
 import { useMemo } from 'react';
+import { MIS_SECTIONS } from '@/lib/mis-form-configs';
+
+const ICON_MAP: Record<string, any> = {
+  FileCheck, Scissors, ShieldCheck: Shield, Shirt, Shield, PackageCheck, ClipboardCheck, Building, Warehouse,
+};
+
+const SECTION_ROUTES: Record<string, string> = {
+  pre_production: '/mis/pre-production',
+  cutting_production: '/mis/cutting-production',
+  cutting_quality: '/mis/cutting-quality',
+  sewing_production: '/mis/sewing-production',
+  sewing_quality: '/mis/sewing-quality',
+  finishing_production: '/mis/finishing-production',
+  finishing_quality: '/mis/finishing-quality',
+  general: '/mis/general',
+  stores: '/mis/stores',
+};
 
 export default function MISPage() {
+  const navigate = useNavigate();
   const today = new Date().toISOString().split('T')[0];
 
   const { data: summary } = useQuery({
@@ -32,6 +52,22 @@ export default function MISPage() {
     },
   });
 
+  // Fetch document counts per section
+  const { data: docCounts = {} } = useQuery({
+    queryKey: ['mis-doc-counts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('mis_documents')
+        .select('section');
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      (data ?? []).forEach((d: any) => {
+        counts[d.section] = (counts[d.section] || 0) + 1;
+      });
+      return counts;
+    },
+  });
+
   const misCards = useMemo(() => {
     const s = summary;
     const totalOperators = (plans as any[]).reduce((sum, p) => sum + p.planned_operators + p.planned_helpers, 0);
@@ -56,27 +92,71 @@ export default function MISPage() {
   }, [summary, plans]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-purple" /> MIS Reports
+          <BarChart3 className="h-5 w-5 text-purple-500" /> MIS Reports
         </h1>
-        <p className="text-sm text-muted-foreground">Management Information System — Today's Key Indicators</p>
+        <p className="text-sm text-muted-foreground">Management Information System — Key Indicators & Document Modules</p>
       </div>
 
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {misCards.map((c, i) => (
           <Card key={c.label} className="border-[1.5px] hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer animate-pop-in" style={{ animationDelay: `${i * 50}ms` }}>
             <CardContent className="p-3.5">
               <p className="text-lg font-extrabold text-foreground">{c.value}</p>
               <p className="text-[10.5px] text-muted-foreground font-medium mt-0.5">{c.label}</p>
-              <p className={`text-[10px] font-semibold mt-1 flex items-center gap-0.5 ${c.up ? 'text-success' : 'text-pink'}`}>
+              <p className={`text-[10px] font-semibold mt-1 flex items-center gap-0.5 ${c.up ? 'text-emerald-500' : 'text-pink-500'}`}>
                 {c.up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                 {c.trend}
               </p>
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Section Navigation */}
+      <div>
+        <h2 className="text-sm font-bold text-foreground mb-3">Document Modules</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {MIS_SECTIONS.map((section) => {
+            const Icon = ICON_MAP[section.icon] || FileCheck;
+            const count = (docCounts as Record<string, number>)[section.key] || 0;
+            const route = SECTION_ROUTES[section.key];
+            const isEnabled = section.key === 'pre_production'; // Only pre-production is built so far
+
+            return (
+              <Card
+                key={section.key}
+                className={`border-[1.5px] transition-all cursor-pointer ${
+                  isEnabled
+                    ? 'hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30'
+                    : 'opacity-60'
+                }`}
+                onClick={() => isEnabled && navigate(route)}
+              >
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{section.label}</p>
+                    <p className="text-[10.5px] text-muted-foreground">
+                      {section.count} document types · {count} record{count !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {!isEnabled && (
+                      <Badge variant="outline" className="text-[9px] text-muted-foreground">Soon</Badge>
+                    )}
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

@@ -19,6 +19,7 @@ import InventoryPage from "./pages/InventoryPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import ReportsPage from "./pages/ReportsPage";
 import MISPage from "./pages/MISPage";
+import PreProductionPage from "./pages/PreProductionPage";
 import SettingsPage from "./pages/SettingsPage";
 import FactorySetupPage from "./pages/FactorySetupPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
