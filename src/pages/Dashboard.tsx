@@ -282,6 +282,32 @@ export default function Dashboard() {
         <DashboardSubPanel filter={currentFilter} lines={lineStatuses} onClose={handleClosePanel} />
       )}
 
+      {/* ═══════════════════════ DEPARTMENT DRILL-DOWN ══════════════════════ */}
+      {isDefault && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fade-in">
+          {[
+            { key: 'cutting', label: 'Cutting', icon: Scissors, color: 'from-primary to-primary/70', path: '/dashboard/cutting' },
+            { key: 'sewing', label: 'Sewing', icon: Factory, color: 'from-purple to-purple/70', path: '/dashboard/sewing' },
+            { key: 'finishing', label: 'Finishing', icon: Package, color: 'from-success to-success/70', path: '/dashboard/finishing' },
+          ].map(dept => (
+            <button
+              key={dept.key}
+              onClick={() => navigate(dept.path)}
+              className="group flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:-translate-y-0.5 transition-all"
+            >
+              <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${dept.color} flex items-center justify-center shrink-0`}>
+                <dept.icon className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <div className="text-left flex-1">
+                <div className="text-xs font-bold text-foreground">{dept.label} Department</div>
+                <div className="text-[10px] text-muted-foreground">View detailed analytics</div>
+              </div>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* ═══════════════════════ PRODUCTIVITY PANEL ══════════════════════ */}
       {isDefault && (
         <div className="space-y-2.5">
@@ -294,14 +320,24 @@ export default function Dashboard() {
                 <EfficiencyTrendChart data={trendData} />
               </div>
             )}
+            <div className="animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+              <LaborProductivityChart data={laborDeptData} />
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+              <ManMachineGauge {...manMachineData} />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {costPerSMVData.length > 0 && (
+              <div className="animate-fade-in" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
+                <CostPerSMVChart data={costPerSMVData} />
+              </div>
+            )}
             {dhuTrendData.length > 0 && (
-              <div className="animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+              <div className="animate-fade-in" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
                 <DHUTrendChart data={dhuTrendData} />
               </div>
             )}
-            <div className="animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
-              <LaborProductivityChart data={laborDeptData} />
-            </div>
           </div>
         </div>
       )}
