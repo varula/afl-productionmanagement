@@ -111,6 +111,7 @@ export default function HourlyEntry() {
 
       if (activeFilter === 'hr-finishing') return lineType === 'finishing';
       if (activeFilter === 'hr-cutting') return lineType === 'cutting';
+      if (activeFilter === 'hr-auxiliary') return lineType === 'auxiliary';
       if (activeFilter.startsWith('hr-floor-')) {
         return floorId === activeFilter.replace('hr-floor-', '');
       }
