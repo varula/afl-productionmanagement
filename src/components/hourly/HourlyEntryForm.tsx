@@ -19,8 +19,7 @@ const HOUR_OPTIONS = [
   { slot: 6, label: '2:00–3:00' },
   { slot: 7, label: '3:00–4:00' },
   { slot: 8, label: '4:00–5:00' },
-  { slot: 9, label: '5:00–6:00' },
-  { slot: 10, label: '6:00–7:00' },
+  { slot: 9, label: 'OT 5:00–7:00' },
 ];
 
 interface HourlyRecord {

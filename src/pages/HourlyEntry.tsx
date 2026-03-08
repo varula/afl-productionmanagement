@@ -34,7 +34,7 @@ const DOWNTIME_REASONS = [
 
 const HOUR_LABELS = [
   '8–9 AM', '9–10 AM', '10–11 AM', '11–12 PM',
-  '12–1 PM', '2–3 PM', '3–4 PM', '4–5 PM', '5–6 PM', '6–7 PM',
+  '12–1 PM', '2–3 PM', '3–4 PM', '4–5 PM', 'OT 5–7 PM',
 ];
 
 interface FormData {
