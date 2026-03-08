@@ -166,13 +166,17 @@ export default function Dashboard() {
   const currentFilter = activeFilter || 'dash-default';
   const reportConfig = REPORT_CONFIG[currentFilter] || REPORT_CONFIG['dash-default'];
   const [panelClosed, setPanelClosed] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  const dateStr = format(selectedDate, 'yyyy-MM-dd');
+  const isToday = dateStr === format(new Date(), 'yyyy-MM-dd');
 
   // Reset panel closed state when filter changes
   const showSubPanel = currentFilter !== 'dash-default' && !panelClosed;
   const handleClosePanel = useCallback(() => setPanelClosed(true), []);
   useEffect(() => { setPanelClosed(false); }, [currentFilter]);
 
-  const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData();
+  const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData(dateStr);
 
   // Filter lines first — then derive everything else from filtered lines
   const filteredLines = useMemo(() => filterLineStatuses(lineStatuses, currentFilter), [lineStatuses, currentFilter]);
