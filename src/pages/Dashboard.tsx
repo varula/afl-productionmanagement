@@ -165,10 +165,7 @@ export default function Dashboard() {
   // Reset panel closed state when filter changes
   const showSubPanel = currentFilter !== 'dash-default' && !panelClosed;
   const handleClosePanel = useCallback(() => setPanelClosed(true), []);
-
-  // Reset when filter changes
-  const prevFilter = useMemo(() => currentFilter, [currentFilter]);
-  useMemo(() => { setPanelClosed(false); }, [currentFilter]);
+  useEffect(() => { setPanelClosed(false); }, [currentFilter]);
 
   const { kpiInput, lineStatuses, trendData, downtimeData, topStats, pipeline, isLoading, isEmpty } = useDashboardData();
 
