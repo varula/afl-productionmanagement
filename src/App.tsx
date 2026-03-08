@@ -17,7 +17,7 @@ import MachinesPage from "./pages/MachinesPage";
 import QCPage from "./pages/QCPage";
 import InventoryPage from "./pages/InventoryPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
-import ReportsPage from "./pages/ReportsPage";
+// ReportsPage removed - merged into MIS
 import MISPage from "./pages/MISPage";
 import PreProductionPage from "./pages/PreProductionPage";
 import CuttingProductionPage from "./pages/CuttingProductionPage";
@@ -65,7 +65,7 @@ const AppRoutes = () => (
       <Route path="/qc" element={<QCPage />} />
       <Route path="/inventory" element={<InventoryPage />} />
       <Route path="/analytics" element={<AnalyticsPage />} />
-      <Route path="/reports" element={<ReportsPage />} />
+      <Route path="/reports" element={<Navigate to="/mis" replace />} />
       <Route path="/mis" element={<MISPage />} />
       <Route path="/mis/pre-production" element={<PreProductionPage />} />
       <Route path="/mis/cutting-production" element={<CuttingProductionPage />} />
