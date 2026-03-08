@@ -272,6 +272,7 @@ export type Database = {
           id: string
           npt_minutes: number
           operators_present: number
+          overtime_minutes: number
           plan_id: string
           produced_qty: number
           rework: number
@@ -289,6 +290,7 @@ export type Database = {
           id?: string
           npt_minutes?: number
           operators_present?: number
+          overtime_minutes?: number
           plan_id: string
           produced_qty?: number
           rework?: number
@@ -306,6 +308,7 @@ export type Database = {
           id?: string
           npt_minutes?: number
           operators_present?: number
+          overtime_minutes?: number
           plan_id?: string
           produced_qty?: number
           rework?: number
