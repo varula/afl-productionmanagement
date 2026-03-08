@@ -369,7 +369,7 @@ export function ContextSidebar({ activeFilter, onFilterChange, factoryId = '' }:
       <ScrollArea className="h-full py-4">
         {groups.map((group, gi) => (
           <div key={gi} className="mb-3">
-            <div className="px-4 pb-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="px-4 pb-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {group.title}
             </div>
             {group.items.map((item) => {
@@ -379,7 +379,7 @@ export function ContextSidebar({ activeFilter, onFilterChange, factoryId = '' }:
                   key={item.key}
                   onClick={() => onFilterChange(item.key)}
                   className={cn(
-                    'w-full text-left px-4 py-[6px] text-[12px] transition-all flex items-center justify-between',
+                    'w-full text-left px-4 py-[6px] text-sm transition-all flex items-center justify-between',
                     isActive
                       ? 'text-primary font-semibold bg-accent'
                       : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
@@ -388,7 +388,7 @@ export function ContextSidebar({ activeFilter, onFilterChange, factoryId = '' }:
                   <span className="truncate">{item.label}</span>
                   {item.badge !== undefined && (
                     <span className={cn(
-                      'text-[9px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ml-1.5 bg-muted text-muted-foreground',
+                      'text-xs font-semibold px-1.5 py-0.5 rounded-full shrink-0 ml-1.5 bg-muted text-muted-foreground',
                       typeof item.badge === 'number' && item.badge > 10 && 'bg-pink/10 text-pink'
                     )}>
                       {item.badge}

@@ -58,10 +58,10 @@ export function NavTabs() {
             onClick={() => navigate(tab.path)}
             className={`nav-tab ${active ? 'active' : ''}`}
           >
-            <tab.icon className="h-3.5 w-3.5 shrink-0" />
+            <tab.icon className="h-4 w-4 shrink-0" />
             <span className="whitespace-nowrap">{tab.title}</span>
             {tab.badge !== undefined && (
-              <span className={`text-[9px] font-bold px-1.5 py-0 rounded-full ml-0.5 ${
+              <span className={`text-xs font-semibold px-1.5 py-0 rounded-full ml-0.5 ${
                 active ? 'bg-primary-foreground/30 text-primary-foreground' : 'bg-pink text-white'
               }`}>
                 {tab.badge}

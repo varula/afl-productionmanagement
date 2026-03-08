@@ -35,21 +35,21 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
       {/* Brand */}
       <div className="flex items-center gap-2.5 shrink-0">
         <div className="w-8 h-8 rounded-xl bg-foreground flex items-center justify-center shrink-0">
-          <span className="text-[10px] font-bold text-background tracking-tight">AG</span>
+          <span className="text-xs font-bold text-background tracking-tight">AG</span>
         </div>
         <div className="hidden md:block">
-          <div className="text-[13px] font-semibold text-foreground leading-tight tracking-tight">Armana Fashions</div>
-          <div className="text-[10px] text-muted-foreground font-normal">Production System</div>
+          <div className="text-sm font-semibold text-foreground leading-tight tracking-tight">Armana Fashions</div>
+          <div className="text-xs text-muted-foreground font-normal">Production System</div>
         </div>
       </div>
 
       {/* Search */}
       <div className="hidden lg:flex flex-1 max-w-[260px] items-center gap-2 bg-muted/60 border border-border/50 rounded-xl px-3 py-2">
-        <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        <Search className="h-4 w-4 text-muted-foreground shrink-0" />
         <input
           type="text"
           placeholder="Search…"
-          className="bg-transparent border-none outline-none text-[13px] text-foreground placeholder:text-muted-foreground w-full"
+          className="bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground w-full"
         />
       </div>
 
@@ -59,7 +59,7 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
       <div className="relative shrink-0" ref={factoryRef}>
         <button
           onClick={() => setFactoryOpen(!factoryOpen)}
-          className="flex items-center gap-2 border border-border/50 rounded-xl px-3 py-2 bg-muted/40 text-[13px] font-medium text-foreground hover:bg-muted/70 transition-colors"
+          className="flex items-center gap-2 border border-border/50 rounded-xl px-3 py-2 bg-muted/40 text-sm font-medium text-foreground hover:bg-muted/70 transition-colors"
         >
           <div className="w-2 h-2 rounded-full bg-success shrink-0" />
           <span className="hidden sm:inline max-w-[160px] truncate">
@@ -79,8 +79,8 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
                 }`}
               >
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-medium text-foreground truncate">{f.name}</div>
-                  {f.location && <div className="text-[11px] text-muted-foreground truncate">{f.location}</div>}
+                  <div className="text-sm font-medium text-foreground truncate">{f.name}</div>
+                  {f.location && <div className="text-xs text-muted-foreground truncate">{f.location}</div>}
                 </div>
                 {f.id === selectedFactoryId && (
                   <Check className="h-4 w-4 text-primary shrink-0" />

@@ -81,7 +81,7 @@ function EmptyState() {
 
 function LiveBadge() {
   return (
-    <div className="flex items-center gap-1.5 text-[9px] font-bold text-success bg-success/8 px-2 py-1 rounded-lg border border-success/15">
+    <div className="flex items-center gap-1.5 text-xs font-semibold text-success bg-success/8 px-2.5 py-1 rounded-lg border border-success/15">
       <span className="relative flex h-2 w-2">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
@@ -166,16 +166,16 @@ export default function Dashboard() {
         <div className="flex items-start justify-between mb-2">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
-              <h1 className="text-lg font-black text-foreground tracking-tight">Dashboard</h1>
+              <h1 className="text-xl font-bold text-foreground tracking-tight">Dashboard</h1>
               {isToday && <LiveBadge />}
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {isToday ? format(new Date(), 'EEEE, MMMM dd, yyyy') : `Historical data — ${format(selectedDate, 'MMMM dd, yyyy')}`}
             </p>
           </div>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className={cn('gap-1.5 text-[11px] h-8 rounded-lg', !isToday && 'border-primary text-primary')}>
+              <Button variant="outline" size="sm" className={cn('gap-1.5 text-sm h-9 rounded-lg', !isToday && 'border-primary text-primary')}>
                 <CalendarIcon className="h-3.5 w-3.5" />
                 {isToday ? 'Today' : format(selectedDate, 'MMM dd')}
               </Button>
@@ -217,14 +217,14 @@ export default function Dashboard() {
               onClick={() => navigate(dept.path)}
               className="group flex items-center gap-2.5 p-2.5 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:-translate-y-0.5 transition-all"
             >
-              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${dept.color} flex items-center justify-center shrink-0`}>
-                <dept.icon className="h-3.5 w-3.5 text-primary-foreground" />
+              <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${dept.color} flex items-center justify-center shrink-0`}>
+                <dept.icon className="h-4 w-4 text-primary-foreground" />
               </div>
               <div className="text-left flex-1 min-w-0">
-                <div className="text-[11px] font-bold text-foreground truncate">{dept.label}</div>
-                <div className="text-[9px] text-muted-foreground">View details</div>
+                <div className="text-sm font-semibold text-foreground truncate">{dept.label}</div>
+                <div className="text-xs text-muted-foreground">View details</div>
               </div>
-              <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
             </button>
           ))}
         </div>

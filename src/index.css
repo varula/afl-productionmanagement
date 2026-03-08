@@ -155,7 +155,7 @@
 
 /* Nav tab styling — Apple-style pill tabs */
 .nav-tab {
-  @apply flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all cursor-pointer select-none;
+  @apply flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all cursor-pointer select-none;
   color: hsl(var(--muted-foreground));
 }
 .nav-tab:hover {

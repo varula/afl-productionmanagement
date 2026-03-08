@@ -32,11 +32,11 @@ const statusConfig = {
 
 export function LineStatusTable({ lines }: LineStatusTableProps) {
   return (
-    <Card className="border border-border/60 shadow-sm hover:shadow-md transition-shadow h-full">
+    <Card className="border border-border/60 hover:shadow-md transition-shadow h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-[13px] font-bold">Line Performance Summary</CardTitle>
-          <span className="text-[10px] text-muted-foreground">Today vs Target</span>
+          <CardTitle className="text-sm font-semibold">Line Performance Summary</CardTitle>
+          <span className="text-xs text-muted-foreground">Today vs Target</span>
         </div>
       </CardHeader>
       <CardContent className="p-0">
@@ -44,14 +44,14 @@ export function LineStatusTable({ lines }: LineStatusTableProps) {
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2.5 w-[72px]">Line</th>
-                <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 min-w-[120px]">Style</th>
-                <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[72px]">Target</th>
-                <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[72px]">Output</th>
-                <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[80px]">Shortfall</th>
-                <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[64px]">Eff %</th>
-                <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[56px]">DHU %</th>
-                <th className="text-center text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[88px]">Status</th>
+                <th className="text-left text-xs uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2.5 w-[72px]">Line</th>
+                <th className="text-left text-xs uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 min-w-[120px]">Style</th>
+                <th className="text-right text-xs uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[72px]">Target</th>
+                <th className="text-right text-xs uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[72px]">Output</th>
+                <th className="text-right text-xs uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[80px]">Shortfall</th>
+                <th className="text-right text-xs uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[64px]">Eff %</th>
+                <th className="text-right text-xs uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[56px]">DHU %</th>
+                <th className="text-center text-xs uppercase tracking-wider font-semibold text-muted-foreground px-3 py-2.5 w-[88px]">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -60,24 +60,24 @@ export function LineStatusTable({ lines }: LineStatusTableProps) {
                 const shortfall = line.output - line.target;
                 return (
                   <tr key={`${line.lineNumber}-${idx}`} className={cn('border-b border-border/50 hover:bg-muted/40 transition-colors', idx % 2 === 1 && 'bg-muted/15')}>
-                    <td className="px-4 py-2.5 text-[11.5px] font-bold text-foreground whitespace-nowrap">Line {line.lineNumber}</td>
-                    <td className="px-3 py-2.5 text-[11.5px] text-muted-foreground">{line.style}</td>
-                    <td className="px-3 py-2.5 text-right text-[11.5px] font-medium text-foreground tabular-nums">{line.target.toLocaleString()}</td>
-                    <td className="px-3 py-2.5 text-right text-[11.5px] font-medium text-foreground tabular-nums">{line.output.toLocaleString()}</td>
-                    <td className={cn('px-3 py-2.5 text-right text-[11.5px] font-semibold tabular-nums', shortfall < 0 ? 'text-pink' : 'text-success')}>
+                    <td className="px-4 py-2.5 text-sm font-semibold text-foreground whitespace-nowrap">Line {line.lineNumber}</td>
+                    <td className="px-3 py-2.5 text-sm text-muted-foreground">{line.style}</td>
+                    <td className="px-3 py-2.5 text-right text-sm font-medium text-foreground tabular-nums">{line.target.toLocaleString()}</td>
+                    <td className="px-3 py-2.5 text-right text-sm font-medium text-foreground tabular-nums">{line.output.toLocaleString()}</td>
+                    <td className={cn('px-3 py-2.5 text-right text-sm font-semibold tabular-nums', shortfall < 0 ? 'text-pink' : 'text-success')}>
                       {shortfall >= 0 ? '+' : ''}{shortfall.toLocaleString()}
                     </td>
-                    <td className={cn('px-3 py-2.5 text-right text-[11.5px] font-bold tabular-nums',
+                    <td className={cn('px-3 py-2.5 text-right text-sm font-semibold tabular-nums',
                       line.efficiency >= 92 ? 'text-success' : line.efficiency >= 85 ? 'text-warning' : 'text-pink'
                     )}>
                       {line.efficiency}%
                     </td>
-                    <td className={cn('px-3 py-2.5 text-right text-[11.5px] tabular-nums', line.dhu > 3 ? 'text-pink font-bold' : 'text-muted-foreground')}>
+                    <td className={cn('px-3 py-2.5 text-right text-sm tabular-nums', line.dhu > 3 ? 'text-pink font-semibold' : 'text-muted-foreground')}>
                       {line.dhu}%
                     </td>
                     <td className="px-3 py-2.5 text-center">
-                      <span className={cn('inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border whitespace-nowrap', config.className)}>
-                        <span className="w-[5px] h-[5px] rounded-full bg-current shrink-0" />
+                      <span className={cn('inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full border whitespace-nowrap', config.className)}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
                         {config.label}
                       </span>
                     </td>
