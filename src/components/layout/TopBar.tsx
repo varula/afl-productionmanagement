@@ -45,11 +45,11 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
 
       {/* Search */}
       <div className="hidden lg:flex flex-1 max-w-[260px] items-center gap-2 bg-muted/60 border border-border/50 rounded-xl px-3 py-2">
-        <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        <Search className="h-4 w-4 text-muted-foreground shrink-0" />
         <input
           type="text"
           placeholder="Search…"
-          className="bg-transparent border-none outline-none text-[13px] text-foreground placeholder:text-muted-foreground w-full"
+          className="bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground w-full"
         />
       </div>
 
