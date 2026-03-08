@@ -111,6 +111,7 @@ export default function HourlyEntry() {
 
       if (activeFilter === 'hr-finishing') return lineType === 'finishing';
       if (activeFilter === 'hr-cutting') return lineType === 'cutting';
+      if (activeFilter === 'hr-auxiliary') return lineType === 'auxiliary';
       if (activeFilter.startsWith('hr-floor-')) {
         return floorId === activeFilter.replace('hr-floor-', '');
       }
@@ -131,6 +132,11 @@ export default function HourlyEntry() {
 
   const cuttingPlans = useMemo(() =>
     filteredPlans.filter((p: any) => p.lines?.type === 'cutting')
+      .sort((a: any, b: any) => (a.lines?.line_number || 0) - (b.lines?.line_number || 0)),
+    [filteredPlans]);
+
+  const auxiliaryPlans = useMemo(() =>
+    filteredPlans.filter((p: any) => p.lines?.type === 'auxiliary')
       .sort((a: any, b: any) => (a.lines?.line_number || 0) - (b.lines?.line_number || 0)),
     [filteredPlans]);
 
@@ -321,6 +327,17 @@ export default function HourlyEntry() {
           title="Cutting Tables — Hourly Output (pcs/table)"
           icon="🔪"
           defaultHourlyTarget={cuttingPlans.length > 0 ? Math.round(cuttingPlans[0].target_qty / (cuttingPlans[0].working_hours || 8)) : 75}
+          onCellClick={handleCellClick}
+        />
+      )}
+
+      {/* Auxiliary Lines (Bartack & Eyelet) */}
+      {auxiliaryPlans.length > 0 && (
+        <HourlyTrackerTable
+          plans={auxiliaryPlans}
+          title="Auxiliary Lines — Bartack & Eyelet (pcs/line)"
+          icon="⚙️"
+          defaultHourlyTarget={auxiliaryPlans.length > 0 ? Math.round(auxiliaryPlans[0].target_qty / (auxiliaryPlans[0].working_hours || 8)) : 100}
           onCellClick={handleCellClick}
         />
       )}
