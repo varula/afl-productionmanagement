@@ -259,6 +259,11 @@ export default function Dashboard() {
         })}
       </div>
 
+      {/* Sub-Panel — detailed data table for active filter */}
+      {showSubPanel && (
+        <DashboardSubPanel filter={currentFilter} lines={lineStatuses} onClose={handleClosePanel} />
+      )}
+
       {/* Charts */}
       {(filteredTrend.length > 0 || filteredDowntime.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
