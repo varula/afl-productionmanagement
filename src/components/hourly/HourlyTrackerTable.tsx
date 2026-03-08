@@ -115,7 +115,7 @@ export function HourlyTrackerTable({ plans, title, icon, defaultHourlyTarget, on
                   h.slot >= 9 ? 'text-warning bg-warning/10 border-l border-warning/30' : 'text-muted-foreground'
                 )}>
                   <div>{h.label}</div>
-                  <div className="text-[9px] font-normal">{h.sub}</div>
+                  <div className="text-[10px] font-normal">{h.sub}</div>
                 </th>
               ))}
               <th className="text-center px-2 py-2 font-semibold text-muted-foreground bg-muted/40 w-[60px]">Total</th>

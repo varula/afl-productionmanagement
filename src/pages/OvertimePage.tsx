@@ -334,7 +334,7 @@ export default function OvertimePage() {
                       <TableCell className="text-xs font-bold tabular-nums">{row.hours} hrs</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{row.reason}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn('text-[9px] font-bold',
+                        <Badge variant="outline" className={cn('text-xs font-bold',
                           row.status === 'approved' && 'border-success/30 text-success bg-success/8',
                           row.status === 'rejected' && 'border-pink/30 text-pink bg-pink/8',
                           row.status === 'pending' && 'border-warning/30 text-warning bg-warning/8',

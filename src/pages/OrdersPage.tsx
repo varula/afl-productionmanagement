@@ -102,23 +102,28 @@ export default function OrdersPage() {
             { label: 'Delayed', value: String(delayed), color: 'border-pink/20' },
             { label: 'Avg Progress', value: `${avgProgress}%`, color: 'border-accent/20' },
           ].map(s => (
-            <Card key={s.label} className={`border-[1.5px] ${s.color}`}><CardContent className="p-3 text-center"><p className="text-lg font-extrabold text-foreground">{s.value}</p><p className="text-[10.5px] text-muted-foreground font-medium">{s.label}</p></CardContent></Card>
+            <Card key={s.label} className={`border-[1.5px] ${s.color}`}>
+              <CardContent className="p-3 text-center">
+                <p className="text-lg font-extrabold text-foreground">{s.value}</p>
+                <p className="text-xs text-muted-foreground font-medium">{s.label}</p>
+              </CardContent>
+            </Card>
           ))}
         </div>
         <Card className="border-[1.5px]">
-          <CardHeader className="pb-2"><CardTitle className="text-[13px] font-bold">Order Pipeline</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-bold">Order Pipeline</CardTitle></CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead><tr className="border-b border-border">
-                  <th className="text-left py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Order ID</th>
-                  <th className="text-left py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Buyer</th>
-                  <th className="text-left py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Style</th>
-                  <th className="text-right py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Target</th>
-                  <th className="text-right py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Output</th>
-                  <th className="text-center py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Stage</th>
-                  <th className="text-center py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Priority</th>
-                  <th className="py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold w-32">Progress</th>
+                  <th className="text-left py-2 px-3 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Order ID</th>
+                  <th className="text-left py-2 px-3 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Buyer</th>
+                  <th className="text-left py-2 px-3 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Style</th>
+                  <th className="text-right py-2 px-3 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Target</th>
+                  <th className="text-right py-2 px-3 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Output</th>
+                  <th className="text-center py-2 px-3 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Stage</th>
+                  <th className="text-center py-2 px-3 text-xs uppercase tracking-wider text-muted-foreground font-semibold">Priority</th>
+                  <th className="py-2 px-3 text-xs uppercase tracking-wider text-muted-foreground font-semibold w-32">Progress</th>
                 </tr></thead>
                 <tbody>
                   {filteredOrders.map((order, i) => (
@@ -128,9 +133,9 @@ export default function OrdersPage() {
                       <td className="py-2.5 px-3 text-foreground font-medium">{order.style}</td>
                       <td className="py-2.5 px-3 text-right font-bold text-foreground">{order.pcs.toLocaleString()}</td>
                       <td className="py-2.5 px-3 text-right font-medium text-foreground">{order.output.toLocaleString()}</td>
-                      <td className="py-2.5 px-3 text-center"><Badge variant="outline" className={`text-[10px] ${stageColors[order.stage] || ''}`}>{order.stage}</Badge></td>
-                      <td className="py-2.5 px-3 text-center"><Badge variant="outline" className={`text-[10px] capitalize ${priorityColors[order.priority]}`}>{order.priority}</Badge></td>
-                      <td className="py-2.5 px-3"><div className="flex items-center gap-2"><Progress value={order.progress} className="h-1.5 flex-1" /><span className="text-[10px] font-bold text-muted-foreground w-8 text-right">{order.progress}%</span></div></td>
+                      <td className="py-2.5 px-3 text-center"><Badge variant="outline" className={`text-xs ${stageColors[order.stage] || ''}`}>{order.stage}</Badge></td>
+                      <td className="py-2.5 px-3 text-center"><Badge variant="outline" className={`text-xs capitalize ${priorityColors[order.priority]}`}>{order.priority}</Badge></td>
+                      <td className="py-2.5 px-3"><div className="flex items-center gap-2"><Progress value={order.progress} className="h-1.5 flex-1" /><span className="text-xs font-bold text-muted-foreground w-8 text-right">{order.progress}%</span></div></td>
                     </tr>
                   ))}
                   {filteredOrders.length === 0 && <tr><td colSpan={8} className="py-8 text-center text-muted-foreground text-sm">No orders match this filter</td></tr>}
@@ -143,7 +148,7 @@ export default function OrdersPage() {
 
       <TabsContent value="entry" className="space-y-4 mt-0">
         <Card className="border-[1.5px]">
-          <CardHeader className="pb-2"><CardTitle className="text-[13px] font-bold">Create Production Plan</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-bold">Create Production Plan</CardTitle></CardHeader>
           <CardContent className="text-center py-8">
             <p className="text-sm text-muted-foreground mb-4">Create a new daily production plan with line, style, and target assignments.</p>
             <Button onClick={() => navigate('/plans/new')} className="gap-2"><Plus className="h-4 w-4" /> New Production Plan</Button>
