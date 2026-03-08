@@ -386,7 +386,7 @@ export default function HourlyEntry() {
               pcsShort={kpis.pcsShort}
               linesBelowTarget={kpis.linesBelowTarget}
               currentHour={kpis.currentHour}
-              currentHourLabel={`Hour ${kpis.currentHour} of 9 (${HOUR_LABELS[kpis.currentHour - 1] || ''})`}
+              currentHourLabel={`Hour ${kpis.currentHour} of 10 (${HOUR_LABELS[kpis.currentHour - 1] || ''})`}
             />
 
             <p className="text-xs text-muted-foreground">Click any cell in the tables above (Tracker tab) or select a line below to enter hourly data.</p>
