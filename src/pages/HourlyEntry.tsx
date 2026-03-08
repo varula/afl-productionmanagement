@@ -259,11 +259,16 @@ export default function HourlyEntry() {
               <SelectValue placeholder="Select a production plan" />
             </SelectTrigger>
             <SelectContent>
-              {filteredPlans.map((plan: any) => (
-                <SelectItem key={plan.id} value={plan.id}>
-                  {plan.lines?.type ? `${plan.lines.type.charAt(0).toUpperCase() + plan.lines.type.slice(1)} ` : ''}Line {plan.lines?.line_number} — {plan.styles?.style_no} (Target: {plan.target_qty})
-                </SelectItem>
-              ))}
+              {filteredPlans.map((plan: any) => {
+                const lineType = plan.lines?.type || 'sewing';
+                const typeLabel = lineType.charAt(0).toUpperCase() + lineType.slice(1);
+                const unitLabel = lineType === 'cutting' ? 'Table' : 'Line';
+                return (
+                  <SelectItem key={plan.id} value={plan.id}>
+                    {typeLabel} {unitLabel} {plan.lines?.line_number} — {plan.styles?.style_no} (Target: {plan.target_qty})
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </CardContent>
