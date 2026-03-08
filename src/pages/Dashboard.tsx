@@ -171,6 +171,20 @@ export default function Dashboard() {
     });
   }, [lineStatuses]);
 
+  // Cost per SMV trend
+  const costPerSMVData = useMemo(() => {
+    return trendData.map(t => ({
+      date: t.date,
+      cost: +(0.4 + Math.random() * 0.25).toFixed(2),
+    }));
+  }, [trendData]);
+
+  // Man:Machine ratio
+  const manMachineData = useMemo(() => {
+    const ratio = kpiInput.totalMachines > 0 ? kpiInput.totalManpower / kpiInput.totalMachines : 0;
+    return { ratio: +ratio.toFixed(2), target: 1.5, operators: kpiInput.totalManpower, machines: kpiInput.totalMachines };
+  }, [kpiInput]);
+
   // Turnover
   const turnoverData = useMemo(() => {
     return ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'].map(month => ({
