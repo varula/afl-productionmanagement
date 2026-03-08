@@ -48,15 +48,15 @@ export function LostTimeDonutChart({ data }: LostTimeDonutChartProps) {
   }));
 
   return (
-    <Card className="border border-border/60 shadow-sm hover:shadow-md transition-shadow">
-      <CardContent className="pt-4 pb-3">
+    <Card className="border border-border/60 shadow-sm hover:shadow-md transition-shadow h-full">
+      <CardContent className="p-4 flex flex-col h-full">
         <div className="mb-3">
-          <div className="text-[13px] font-bold text-foreground">Lost Time Breakdown</div>
+          <div className="text-[13px] font-bold text-foreground leading-tight">Lost Time Breakdown</div>
           <div className="text-[10px] text-muted-foreground">Downtime + NPT distribution</div>
         </div>
-        <div className="flex items-start gap-4">
-          <div className="relative">
-            <ChartContainer config={chartConfig} className="h-[160px] w-[160px] shrink-0">
+        <div className="flex-1 flex items-start gap-4 min-h-0">
+          <div className="relative shrink-0">
+            <ChartContainer config={chartConfig} className="h-[160px] w-[160px]">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Pie
@@ -76,13 +76,12 @@ export function LostTimeDonutChart({ data }: LostTimeDonutChartProps) {
                 </Pie>
               </PieChart>
             </ChartContainer>
-            {/* Center total */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-[18px] font-black text-foreground leading-none">{total}</span>
               <span className="text-[8px] font-medium text-muted-foreground">mins</span>
             </div>
           </div>
-          <div className="flex-1 space-y-2 min-w-0 pt-1">
+          <div className="flex-1 space-y-2.5 min-w-0 pt-2">
             {chartData.map((d, i) => (
               <div key={i} className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-[3px] shrink-0" style={{ background: d.fill }} />

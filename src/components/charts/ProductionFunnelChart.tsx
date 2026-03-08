@@ -15,13 +15,13 @@ export function ProductionFunnelChart({ stages }: ProductionFunnelChartProps) {
   const maxQty = Math.max(...stages.map(s => s.qty), 1);
 
   return (
-    <Card className="border border-border/60 shadow-sm hover:shadow-md transition-shadow">
-      <CardContent className="pt-4 pb-3">
+    <Card className="border border-border/60 shadow-sm hover:shadow-md transition-shadow h-full">
+      <CardContent className="p-4 flex flex-col h-full">
         <div className="mb-4">
-          <div className="text-[13px] font-bold text-foreground">Production Flow</div>
+          <div className="text-[13px] font-bold text-foreground leading-tight">Production Flow</div>
           <div className="text-[10px] text-muted-foreground">Cut → Sew → Finish → Ship conversion</div>
         </div>
-        <div className="space-y-3">
+        <div className="flex-1 space-y-3">
           {stages.map((stage, i) => {
             const widthPct = Math.max((stage.qty / maxQty) * 100, 20);
             const lossPct = i > 0 ? ((stages[i - 1].qty - stage.qty) / stages[i - 1].qty * 100) : 0;
@@ -59,8 +59,6 @@ export function ProductionFunnelChart({ stages }: ProductionFunnelChartProps) {
             );
           })}
         </div>
-
-        {/* Summary row */}
         <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between">
           <span className="text-[10px] font-semibold text-muted-foreground">Overall Yield</span>
           <span className="text-[12px] font-black text-foreground">

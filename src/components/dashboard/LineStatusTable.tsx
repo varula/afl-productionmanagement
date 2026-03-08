@@ -32,7 +32,7 @@ const statusConfig = {
 
 export function LineStatusTable({ lines }: LineStatusTableProps) {
   return (
-    <Card className="border-[1.5px]">
+    <Card className="border border-border/60 shadow-sm hover:shadow-md transition-shadow h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-[13px] font-bold">Line Performance Summary</CardTitle>
