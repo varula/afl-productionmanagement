@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings, Factory, Users, Bell, Shield, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -5,8 +6,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
 const sections = [
-  { icon: Factory, title: 'Factory Configuration', desc: 'Manage factories, floors, and production lines' },
-  { icon: Users, title: 'User Management', desc: 'Add users, assign roles (Admin, Manager, Line Chief, Operator)' },
+  { icon: Factory, title: 'Factory Configuration', desc: 'Manage factories, floors, and production lines', path: '/admin/factories' },
+  { icon: Users, title: 'User Management', desc: 'Add users, assign roles (Admin, Manager, Line Chief, Operator)', path: '/admin/users' },
   { icon: Bell, title: 'Notifications', desc: 'Configure alerts for downtime, low stock, and quality issues' },
   { icon: Shield, title: 'Security', desc: 'Password policies, session management, audit logs' },
   { icon: Database, title: 'Data & Backup', desc: 'Export data, manage backups, data retention policies' },
