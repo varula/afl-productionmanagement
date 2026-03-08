@@ -13,6 +13,8 @@ export interface DashboardData {
   downtimeData: { reason: string; minutes: number }[];
   topStats: TopStat[];
   pipeline: PipelineStage[];
+  totalOTMinutes: number;
+  otBySection: { section: string; otMinutes: number; otPct: number }[];
   isLoading: boolean;
   isEmpty: boolean;
 }
