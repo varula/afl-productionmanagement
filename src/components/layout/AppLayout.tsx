@@ -11,6 +11,7 @@ export function AppLayout() {
   const [activeFilter, setActiveFilter] = useState('');
   const location = useLocation();
 
+  // Auto-select first factory
   const { data: factories } = useQuery({
     queryKey: ['factories-init'],
     queryFn: async () => {
@@ -25,14 +26,15 @@ export function AppLayout() {
     }
   }, [factories, selectedFactoryId]);
 
+  // Reset filter when route changes
   useEffect(() => {
     setActiveFilter(getDefaultFilter(location.pathname));
   }, [location.pathname]);
 
   return (
-    <div className="flex w-full min-h-screen bg-background">
-      <div className="flex-1 flex flex-col min-h-screen">
-        <div className="flex-1 bg-card flex flex-col overflow-hidden">
+    <div className="flex w-full min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen app-bg-gradient">
+        <div className="m-2 md:m-4 flex-1 bg-card rounded-[22px] shadow-[0_20px_80px_rgba(30,40,100,0.15)] flex flex-col overflow-hidden">
           <TopBar
             selectedFactoryId={selectedFactoryId}
             onFactoryChange={setSelectedFactoryId}
@@ -44,7 +46,7 @@ export function AppLayout() {
               onFilterChange={setActiveFilter}
               factoryId={selectedFactoryId}
             />
-            <main className="flex-1 min-w-0 overflow-y-auto custom-scrollbar p-4 md:p-6 bg-background/50">
+            <main className="flex-1 min-w-0 overflow-y-auto custom-scrollbar p-3 md:p-5">
               <Outlet context={{ activeFilter, factoryId: selectedFactoryId }} />
             </main>
           </div>

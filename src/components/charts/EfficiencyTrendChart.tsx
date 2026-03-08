@@ -1,5 +1,5 @@
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Line, XAxis, YAxis, CartesianGrid, Area, AreaChart } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Area, AreaChart } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface TrendData {
@@ -13,25 +13,25 @@ interface EfficiencyTrendChartProps {
 }
 
 const chartConfig = {
-  efficiency: { label: 'Actual', color: 'hsl(var(--chart-1))' },
-  target: { label: 'Target', color: 'hsl(var(--muted-foreground))' },
+  efficiency: { label: 'Actual %', color: 'hsl(var(--chart-1))' },
+  target: { label: 'Target %', color: 'hsl(var(--muted-foreground))' },
 };
 
 export function EfficiencyTrendChart({ data }: EfficiencyTrendChartProps) {
   return (
-    <Card className="border border-border/50 shadow-none hover:shadow-sm transition-shadow h-full rounded-2xl">
-      <CardContent className="p-5 flex flex-col h-full">
-        <div className="flex items-center justify-between mb-4">
+    <Card className="border border-border/60 shadow-sm hover:shadow-md transition-shadow h-full">
+      <CardContent className="p-4 flex flex-col h-full">
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <div className="text-[15px] font-semibold text-foreground leading-tight tracking-tight">Efficiency Trend</div>
-            <div className="text-[12px] text-muted-foreground mt-0.5">Daily efficiency vs target</div>
+            <div className="text-[13px] font-bold text-foreground leading-tight">Efficiency Trend</div>
+            <div className="text-[10px] text-muted-foreground">Daily efficiency vs target</div>
           </div>
-          <div className="flex items-center gap-4 shrink-0">
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <div className="w-2 h-2 rounded-full bg-primary" />Actual
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
+              <div className="w-5 h-[2px] rounded-full bg-primary" />Actual
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />Target
+            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
+              <div className="w-5 h-[2px] rounded-full bg-muted-foreground opacity-40" />Target
             </div>
           </div>
         </div>
@@ -40,16 +40,16 @@ export function EfficiencyTrendChart({ data }: EfficiencyTrendChartProps) {
             <AreaChart data={data} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
               <defs>
                 <linearGradient id="effGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity={0.12} />
-                  <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                  <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="0" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis domain={['auto', 'auto']} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+              <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9 }} axisLine={false} tickLine={false} />
+              <YAxis domain={['auto', 'auto']} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9 }} axisLine={false} tickLine={false} />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Area type="monotone" dataKey="efficiency" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="url(#effGradient)" dot={{ r: 3, fill: 'hsl(var(--card))', stroke: 'hsl(var(--chart-1))', strokeWidth: 2 }} activeDot={{ r: 4, fill: 'hsl(var(--chart-1))' }} />
-              <Line type="monotone" dataKey="target" stroke="hsl(var(--muted-foreground))" strokeWidth={1} strokeDasharray="4 4" dot={false} opacity={0.3} />
+              <Area type="monotone" dataKey="efficiency" stroke="hsl(var(--chart-1))" strokeWidth={2.5} fill="url(#effGradient)" dot={{ r: 3, fill: 'hsl(var(--card))', stroke: 'hsl(var(--chart-1))', strokeWidth: 2 }} activeDot={{ r: 5, fill: 'hsl(var(--chart-1))' }} />
+              <Line type="monotone" dataKey="target" stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} strokeDasharray="6 4" dot={false} opacity={0.4} />
             </AreaChart>
           </ChartContainer>
         </div>
