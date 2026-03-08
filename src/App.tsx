@@ -20,6 +20,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import ReportsPage from "./pages/ReportsPage";
 import MISPage from "./pages/MISPage";
 import PreProductionPage from "./pages/PreProductionPage";
+import CuttingProductionPage from "./pages/CuttingProductionPage";
 import SettingsPage from "./pages/SettingsPage";
 import FactorySetupPage from "./pages/FactorySetupPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
