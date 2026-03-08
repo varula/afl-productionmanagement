@@ -141,7 +141,7 @@ export function useDashboardData(selectedDate?: string, factoryId?: string): Das
   // Aggregate hourly by plan
   const hourlyByPlan = new Map<string, {
     output: number; defects: number; rework: number; checked: number;
-    downtime: number; npt: number; operators: number; helpers: number;
+    downtime: number; npt: number; operators: number; helpers: number; ot: number;
   }>();
   for (const h of (hourlyRows ?? [])) {
     const existing = hourlyByPlan.get(h.plan_id) ?? { output: 0, defects: 0, rework: 0, checked: 0, downtime: 0, npt: 0, operators: 0, helpers: 0, ot: 0 };
