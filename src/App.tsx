@@ -30,6 +30,7 @@ import GeneralActivitiesPage from "./pages/GeneralActivitiesPage";
 import StoresActivitiesPage from "./pages/StoresActivitiesPage";
 import SettingsPage from "./pages/SettingsPage";
 import ShipmentsPage from "./pages/ShipmentsPage";
+import UserManagementPage from "./pages/UserManagementPage";
 import FactorySetupPage from "./pages/FactorySetupPage";
 import ProductionPlanEntry from "./pages/ProductionPlanEntry";
 import PlanningModule from "./pages/PlanningModule";
