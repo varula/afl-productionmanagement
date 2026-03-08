@@ -79,8 +79,8 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
                 }`}
               >
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-medium text-foreground truncate">{f.name}</div>
-                  {f.location && <div className="text-[11px] text-muted-foreground truncate">{f.location}</div>}
+                  <div className="text-sm font-medium text-foreground truncate">{f.name}</div>
+                  {f.location && <div className="text-xs text-muted-foreground truncate">{f.location}</div>}
                 </div>
                 {f.id === selectedFactoryId && (
                   <Check className="h-4 w-4 text-primary shrink-0" />
