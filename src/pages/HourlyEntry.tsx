@@ -519,7 +519,7 @@ export default function HourlyEntry() {
               <Button onClick={handleSave} disabled={saveMutation.isPending} className="flex-1">
                 <Save className="h-4 w-4 mr-1" /> Save
               </Button>
-              <Button variant="secondary" onClick={handleSaveAndNext} disabled={saveMutation.isPending || editingSlot === 9} className="flex-1">
+              <Button variant="secondary" onClick={handleSaveAndNext} disabled={saveMutation.isPending || editingSlot === 10} className="flex-1">
                 Save & Next <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
