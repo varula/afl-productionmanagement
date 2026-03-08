@@ -63,6 +63,7 @@ const AppRoutes = () => (
       <Route path="/mis" element={<MISPage />} />
       <Route path="/mis/pre-production" element={<PreProductionPage />} />
       <Route path="/mis/cutting-production" element={<CuttingProductionPage />} />
+      <Route path="/mis/cutting-quality" element={<CuttingQualityPage />} />
       <Route path="/plans/new" element={<ProductionPlanEntry />} />
       <Route path="/planning" element={<PlanningModule />} />
       <Route path="/admin/factories" element={<FactorySetupPage />} />
