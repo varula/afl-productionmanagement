@@ -288,7 +288,7 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
                   );
                 })}
                 {enrichedPlans.length === 0 && (
-                  <tr><td colSpan={15} className="py-12 text-center text-muted-foreground text-sm">No plans for this date. Click "Add Plan" to create one.</td></tr>
+                  <tr><td colSpan={16} className="py-12 text-center text-muted-foreground text-sm">No plans for this date. Click "Add Plan" to create one.</td></tr>
                 )}
               </tbody>
             </table>
