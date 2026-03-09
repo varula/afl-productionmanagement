@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Plus, Trash2, Pencil, Target, Users, TrendingUp, Clock, UserMinus, Copy } from 'lucide-react';
 import { format, subDays } from 'date-fns';
@@ -235,6 +236,20 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!planIds.length) throw new Error('No plans to delete');
+      const { error } = await supabase.from('production_plans').delete().in('id', planIds);
+      if (error) throw error;
+      return planIds.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['day-plans'] });
+      toast.success(`Deleted ${count} plan(s) for ${format(new Date(selectedDate + 'T00:00'), 'MMM d, yyyy')}`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const selectedStyle = styles.find(s => s.id === styleId);
 
   return (
@@ -265,6 +280,29 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-[13px] font-bold">Day Plan — {format(new Date(selectedDate + 'T00:00'), 'EEE, MMM d, yyyy')}</CardTitle>
           <div className="flex items-center gap-1.5">
+            {enrichedPlans.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="gap-1.5 h-7 text-destructive hover:text-destructive">
+                    <Trash2 className="h-3.5 w-3.5" /> Delete All
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete All Plans?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete all {enrichedPlans.length} plan(s) for {format(new Date(selectedDate + 'T00:00'), 'EEEE, MMM d, yyyy')}. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => bulkDeleteMutation.mutate()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      {bulkDeleteMutation.isPending ? 'Deleting...' : 'Delete All'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <Button size="sm" variant="outline" onClick={() => copyMutation.mutate()} disabled={copyMutation.isPending} className="gap-1.5 h-7">
               <Copy className="h-3.5 w-3.5" /> {copyMutation.isPending ? 'Copying...' : 'Copy Previous Day'}
             </Button>
