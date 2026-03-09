@@ -201,7 +201,6 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
     </div>
   );
 }
-export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
   const { user, roles, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
