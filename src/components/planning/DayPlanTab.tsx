@@ -1,0 +1,359 @@
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import { Plus, Trash2, Pencil, Target, Users, TrendingUp, Clock, UserMinus } from 'lucide-react';
+import { format } from 'date-fns';
+
+interface DayPlanTabProps {
+  factoryId: string;
+  selectedDate: string;
+}
+
+export function DayPlanTab({ factoryId, selectedDate }: DayPlanTabProps) {
+  const queryClient = useQueryClient();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const [lineId, setLineId] = useState('');
+  const [styleId, setStyleId] = useState('');
+  const [targetQty, setTargetQty] = useState(0);
+  const [plannedOps, setPlannedOps] = useState(0);
+  const [presentOps, setPresentOps] = useState(0);
+  const [absentOps, setAbsentOps] = useState(0);
+  const [plannedHelpers, setPlannedHelpers] = useState(0);
+  const [workingHours, setWorkingHours] = useState(8);
+  const [plannedEff, setPlannedEff] = useState(60);
+  const [targetEff, setTargetEff] = useState(65);
+
+  const { data: lines = [] } = useQuery({
+    queryKey: ['lines-for-plans', factoryId],
+    queryFn: async () => {
+      const { data: floors } = await supabase.from('floors').select('id').eq('factory_id', factoryId);
+      if (!floors?.length) return [];
+      const { data } = await supabase.from('lines').select('id, line_number, type, floor_id, operator_count, floors(name)').eq('is_active', true).in('floor_id', floors.map(f => f.id)).order('line_number');
+      return data ?? [];
+    },
+    enabled: !!factoryId,
+  });
+
+  const { data: styles = [] } = useQuery({
+    queryKey: ['styles-for-plans'],
+    queryFn: async () => {
+      const { data } = await supabase.from('styles').select('id, style_no, buyer, smv, sam, target_efficiency').order('style_no');
+      return data ?? [];
+    },
+  });
+
+  const { data: plans = [], isLoading } = useQuery({
+    queryKey: ['day-plans', selectedDate],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('production_plans')
+        .select('*, lines(line_number, type, floor_id, operator_count, floors(name)), styles(style_no, buyer, smv, sam)')
+        .eq('date', selectedDate)
+        .order('created_at');
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  // Get hourly production for present operators
+  const planIds = plans.map((p: any) => p.id);
+  const { data: hourlyData = [] } = useQuery({
+    queryKey: ['day-plan-hourly', planIds],
+    queryFn: async () => {
+      if (!planIds.length) return [];
+      const { data } = await supabase.from('hourly_production').select('plan_id, produced_qty, operators_present, helpers_present').in('plan_id', planIds);
+      return data ?? [];
+    },
+    enabled: planIds.length > 0,
+  });
+
+  const outputMap = useMemo(() => {
+    const m = new Map<string, { output: number; maxOps: number }>();
+    for (const h of hourlyData as any[]) {
+      const e = m.get(h.plan_id) || { output: 0, maxOps: 0 };
+      e.output += h.produced_qty;
+      e.maxOps = Math.max(e.maxOps, h.operators_present || 0);
+      m.set(h.plan_id, e);
+    }
+    return m;
+  }, [hourlyData]);
+
+  const enrichedPlans = useMemo(() =>
+    (plans as any[]).map(p => {
+      const stats = outputMap.get(p.id) || { output: 0, maxOps: 0 };
+      const progress = p.target_qty > 0 ? Math.min(100, Math.round((stats.output / p.target_qty) * 100)) : 0;
+      const lineOps = p.lines?.operator_count || p.planned_operators;
+      const absent = lineOps - (stats.maxOps || p.planned_operators);
+      return { ...p, output: stats.output, progress, presentOps: stats.maxOps || p.planned_operators, absentOps: Math.max(0, absent) };
+    }), [plans, outputMap]);
+
+  const totalTarget = enrichedPlans.reduce((s, p) => s + p.target_qty, 0);
+  const totalOutput = enrichedPlans.reduce((s, p) => s + p.output, 0);
+  const totalPlannedOps = enrichedPlans.reduce((s, p) => s + p.planned_operators, 0);
+  const totalAbsent = enrichedPlans.reduce((s, p) => s + p.absentOps, 0);
+
+  const autoCalcTarget = (ops: number, hours: number, eff: number, smv: number) => {
+    if (smv <= 0) return 0;
+    return Math.floor((ops * hours * 60 * (eff / 100)) / smv);
+  };
+
+  const openCreate = () => {
+    setEditingId(null);
+    setLineId(''); setStyleId(''); setTargetQty(0); setPlannedOps(0); setPresentOps(0); setAbsentOps(0);
+    setPlannedHelpers(0); setWorkingHours(8); setPlannedEff(60); setTargetEff(65);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (plan: any) => {
+    setEditingId(plan.id);
+    setLineId(plan.line_id); setStyleId(plan.style_id); setTargetQty(plan.target_qty);
+    setPlannedOps(plan.planned_operators); setPresentOps(plan.presentOps); setAbsentOps(plan.absentOps);
+    setPlannedHelpers(plan.planned_helpers); setWorkingHours(Number(plan.working_hours));
+    setPlannedEff(Number(plan.planned_efficiency)); setTargetEff(Number(plan.target_efficiency));
+    setDialogOpen(true);
+  };
+
+  const handleStyleChange = (id: string) => {
+    setStyleId(id);
+    const style = styles.find(s => s.id === id);
+    if (style) {
+      setTargetEff(Number(style.target_efficiency));
+      if (plannedOps > 0) {
+        setTargetQty(autoCalcTarget(plannedOps, workingHours, plannedEff, Number(style.smv)));
+      }
+    }
+  };
+
+  const handleOpsChange = (ops: number) => {
+    setPlannedOps(ops);
+    const style = styles.find(s => s.id === styleId);
+    if (style && ops > 0) {
+      setTargetQty(autoCalcTarget(ops, workingHours, plannedEff, Number(style.smv)));
+    }
+  };
+
+  const handleLineChange = (id: string) => {
+    setLineId(id);
+    const line = lines.find((l: any) => l.id === id);
+    if (line) {
+      setPlannedOps((line as any).operator_count || 0);
+      setPresentOps((line as any).operator_count || 0);
+      setAbsentOps(0);
+    }
+  };
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        date: selectedDate,
+        line_id: lineId,
+        style_id: styleId,
+        target_qty: targetQty,
+        planned_operators: plannedOps,
+        planned_helpers: plannedHelpers,
+        working_hours: workingHours,
+        planned_efficiency: plannedEff,
+        target_efficiency: targetEff,
+      };
+      if (editingId) {
+        const { error } = await supabase.from('production_plans').update(payload).eq('id', editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('production_plans').insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['day-plans'] });
+      toast.success(editingId ? 'Plan updated' : 'Plan created');
+      setDialogOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('production_plans').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['day-plans'] });
+      toast.success('Plan deleted');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const selectedStyle = styles.find(s => s.id === styleId);
+
+  return (
+    <div className="space-y-4">
+      {/* KPI Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {[
+          { label: 'Lines Planned', value: enrichedPlans.length, icon: Target, color: 'text-primary' },
+          { label: 'Total Target', value: totalTarget.toLocaleString(), icon: TrendingUp, color: 'text-emerald-500' },
+          { label: 'Total Output', value: totalOutput.toLocaleString(), icon: TrendingUp, color: 'text-blue-500' },
+          { label: 'Total Manpower', value: totalPlannedOps, icon: Users, color: 'text-purple-500' },
+          { label: 'Total Absent', value: totalAbsent, icon: UserMinus, color: 'text-destructive' },
+        ].map(k => (
+          <Card key={k.label} className="border-[1.5px]">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <k.icon className={`h-3.5 w-3.5 ${k.color}`} />
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{k.label}</span>
+              </div>
+              <p className="text-lg font-extrabold text-foreground">{k.value}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Plans Table */}
+      <Card className="border-[1.5px]">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-[13px] font-bold">Day Plan — {format(new Date(selectedDate + 'T00:00'), 'EEE, MMM d, yyyy')}</CardTitle>
+          <Button size="sm" onClick={openCreate} className="gap-1.5 h-7"><Plus className="h-3.5 w-3.5" /> Add Plan</Button>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/30">
+                  {['Line', 'Floor', 'Style', 'Buyer', 'SMV', 'SAM', 'Target', 'Output', 'Planned Ops', 'Present', 'Absent', 'Hours', 'Eff %', 'Progress', ''].map(h => (
+                    <th key={h} className={`py-2 px-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold ${['SMV','SAM','Target','Output','Planned Ops','Present','Absent','Hours','Eff %'].includes(h) ? 'text-right' : 'text-left'}`}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {enrichedPlans.map((p: any) => {
+                  const progressColor = p.progress >= 80 ? 'text-emerald-500' : p.progress >= 50 ? 'text-warning' : 'text-destructive';
+                  return (
+                    <tr key={p.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      <td className="py-2 px-2.5"><Badge variant="outline" className="text-[10px] font-bold">L{p.lines?.line_number}</Badge></td>
+                      <td className="py-2 px-2.5 text-xs text-muted-foreground">{p.lines?.floors?.name || '—'}</td>
+                      <td className="py-2 px-2.5 font-medium text-foreground">{p.styles?.style_no || '—'}</td>
+                      <td className="py-2 px-2.5 text-muted-foreground text-xs">{p.styles?.buyer || '—'}</td>
+                      <td className="py-2 px-2.5 text-right font-mono text-xs font-bold text-foreground">{p.styles?.smv || '—'}</td>
+                      <td className="py-2 px-2.5 text-right font-mono text-xs text-muted-foreground">{p.styles?.sam || '—'}</td>
+                      <td className="py-2 px-2.5 text-right font-bold text-foreground">{p.target_qty.toLocaleString()}</td>
+                      <td className="py-2 px-2.5 text-right font-medium">{p.output.toLocaleString()}</td>
+                      <td className="py-2 px-2.5 text-right">{p.planned_operators}</td>
+                      <td className="py-2 px-2.5 text-right font-medium text-emerald-600">{p.presentOps}</td>
+                      <td className="py-2 px-2.5 text-right">
+                        {p.absentOps > 0 ? <span className="text-destructive font-bold">{p.absentOps}</span> : <span className="text-muted-foreground">0</span>}
+                      </td>
+                      <td className="py-2 px-2.5 text-right text-muted-foreground">{p.working_hours}</td>
+                      <td className="py-2 px-2.5 text-right text-xs">{Number(p.planned_efficiency).toFixed(0)}%</td>
+                      <td className="py-2 px-2.5 w-28">
+                        <div className="flex items-center gap-1.5">
+                          <Progress value={p.progress} className="h-1.5 flex-1" />
+                          <span className={`text-[10px] font-bold w-7 text-right ${progressColor}`}>{p.progress}%</span>
+                        </div>
+                      </td>
+                      <td className="py-2 px-2.5">
+                        <div className="flex gap-0.5">
+                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(p)}><Pencil className="h-3 w-3" /></Button>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => deleteMutation.mutate(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {enrichedPlans.length === 0 && (
+                  <tr><td colSpan={15} className="py-12 text-center text-muted-foreground text-sm">No plans for this date. Click "Add Plan" to create one.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Create/Edit Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingId ? 'Edit' : 'New'} Day Plan</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Line *</Label>
+              <Select value={lineId} onValueChange={handleLineChange}>
+                <SelectTrigger><SelectValue placeholder="Select line" /></SelectTrigger>
+                <SelectContent>
+                  {lines.map((l: any) => (
+                    <SelectItem key={l.id} value={l.id}>L{l.line_number} — {l.floors?.name} ({l.operator_count} ops)</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Style *</Label>
+              <Select value={styleId} onValueChange={handleStyleChange}>
+                <SelectTrigger><SelectValue placeholder="Select style" /></SelectTrigger>
+                <SelectContent>
+                  {styles.map(s => (
+                    <SelectItem key={s.id} value={s.id}>{s.style_no} — {s.buyer} (SMV: {s.smv})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Planned Operators</Label>
+              <Input type="number" min={0} value={plannedOps || ''} onChange={e => handleOpsChange(Number(e.target.value))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Present Operators</Label>
+              <Input type="number" min={0} value={presentOps || ''} onChange={e => { setPresentOps(Number(e.target.value)); setAbsentOps(Math.max(0, plannedOps - Number(e.target.value))); }} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Absent Operators</Label>
+              <Input type="number" min={0} value={absentOps} readOnly className="bg-muted" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Planned Helpers</Label>
+              <Input type="number" min={0} value={plannedHelpers || ''} onChange={e => setPlannedHelpers(Number(e.target.value))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Working Hours</Label>
+              <Input type="number" min={1} max={24} step={0.5} value={workingHours} onChange={e => setWorkingHours(Number(e.target.value))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Planned Efficiency %</Label>
+              <Input type="number" min={0} max={100} value={plannedEff} onChange={e => setPlannedEff(Number(e.target.value))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Target Efficiency %</Label>
+              <Input type="number" min={0} max={100} value={targetEff} onChange={e => setTargetEff(Number(e.target.value))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Target Qty (auto-calculated)</Label>
+              <Input type="number" min={0} value={targetQty || ''} onChange={e => setTargetQty(Number(e.target.value))} />
+            </div>
+          </div>
+          {selectedStyle && (
+            <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2 mt-2">
+              <strong>{selectedStyle.style_no}</strong> | Buyer: {selectedStyle.buyer} | SMV: {selectedStyle.smv} | SAM: {selectedStyle.sam} | Target Eff: {selectedStyle.target_efficiency}%
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => saveMutation.mutate()} disabled={!lineId || !styleId || saveMutation.isPending}>
+              {saveMutation.isPending ? 'Saving...' : editingId ? 'Update' : 'Create'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

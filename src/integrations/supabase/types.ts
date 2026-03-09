@@ -693,6 +693,85 @@ export type Database = {
           },
         ]
       }
+      sample_orders: {
+        Row: {
+          completed_date: string | null
+          completed_qty: number
+          created_at: string
+          created_by: string
+          due_date: string | null
+          factory_id: string | null
+          id: string
+          line_id: string | null
+          quantity: number
+          remarks: string | null
+          requested_by: string | null
+          requested_date: string
+          sample_type: string
+          status: string
+          style_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          completed_date?: string | null
+          completed_qty?: number
+          created_at?: string
+          created_by: string
+          due_date?: string | null
+          factory_id?: string | null
+          id?: string
+          line_id?: string | null
+          quantity?: number
+          remarks?: string | null
+          requested_by?: string | null
+          requested_date?: string
+          sample_type?: string
+          status?: string
+          style_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          completed_date?: string | null
+          completed_qty?: number
+          created_at?: string
+          created_by?: string
+          due_date?: string | null
+          factory_id?: string | null
+          id?: string
+          line_id?: string | null
+          quantity?: number
+          remarks?: string | null
+          requested_by?: string | null
+          requested_date?: string
+          sample_type?: string
+          status?: string
+          style_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_orders_factory_id_fkey"
+            columns: ["factory_id"]
+            isOneToOne: false
+            referencedRelation: "factories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_orders_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_orders_style_id_fkey"
+            columns: ["style_id"]
+            isOneToOne: false
+            referencedRelation: "styles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shipments: {
         Row: {
           actual_delivery: string | null
