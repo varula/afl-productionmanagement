@@ -15,9 +15,10 @@ import { format } from 'date-fns';
 
 interface StyleChangeoverTabProps {
   factoryId: string;
+  department: 'sewing' | 'finishing';
 }
 
-export function StyleChangeoverTab({ factoryId }: StyleChangeoverTabProps) {
+export function StyleChangeoverTab({ factoryId, department }: StyleChangeoverTabProps) {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
