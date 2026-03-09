@@ -100,8 +100,14 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
       const stats = outputMap.get(p.id) || { output: 0, maxOps: 0 };
       const progress = p.target_qty > 0 ? Math.min(100, Math.round((stats.output / p.target_qty) * 100)) : 0;
       const lineOps = p.lines?.operator_count || p.planned_operators;
-      const absent = lineOps - (stats.maxOps || p.planned_operators);
-      return { ...p, output: stats.output, progress, presentOps: stats.maxOps || p.planned_operators, absentOps: Math.max(0, absent) };
+      const present = stats.maxOps || p.planned_operators;
+      const absent = lineOps - present;
+      const smv = Number(p.styles?.smv) || 0;
+      const hours = Number(p.working_hours) || 0;
+      const actualEff = (present > 0 && hours > 0 && smv > 0)
+        ? (stats.output * smv) / (present * hours * 60) * 100
+        : 0;
+      return { ...p, output: stats.output, progress, presentOps: present, absentOps: Math.max(0, absent), actualEff: Math.round(actualEff * 10) / 10 };
     }), [plans, outputMap]);
 
   const totalTarget = enrichedPlans.reduce((s, p) => s + p.target_qty, 0);
