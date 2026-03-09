@@ -116,6 +116,34 @@ export default function HourlyEntry() {
     enabled: planIds.length > 0,
   });
 
+  // Realtime subscription for auto-refresh
+  useEffect(() => {
+    if (planIds.length === 0) return;
+
+    const channel = supabase
+      .channel('hourly-production-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'hourly_production',
+        },
+        (payload) => {
+          // Check if the change is for one of our plans
+          const changedPlanId = (payload.new as any)?.plan_id || (payload.old as any)?.plan_id;
+          if (changedPlanId && planIds.includes(changedPlanId)) {
+            queryClient.invalidateQueries({ queryKey: ['hourly-production-all', planIds] });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [planIds, queryClient]);
+
   // Merge hourly records into plans
   const plansWithHourly = useMemo(() => {
     return plans.map((plan: any) => ({
