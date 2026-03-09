@@ -117,6 +117,11 @@ export default function IEModulePage() {
         fileSize = selectedFile.size;
       }
 
+      // Get actual Supabase auth user
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData?.user?.id;
+      if (!userId) throw new Error('You must be logged in');
+
       const payload = {
         category: activeTab,
         title,
@@ -125,7 +130,7 @@ export default function IEModulePage() {
         file_path: filePath,
         file_name: fileName,
         file_size: fileSize,
-        created_by: user?.id || '',
+        created_by: userId,
         data: {},
       };
 
