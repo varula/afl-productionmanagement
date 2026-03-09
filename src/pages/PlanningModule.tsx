@@ -92,19 +92,19 @@ export default function PlanningModule() {
         </TabsList>
 
         <TabsContent value="day_plan" className="mt-4">
-          <DayPlanTab factoryId={factoryId} selectedDate={dateStr} />
+          <DayPlanTab factoryId={factoryId} selectedDate={dateStr} department={department} />
         </TabsContent>
 
         <TabsContent value="line_running" className="mt-4">
-          <LineRunningDaysTab factoryId={factoryId} selectedDate={dateStr} />
+          <LineRunningDaysTab factoryId={factoryId} selectedDate={dateStr} department={department} />
         </TabsContent>
 
         <TabsContent value="changeover" className="mt-4">
-          <StyleChangeoverTab factoryId={factoryId} />
+          <StyleChangeoverTab factoryId={factoryId} department={department} />
         </TabsContent>
 
         <TabsContent value="samples" className="mt-4">
-          <SampleMakingTab factoryId={factoryId} />
+          <SampleMakingTab factoryId={factoryId} department={department} />
         </TabsContent>
       </Tabs>
     </div>
