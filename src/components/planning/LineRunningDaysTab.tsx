@@ -9,9 +9,10 @@ import { differenceInDays, parseISO } from 'date-fns';
 interface LineRunningDaysTabProps {
   factoryId: string;
   selectedDate: string;
+  department: 'sewing' | 'finishing';
 }
 
-export function LineRunningDaysTab({ factoryId, selectedDate }: LineRunningDaysTabProps) {
+export function LineRunningDaysTab({ factoryId, selectedDate, department }: LineRunningDaysTabProps) {
   // Get all plans to compute running days per line/style
   const { data: plans = [], isLoading } = useQuery({
     queryKey: ['line-running-days', factoryId],
