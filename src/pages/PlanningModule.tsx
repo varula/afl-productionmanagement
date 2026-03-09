@@ -18,6 +18,7 @@ import { SampleMakingTab } from '@/components/planning/SampleMakingTab';
 export default function PlanningModule() {
   const factoryId = useFactoryId();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [department, setDepartment] = useState<'sewing' | 'finishing'>('sewing');
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
 
   return (
@@ -33,23 +34,44 @@ export default function PlanningModule() {
             Day Plan, Line Running Days, Style Changeovers & Sample Making
           </p>
         </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5 h-8">
-              <CalendarDays className="h-3.5 w-3.5" />
-              {format(selectedDate, 'EEE, MMM d, yyyy')}
+        <div className="flex items-center gap-2">
+          {/* Department Toggle */}
+          <div className="flex items-center rounded-md border border-border bg-muted p-0.5">
+            <Button
+              variant={department === 'sewing' ? 'default' : 'ghost'}
+              size="sm"
+              className="h-7 text-xs px-3"
+              onClick={() => setDepartment('sewing')}
+            >
+              Sewing
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(d) => d && setSelectedDate(d)}
-              initialFocus
-              className={cn("p-3 pointer-events-auto")}
-            />
-          </PopoverContent>
-        </Popover>
+            <Button
+              variant={department === 'finishing' ? 'default' : 'ghost'}
+              size="sm"
+              className="h-7 text-xs px-3"
+              onClick={() => setDepartment('finishing')}
+            >
+              Finishing
+            </Button>
+          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5 h-8">
+                <CalendarDays className="h-3.5 w-3.5" />
+                {format(selectedDate, 'EEE, MMM d, yyyy')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(d) => d && setSelectedDate(d)}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       {/* Sub-module Tabs */}
