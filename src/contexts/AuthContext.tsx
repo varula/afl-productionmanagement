@@ -63,7 +63,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     if (error) {
       console.error('Auto sign-in failed:', error.message);
+      // Still set loading to false to prevent infinite loading state
+      setLoading(false);
     }
+    // Success case will be handled by onAuthStateChange
   };
 
   useEffect(() => {
