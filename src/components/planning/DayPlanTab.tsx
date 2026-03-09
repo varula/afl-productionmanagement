@@ -236,6 +236,20 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!planIds.length) throw new Error('No plans to delete');
+      const { error } = await supabase.from('production_plans').delete().in('id', planIds);
+      if (error) throw error;
+      return planIds.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['day-plans'] });
+      toast.success(`Deleted ${count} plan(s) for ${format(new Date(selectedDate + 'T00:00'), 'MMM d, yyyy')}`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const selectedStyle = styles.find(s => s.id === styleId);
 
   return (
