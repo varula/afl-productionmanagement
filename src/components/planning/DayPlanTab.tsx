@@ -10,8 +10,8 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Trash2, Pencil, Target, Users, TrendingUp, Clock, UserMinus } from 'lucide-react';
-import { format } from 'date-fns';
+import { Plus, Trash2, Pencil, Target, Users, TrendingUp, Clock, UserMinus, Copy } from 'lucide-react';
+import { format, subDays } from 'date-fns';
 
 interface DayPlanTabProps {
   factoryId: string;
