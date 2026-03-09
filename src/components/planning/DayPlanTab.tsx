@@ -100,8 +100,14 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
       const stats = outputMap.get(p.id) || { output: 0, maxOps: 0 };
       const progress = p.target_qty > 0 ? Math.min(100, Math.round((stats.output / p.target_qty) * 100)) : 0;
       const lineOps = p.lines?.operator_count || p.planned_operators;
-      const absent = lineOps - (stats.maxOps || p.planned_operators);
-      return { ...p, output: stats.output, progress, presentOps: stats.maxOps || p.planned_operators, absentOps: Math.max(0, absent) };
+      const present = stats.maxOps || p.planned_operators;
+      const absent = lineOps - present;
+      const smv = Number(p.styles?.smv) || 0;
+      const hours = Number(p.working_hours) || 0;
+      const actualEff = (present > 0 && hours > 0 && smv > 0)
+        ? (stats.output * smv) / (present * hours * 60) * 100
+        : 0;
+      return { ...p, output: stats.output, progress, presentOps: present, absentOps: Math.max(0, absent), actualEff: Math.round(actualEff * 10) / 10 };
     }), [plans, outputMap]);
 
   const totalTarget = enrichedPlans.reduce((s, p) => s + p.target_qty, 0);
@@ -236,8 +242,8 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/30">
-                  {['Line', 'Floor', 'Style', 'Buyer', 'SMV', 'SAM', 'Target', 'Output', 'Planned Ops', 'Present', 'Absent', 'Hours', 'Eff %', 'Progress', ''].map(h => (
-                    <th key={h} className={`py-2 px-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold ${['SMV','SAM','Target','Output','Planned Ops','Present','Absent','Hours','Eff %'].includes(h) ? 'text-right' : 'text-left'}`}>{h}</th>
+                  {['Line', 'Floor', 'Style', 'Buyer', 'SMV', 'SAM', 'Target', 'Output', 'Planned Ops', 'Present', 'Absent', 'Hours', 'Plan Eff %', 'Actual Eff %', 'Progress', ''].map(h => (
+                    <th key={h} className={`py-2 px-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold ${['SMV','SAM','Target','Output','Planned Ops','Present','Absent','Hours','Plan Eff %','Actual Eff %'].includes(h) ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -261,6 +267,11 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
                       </td>
                       <td className="py-2 px-2.5 text-right text-muted-foreground">{p.working_hours}</td>
                       <td className="py-2 px-2.5 text-right text-xs">{Number(p.planned_efficiency).toFixed(0)}%</td>
+                      <td className="py-2 px-2.5 text-right text-xs font-bold">
+                        <span className={p.actualEff >= Number(p.planned_efficiency) ? 'text-success' : p.actualEff > 0 ? 'text-destructive' : 'text-muted-foreground'}>
+                          {p.actualEff > 0 ? `${p.actualEff.toFixed(1)}%` : '—'}
+                        </span>
+                      </td>
                       <td className="py-2 px-2.5 w-28">
                         <div className="flex items-center gap-1.5">
                           <Progress value={p.progress} className="h-1.5 flex-1" />
@@ -277,7 +288,7 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
                   );
                 })}
                 {enrichedPlans.length === 0 && (
-                  <tr><td colSpan={15} className="py-12 text-center text-muted-foreground text-sm">No plans for this date. Click "Add Plan" to create one.</td></tr>
+                  <tr><td colSpan={16} className="py-12 text-center text-muted-foreground text-sm">No plans for this date. Click "Add Plan" to create one.</td></tr>
                 )}
               </tbody>
             </table>
