@@ -33,6 +33,7 @@ import ProductionPlanEntry from "./pages/ProductionPlanEntry";
 import PlanningModule from "./pages/PlanningModule";
 import DepartmentDashboard from "./pages/DepartmentDashboard";
 import OvertimePage from "./pages/OvertimePage";
+import IEModulePage from "./pages/IEModulePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
