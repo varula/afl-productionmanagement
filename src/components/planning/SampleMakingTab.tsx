@@ -38,9 +38,10 @@ const STATUS_COLORS: Record<string, string> = {
 
 interface SampleMakingTabProps {
   factoryId: string;
+  department: 'sewing' | 'finishing';
 }
 
-export function SampleMakingTab({ factoryId }: SampleMakingTabProps) {
+export function SampleMakingTab({ factoryId, department }: SampleMakingTabProps) {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
