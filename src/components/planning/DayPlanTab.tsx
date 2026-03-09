@@ -267,6 +267,11 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
                       </td>
                       <td className="py-2 px-2.5 text-right text-muted-foreground">{p.working_hours}</td>
                       <td className="py-2 px-2.5 text-right text-xs">{Number(p.planned_efficiency).toFixed(0)}%</td>
+                      <td className="py-2 px-2.5 text-right text-xs font-bold">
+                        <span className={p.actualEff >= Number(p.planned_efficiency) ? 'text-success' : p.actualEff > 0 ? 'text-destructive' : 'text-muted-foreground'}>
+                          {p.actualEff > 0 ? `${p.actualEff.toFixed(1)}%` : '—'}
+                        </span>
+                      </td>
                       <td className="py-2 px-2.5 w-28">
                         <div className="flex items-center gap-1.5">
                           <Progress value={p.progress} className="h-1.5 flex-1" />
