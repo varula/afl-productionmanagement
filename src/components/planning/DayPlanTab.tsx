@@ -16,9 +16,10 @@ import { format } from 'date-fns';
 interface DayPlanTabProps {
   factoryId: string;
   selectedDate: string;
+  department: 'sewing' | 'finishing';
 }
 
-export function DayPlanTab({ factoryId, selectedDate }: DayPlanTabProps) {
+export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabProps) {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
