@@ -44,10 +44,11 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: roleError.message }), { status: 400, headers: corsHeaders });
   }
 
-  // Ensure profile exists
-  const { error: profileError } = await supabaseAdmin
+  // Ensure profile is approved
+  await supabaseAdmin
     .from("profiles")
-    .upsert({ user_id: userId, full_name: "Test Admin", is_approved: true }, { onConflict: "user_id" });
+    .update({ full_name: "Test Admin", is_approved: true })
+    .eq("user_id", userId);
 
   return new Response(
     JSON.stringify({ success: true, userId, email, message: "Test admin ready. Sign in with admin@test.com / admin123456" }),
