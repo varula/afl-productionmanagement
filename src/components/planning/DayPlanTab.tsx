@@ -206,6 +206,35 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const copyMutation = useMutation({
+    mutationFn: async () => {
+      const prevDate = format(subDays(new Date(selectedDate + 'T00:00'), 1), 'yyyy-MM-dd');
+      const { data: prevPlans, error: fetchErr } = await supabase
+        .from('production_plans')
+        .select('line_id, style_id, target_qty, planned_operators, planned_helpers, working_hours, planned_efficiency, target_efficiency')
+        .eq('date', prevDate)
+        .in('line_id', lineIds);
+      if (fetchErr) throw fetchErr;
+      if (!prevPlans?.length) throw new Error(`No plans found for ${prevDate}`);
+
+      // Filter out lines that already have plans for today
+      const existingLineIds = new Set((plans as any[]).map(p => p.line_id));
+      const newPlans = prevPlans
+        .filter(p => !existingLineIds.has(p.line_id))
+        .map(p => ({ ...p, date: selectedDate }));
+      if (!newPlans.length) throw new Error('All lines from previous day already have plans for today');
+
+      const { error: insertErr } = await supabase.from('production_plans').insert(newPlans);
+      if (insertErr) throw insertErr;
+      return newPlans.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['day-plans'] });
+      toast.success(`Copied ${count} plan(s) from previous day`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const selectedStyle = styles.find(s => s.id === styleId);
 
   return (
