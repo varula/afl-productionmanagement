@@ -54,17 +54,22 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
     },
   });
 
+  const lineIds = lines.map((l: any) => l.id);
+
   const { data: plans = [], isLoading } = useQuery({
-    queryKey: ['day-plans', selectedDate],
+    queryKey: ['day-plans', selectedDate, department],
     queryFn: async () => {
+      if (!lineIds.length) return [];
       const { data, error } = await supabase
         .from('production_plans')
         .select('*, lines(line_number, type, floor_id, operator_count, floors(name)), styles(style_no, buyer, smv, sam)')
         .eq('date', selectedDate)
+        .in('line_id', lineIds)
         .order('created_at');
       if (error) throw error;
       return data ?? [];
     },
+    enabled: lineIds.length > 0,
   });
 
   // Get hourly production for present operators

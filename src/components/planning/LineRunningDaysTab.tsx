@@ -15,16 +15,16 @@ interface LineRunningDaysTabProps {
 export function LineRunningDaysTab({ factoryId, selectedDate, department }: LineRunningDaysTabProps) {
   // Get all plans to compute running days per line/style
   const { data: plans = [], isLoading } = useQuery({
-    queryKey: ['line-running-days', factoryId],
+    queryKey: ['line-running-days', factoryId, department],
     queryFn: async () => {
       const { data: floors } = await supabase.from('floors').select('id').eq('factory_id', factoryId);
       if (!floors?.length) return [];
-      const lineIds = await supabase.from('lines').select('id').in('floor_id', floors.map(f => f.id));
-      if (!lineIds.data?.length) return [];
+      const { data: lineData } = await supabase.from('lines').select('id').eq('type', department).in('floor_id', floors.map(f => f.id));
+      if (!lineData?.length) return [];
       const { data, error } = await supabase
         .from('production_plans')
         .select('date, line_id, style_id, lines(line_number, type, floors(name)), styles(style_no, buyer, smv)')
-        .in('line_id', lineIds.data.map(l => l.id))
+        .in('line_id', lineData.map(l => l.id))
         .order('date', { ascending: true });
       if (error) throw error;
       return data ?? [];
