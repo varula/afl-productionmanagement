@@ -10,8 +10,8 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Trash2, Pencil, Target, Users, TrendingUp, Clock, UserMinus } from 'lucide-react';
-import { format } from 'date-fns';
+import { Plus, Trash2, Pencil, Target, Users, TrendingUp, Clock, UserMinus, Copy } from 'lucide-react';
+import { format, subDays } from 'date-fns';
 
 interface DayPlanTabProps {
   factoryId: string;
@@ -206,6 +206,35 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const copyMutation = useMutation({
+    mutationFn: async () => {
+      const prevDate = format(subDays(new Date(selectedDate + 'T00:00'), 1), 'yyyy-MM-dd');
+      const { data: prevPlans, error: fetchErr } = await supabase
+        .from('production_plans')
+        .select('line_id, style_id, target_qty, planned_operators, planned_helpers, working_hours, planned_efficiency, target_efficiency')
+        .eq('date', prevDate)
+        .in('line_id', lineIds);
+      if (fetchErr) throw fetchErr;
+      if (!prevPlans?.length) throw new Error(`No plans found for ${prevDate}`);
+
+      // Filter out lines that already have plans for today
+      const existingLineIds = new Set((plans as any[]).map(p => p.line_id));
+      const newPlans = prevPlans
+        .filter(p => !existingLineIds.has(p.line_id))
+        .map(p => ({ ...p, date: selectedDate }));
+      if (!newPlans.length) throw new Error('All lines from previous day already have plans for today');
+
+      const { error: insertErr } = await supabase.from('production_plans').insert(newPlans);
+      if (insertErr) throw insertErr;
+      return newPlans.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['day-plans'] });
+      toast.success(`Copied ${count} plan(s) from previous day`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const selectedStyle = styles.find(s => s.id === styleId);
 
   return (
@@ -235,7 +264,12 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
       <Card className="border-[1.5px]">
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-[13px] font-bold">Day Plan — {format(new Date(selectedDate + 'T00:00'), 'EEE, MMM d, yyyy')}</CardTitle>
-          <Button size="sm" onClick={openCreate} className="gap-1.5 h-7"><Plus className="h-3.5 w-3.5" /> Add Plan</Button>
+          <div className="flex items-center gap-1.5">
+            <Button size="sm" variant="outline" onClick={() => copyMutation.mutate()} disabled={copyMutation.isPending} className="gap-1.5 h-7">
+              <Copy className="h-3.5 w-3.5" /> {copyMutation.isPending ? 'Copying...' : 'Copy Previous Day'}
+            </Button>
+            <Button size="sm" onClick={openCreate} className="gap-1.5 h-7"><Plus className="h-3.5 w-3.5" /> Add Plan</Button>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
