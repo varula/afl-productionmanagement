@@ -242,8 +242,8 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/30">
-                  {['Line', 'Floor', 'Style', 'Buyer', 'SMV', 'SAM', 'Target', 'Output', 'Planned Ops', 'Present', 'Absent', 'Hours', 'Eff %', 'Progress', ''].map(h => (
-                    <th key={h} className={`py-2 px-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold ${['SMV','SAM','Target','Output','Planned Ops','Present','Absent','Hours','Eff %'].includes(h) ? 'text-right' : 'text-left'}`}>{h}</th>
+                  {['Line', 'Floor', 'Style', 'Buyer', 'SMV', 'SAM', 'Target', 'Output', 'Planned Ops', 'Present', 'Absent', 'Hours', 'Plan Eff %', 'Actual Eff %', 'Progress', ''].map(h => (
+                    <th key={h} className={`py-2 px-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold ${['SMV','SAM','Target','Output','Planned Ops','Present','Absent','Hours','Plan Eff %','Actual Eff %'].includes(h) ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
