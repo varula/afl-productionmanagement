@@ -15,9 +15,10 @@ import { format } from 'date-fns';
 
 interface StyleChangeoverTabProps {
   factoryId: string;
+  department: 'sewing' | 'finishing';
 }
 
-export function StyleChangeoverTab({ factoryId }: StyleChangeoverTabProps) {
+export function StyleChangeoverTab({ factoryId, department }: StyleChangeoverTabProps) {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -30,11 +31,11 @@ export function StyleChangeoverTab({ factoryId }: StyleChangeoverTabProps) {
   const [notes, setNotes] = useState('');
 
   const { data: lines = [] } = useQuery({
-    queryKey: ['changeover-lines', factoryId],
+    queryKey: ['changeover-lines', factoryId, department],
     queryFn: async () => {
       const { data: floors } = await supabase.from('floors').select('id').eq('factory_id', factoryId);
       if (!floors?.length) return [];
-      const { data } = await supabase.from('lines').select('id, line_number, floors(name)').eq('is_active', true).in('floor_id', floors.map(f => f.id)).order('line_number');
+      const { data } = await supabase.from('lines').select('id, line_number, floors(name)').eq('is_active', true).eq('type', department).in('floor_id', floors.map(f => f.id)).order('line_number');
       return data ?? [];
     },
     enabled: !!factoryId,

@@ -16,9 +16,10 @@ import { format } from 'date-fns';
 interface DayPlanTabProps {
   factoryId: string;
   selectedDate: string;
+  department: 'sewing' | 'finishing';
 }
 
-export function DayPlanTab({ factoryId, selectedDate }: DayPlanTabProps) {
+export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabProps) {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -35,11 +36,11 @@ export function DayPlanTab({ factoryId, selectedDate }: DayPlanTabProps) {
   const [targetEff, setTargetEff] = useState(65);
 
   const { data: lines = [] } = useQuery({
-    queryKey: ['lines-for-plans', factoryId],
+    queryKey: ['lines-for-plans', factoryId, department],
     queryFn: async () => {
       const { data: floors } = await supabase.from('floors').select('id').eq('factory_id', factoryId);
       if (!floors?.length) return [];
-      const { data } = await supabase.from('lines').select('id, line_number, type, floor_id, operator_count, floors(name)').eq('is_active', true).in('floor_id', floors.map(f => f.id)).order('line_number');
+      const { data } = await supabase.from('lines').select('id, line_number, type, floor_id, operator_count, floors(name)').eq('is_active', true).eq('type', department).in('floor_id', floors.map(f => f.id)).order('line_number');
       return data ?? [];
     },
     enabled: !!factoryId,
@@ -53,17 +54,22 @@ export function DayPlanTab({ factoryId, selectedDate }: DayPlanTabProps) {
     },
   });
 
+  const lineIds = lines.map((l: any) => l.id);
+
   const { data: plans = [], isLoading } = useQuery({
-    queryKey: ['day-plans', selectedDate],
+    queryKey: ['day-plans', selectedDate, department],
     queryFn: async () => {
+      if (!lineIds.length) return [];
       const { data, error } = await supabase
         .from('production_plans')
         .select('*, lines(line_number, type, floor_id, operator_count, floors(name)), styles(style_no, buyer, smv, sam)')
         .eq('date', selectedDate)
+        .in('line_id', lineIds)
         .order('created_at');
       if (error) throw error;
       return data ?? [];
     },
+    enabled: lineIds.length > 0,
   });
 
   // Get hourly production for present operators
