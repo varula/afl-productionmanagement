@@ -264,7 +264,12 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
       <Card className="border-[1.5px]">
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-[13px] font-bold">Day Plan — {format(new Date(selectedDate + 'T00:00'), 'EEE, MMM d, yyyy')}</CardTitle>
-          <Button size="sm" onClick={openCreate} className="gap-1.5 h-7"><Plus className="h-3.5 w-3.5" /> Add Plan</Button>
+          <div className="flex items-center gap-1.5">
+            <Button size="sm" variant="outline" onClick={() => copyMutation.mutate()} disabled={copyMutation.isPending} className="gap-1.5 h-7">
+              <Copy className="h-3.5 w-3.5" /> {copyMutation.isPending ? 'Copying...' : 'Copy Previous Day'}
+            </Button>
+            <Button size="sm" onClick={openCreate} className="gap-1.5 h-7"><Plus className="h-3.5 w-3.5" /> Add Plan</Button>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
