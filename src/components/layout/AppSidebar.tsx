@@ -14,6 +14,7 @@ import {
   Shield,
   Package,
   LineChart,
+  Ruler,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -45,6 +46,7 @@ const mainNav = [
   { title: 'Quality Control', url: '/qc', icon: Shield },
   { title: 'Inventory', url: '/inventory', icon: Package },
   { title: 'Analytics', url: '/analytics', icon: LineChart },
+  { title: 'IE Module', url: '/ie', icon: Ruler },
   { title: 'MIS Reports', url: '/mis', icon: BarChart3 },
 ];
 

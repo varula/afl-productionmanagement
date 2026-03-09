@@ -323,6 +323,82 @@ export type Database = {
           },
         ]
       }
+      ie_documents: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string
+          data: Json
+          description: string | null
+          factory_id: string | null
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          id: string
+          line_id: string | null
+          status: string
+          style_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by: string
+          data?: Json
+          description?: string | null
+          factory_id?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          line_id?: string | null
+          status?: string
+          style_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string
+          data?: Json
+          description?: string | null
+          factory_id?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          line_id?: string | null
+          status?: string
+          style_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ie_documents_factory_id_fkey"
+            columns: ["factory_id"]
+            isOneToOne: false
+            referencedRelation: "factories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ie_documents_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ie_documents_style_id_fkey"
+            columns: ["style_id"]
+            isOneToOne: false
+            referencedRelation: "styles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lines: {
         Row: {
           created_at: string
