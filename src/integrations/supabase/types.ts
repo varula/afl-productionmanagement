@@ -521,7 +521,9 @@ export type Database = {
       operators: {
         Row: {
           created_at: string
+          designation: string | null
           employee_no: string
+          expertise_level: string | null
           factory_id: string
           grade: Database["public"]["Enums"]["operator_grade"]
           id: string
@@ -529,11 +531,15 @@ export type Database = {
           joined_at: string | null
           line_id: string | null
           name: string
+          operations_count: number | null
+          salary: number | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          designation?: string | null
           employee_no: string
+          expertise_level?: string | null
           factory_id: string
           grade?: Database["public"]["Enums"]["operator_grade"]
           id?: string
@@ -541,11 +547,15 @@ export type Database = {
           joined_at?: string | null
           line_id?: string | null
           name: string
+          operations_count?: number | null
+          salary?: number | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          designation?: string | null
           employee_no?: string
+          expertise_level?: string | null
           factory_id?: string
           grade?: Database["public"]["Enums"]["operator_grade"]
           id?: string
@@ -553,6 +563,8 @@ export type Database = {
           joined_at?: string | null
           line_id?: string | null
           name?: string
+          operations_count?: number | null
+          salary?: number | null
           updated_at?: string
         }
         Relationships: [
