@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, Trash2, Pencil, Target, Users, TrendingUp, Clock, UserMinus, Copy } from 'lucide-react';
+import { Plus, Trash2, Pencil, Target, Users, TrendingUp, Clock, UserMinus, Copy, Layers } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 
 interface DayPlanTabProps {
@@ -23,6 +23,7 @@ interface DayPlanTabProps {
 export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabProps) {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [lineId, setLineId] = useState('');
@@ -36,12 +37,18 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
   const [plannedEff, setPlannedEff] = useState(60);
   const [targetEff, setTargetEff] = useState(65);
 
+  // Bulk add state
+  const [bulkStyleId, setBulkStyleId] = useState('');
+  const [bulkWorkingHours, setBulkWorkingHours] = useState(8);
+  const [bulkPlannedEff, setBulkPlannedEff] = useState(60);
+  const [bulkTargetEff, setBulkTargetEff] = useState(65);
+
   const { data: lines = [] } = useQuery({
     queryKey: ['lines-for-plans', factoryId, department],
     queryFn: async () => {
       const { data: floors } = await supabase.from('floors').select('id').eq('factory_id', factoryId);
       if (!floors?.length) return [];
-      const { data } = await supabase.from('lines').select('id, line_number, type, floor_id, operator_count, floors(name)').eq('is_active', true).eq('type', department).in('floor_id', floors.map(f => f.id)).order('line_number');
+      const { data } = await supabase.from('lines').select('id, line_number, type, floor_id, operator_count, helper_count, floors(name)').eq('is_active', true).eq('type', department).in('floor_id', floors.map(f => f.id)).order('line_number');
       return data ?? [];
     },
     enabled: !!factoryId,
@@ -121,6 +128,12 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
     return Math.floor((ops * hours * 60 * (eff / 100)) / smv);
   };
 
+  // Lines not yet planned for this date
+  const unplannedLines = useMemo(() => {
+    const plannedLineIds = new Set((plans as any[]).map(p => p.line_id));
+    return (lines as any[]).filter(l => !plannedLineIds.has(l.id));
+  }, [lines, plans]);
+
   const openCreate = () => {
     setEditingId(null);
     setLineId(''); setStyleId(''); setTargetQty(0); setPlannedOps(0); setPresentOps(0); setAbsentOps(0);
@@ -135,6 +148,14 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
     setPlannedHelpers(plan.planned_helpers); setWorkingHours(Number(plan.working_hours));
     setPlannedEff(Number(plan.planned_efficiency)); setTargetEff(Number(plan.target_efficiency));
     setDialogOpen(true);
+  };
+
+  const openBulkAdd = () => {
+    setBulkStyleId('');
+    setBulkWorkingHours(8);
+    setBulkPlannedEff(60);
+    setBulkTargetEff(65);
+    setBulkDialogOpen(true);
   };
 
   const handleStyleChange = (id: string) => {
@@ -195,6 +216,43 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const bulkAddMutation = useMutation({
+    mutationFn: async () => {
+      if (!bulkStyleId) throw new Error('Select a style');
+      if (unplannedLines.length === 0) throw new Error('All lines already have plans');
+
+      const style = styles.find(s => s.id === bulkStyleId);
+      const smv = Number(style?.smv) || 0;
+
+      const newPlans = unplannedLines.map((line: any) => {
+        const ops = line.operator_count || 0;
+        const helpers = line.helper_count || 0;
+        const target = autoCalcTarget(ops, bulkWorkingHours, bulkPlannedEff, smv);
+        return {
+          date: selectedDate,
+          line_id: line.id,
+          style_id: bulkStyleId,
+          target_qty: target,
+          planned_operators: ops,
+          planned_helpers: helpers,
+          working_hours: bulkWorkingHours,
+          planned_efficiency: bulkPlannedEff,
+          target_efficiency: bulkTargetEff,
+        };
+      });
+
+      const { error } = await supabase.from('production_plans').insert(newPlans);
+      if (error) throw error;
+      return newPlans.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['day-plans'] });
+      toast.success(`Created plans for ${count} lines`);
+      setBulkDialogOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('production_plans').delete().eq('id', id);
@@ -251,6 +309,7 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
   });
 
   const selectedStyle = styles.find(s => s.id === styleId);
+  const bulkSelectedStyle = styles.find(s => s.id === bulkStyleId);
 
   return (
     <div className="space-y-4">
@@ -279,7 +338,7 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
       <Card className="border-[1.5px]">
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-[13px] font-bold">Day Plan — {format(new Date(selectedDate + 'T00:00'), 'EEE, MMM d, yyyy')}</CardTitle>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {enrichedPlans.length > 0 && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -306,6 +365,11 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
             <Button size="sm" variant="outline" onClick={() => copyMutation.mutate()} disabled={copyMutation.isPending} className="gap-1.5 h-7">
               <Copy className="h-3.5 w-3.5" /> {copyMutation.isPending ? 'Copying...' : 'Copy Previous Day'}
             </Button>
+            {unplannedLines.length > 0 && (
+              <Button size="sm" variant="outline" onClick={openBulkAdd} className="gap-1.5 h-7">
+                <Layers className="h-3.5 w-3.5" /> Add All Lines ({unplannedLines.length})
+              </Button>
+            )}
             <Button size="sm" onClick={openCreate} className="gap-1.5 h-7"><Plus className="h-3.5 w-3.5" /> Add Plan</Button>
           </div>
         </CardHeader>
@@ -360,7 +424,7 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
                   );
                 })}
                 {enrichedPlans.length === 0 && (
-                  <tr><td colSpan={16} className="py-12 text-center text-muted-foreground text-sm">No plans for this date. Click "Add Plan" to create one.</td></tr>
+                  <tr><td colSpan={16} className="py-12 text-center text-muted-foreground text-sm">No plans for this date. Click "Add Plan" or "Add All Lines" to create.</td></tr>
                 )}
               </tbody>
             </table>
@@ -380,7 +444,7 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
               <Select value={lineId} onValueChange={handleLineChange}>
                 <SelectTrigger><SelectValue placeholder="Select line" /></SelectTrigger>
                 <SelectContent>
-                  {lines.map((l: any) => (
+                  {(lines as any[]).map((l: any) => (
                     <SelectItem key={l.id} value={l.id}>L{l.line_number} — {l.floors?.name} ({l.operator_count} ops)</SelectItem>
                   ))}
                 </SelectContent>
@@ -439,6 +503,92 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
             <Button onClick={() => saveMutation.mutate()} disabled={!lineId || !styleId || saveMutation.isPending}>
               {saveMutation.isPending ? 'Saving...' : editingId ? 'Update' : 'Create'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Add Dialog */}
+      <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Layers className="h-4 w-4 text-primary" />
+              Add All {unplannedLines.length} Lines
+            </DialogTitle>
+            <DialogDescription>
+              Create plans for all {unplannedLines.length} unplanned {department} lines at once. Each line's operator/helper count from setup will be used, and target qty will be auto-calculated.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Style (same for all lines) *</Label>
+              <Select value={bulkStyleId} onValueChange={(id) => {
+                setBulkStyleId(id);
+                const style = styles.find(s => s.id === id);
+                if (style) setBulkTargetEff(Number(style.target_efficiency));
+              }}>
+                <SelectTrigger><SelectValue placeholder="Select style" /></SelectTrigger>
+                <SelectContent>
+                  {styles.map(s => (
+                    <SelectItem key={s.id} value={s.id}>{s.style_no} — {s.buyer} (SMV: {s.smv})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Working Hours</Label>
+                <Input type="number" min={1} max={24} step={0.5} value={bulkWorkingHours} onChange={e => setBulkWorkingHours(Number(e.target.value))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Planned Eff %</Label>
+                <Input type="number" min={0} max={100} value={bulkPlannedEff} onChange={e => setBulkPlannedEff(Number(e.target.value))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Target Eff %</Label>
+                <Input type="number" min={0} max={100} value={bulkTargetEff} onChange={e => setBulkTargetEff(Number(e.target.value))} />
+              </div>
+            </div>
+
+            {bulkSelectedStyle && (
+              <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2">
+                <strong>{bulkSelectedStyle.style_no}</strong> | Buyer: {bulkSelectedStyle.buyer} | SMV: {bulkSelectedStyle.smv}
+              </div>
+            )}
+
+            {/* Preview of lines to be added */}
+            <div className="border rounded-md overflow-hidden max-h-[200px] overflow-y-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-muted/30 border-b">
+                    <th className="text-left px-2.5 py-1.5 font-semibold text-muted-foreground">Line</th>
+                    <th className="text-left px-2.5 py-1.5 font-semibold text-muted-foreground">Floor</th>
+                    <th className="text-right px-2.5 py-1.5 font-semibold text-muted-foreground">Ops</th>
+                    <th className="text-right px-2.5 py-1.5 font-semibold text-muted-foreground">Target</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {unplannedLines.map((l: any) => {
+                    const smv = Number(bulkSelectedStyle?.smv) || 0;
+                    const target = autoCalcTarget(l.operator_count || 0, bulkWorkingHours, bulkPlannedEff, smv);
+                    return (
+                      <tr key={l.id} className="border-b border-border/30">
+                        <td className="px-2.5 py-1.5 font-medium">L{l.line_number}</td>
+                        <td className="px-2.5 py-1.5 text-muted-foreground">{l.floors?.name}</td>
+                        <td className="px-2.5 py-1.5 text-right">{l.operator_count || 0}</td>
+                        <td className="px-2.5 py-1.5 text-right font-bold">{target > 0 ? target.toLocaleString() : '—'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => bulkAddMutation.mutate()} disabled={!bulkStyleId || bulkAddMutation.isPending}>
+              {bulkAddMutation.isPending ? 'Creating...' : `Create ${unplannedLines.length} Plans`}
             </Button>
           </DialogFooter>
         </DialogContent>
