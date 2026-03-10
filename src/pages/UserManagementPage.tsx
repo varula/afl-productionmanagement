@@ -146,11 +146,15 @@ export default function UserManagementPage() {
     return acc;
   }, {} as Record<AppRole, number>);
 
+  const currentFilter = FILTER_MAP[activeFilter] || { type: 'all' };
+
   const filteredUsers = users.filter(u => {
     // Sidebar filter
-    if (activeFilter === 'pending' && u.is_approved) return false;
-    if (activeFilter === 'approved' && !u.is_approved) return false;
-    if (ALL_ROLES.includes(activeFilter as AppRole) && u.role !== activeFilter) return false;
+    if (currentFilter.type === 'status') {
+      if (currentFilter.value === 'pending' && u.is_approved) return false;
+      if (currentFilter.value === 'approved' && !u.is_approved) return false;
+    }
+    if (currentFilter.type === 'role' && u.role !== currentFilter.value) return false;
 
     // Search
     if (search) {
@@ -159,16 +163,6 @@ export default function UserManagementPage() {
     }
     return true;
   });
-
-  const sidebarItems: { key: SidebarFilter; label: string; count?: number; section?: string }[] = [
-    { key: 'all', label: 'All Users', count: users.length, section: 'FILTER' },
-    { key: 'pending', label: 'Pending Approval', count: pendingCount },
-    { key: 'approved', label: 'Approved', count: approvedCount },
-    { key: 'admin', label: 'Admin', count: roleCounts.admin, section: 'BY ROLE' },
-    { key: 'manager', label: 'Manager / IE', count: roleCounts.manager },
-    { key: 'line_chief', label: 'Line Chief', count: roleCounts.line_chief },
-    { key: 'operator', label: 'Operator', count: roleCounts.operator },
-  ];
 
   const openEdit = (u: any) => {
     setEditUser(u);
