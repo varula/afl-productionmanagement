@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Ruler, Upload, Plus, Pencil, Trash2, Download, FileText, Eye,
-  Users, ClipboardList, BarChart3, Clock, Cpu, Search
+  Users, ClipboardList, BarChart3, Clock, Cpu, Search, GitBranch
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,7 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
-type IECategory = 'skill_matrix' | 'operation_breakdown' | 'capacity_study' | 'time_study' | 'machine_inventory';
+type IECategory = 'skill_matrix' | 'operation_breakdown' | 'capacity_study' | 'time_study' | 'machine_inventory' | 'line_balancing';
 
 interface IEDocument {
   id: string;
@@ -45,6 +45,7 @@ const CATEGORIES: { key: IECategory; label: string; icon: React.ElementType; des
   { key: 'capacity_study', label: 'Capacity Study', icon: BarChart3, description: 'Line/factory capacity analysis reports' },
   { key: 'time_study', label: 'Time Study', icon: Clock, description: 'Time study follow-up and method improvements' },
   { key: 'machine_inventory', label: 'Machine Inventory', icon: Cpu, description: 'Machine type, brand, condition and allocation' },
+  { key: 'line_balancing', label: 'Line Balancing', icon: GitBranch, description: 'Workload distribution and bottleneck analysis per line' },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
