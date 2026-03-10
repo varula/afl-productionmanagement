@@ -42,9 +42,6 @@ export default function Auth() {
     try {
       const { error } = await lovable.auth.signInWithOAuth('google', {
         redirect_uri: window.location.origin,
-        extraParams: {
-          hd: 'armanabd.com',
-        },
       });
       if (error) throw error;
     } catch (err: any) {
