@@ -37,11 +37,11 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
   const [plannedEff, setPlannedEff] = useState(60);
   const [targetEff, setTargetEff] = useState(65);
 
-  // Bulk add state
-  const [bulkStyleId, setBulkStyleId] = useState('');
+  // Bulk add state - per-line configuration
   const [bulkWorkingHours, setBulkWorkingHours] = useState(8);
   const [bulkPlannedEff, setBulkPlannedEff] = useState(60);
   const [bulkTargetEff, setBulkTargetEff] = useState(65);
+  const [perLineConfig, setPerLineConfig] = useState<Record<string, { styleId: string; ops: number; helpers: number }>>({});
 
   const { data: lines = [] } = useQuery({
     queryKey: ['lines-for-plans', factoryId, department],
