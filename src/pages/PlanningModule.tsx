@@ -7,10 +7,13 @@ import { useFactoryId } from '@/hooks/useActiveFilter';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
-  Target, CalendarDays, ClipboardList, RefreshCw, Scissors,
+  Target, CalendarDays, ClipboardList, RefreshCw, Scissors, Calendar as CalendarIcon, Ship,
 } from 'lucide-react';
 
 import { DayPlanTab } from '@/components/planning/DayPlanTab';
+import { WeekPlanTab } from '@/components/planning/WeekPlanTab';
+import { MonthPlanTab } from '@/components/planning/MonthPlanTab';
+import { SeasonPlanTab } from '@/components/planning/SeasonPlanTab';
 import { LineRunningDaysTab } from '@/components/planning/LineRunningDaysTab';
 import { StyleChangeoverTab } from '@/components/planning/StyleChangeoverTab';
 import { SampleMakingTab } from '@/components/planning/SampleMakingTab';
@@ -31,7 +34,7 @@ export default function PlanningModule() {
             Planning Module
           </h1>
           <p className="text-sm text-muted-foreground">
-            Day Plan, Line Running Days, Style Changeovers & Sample Making
+            Day, Week, Month & Season Plans — Line Running Days, Style Changeovers & Samples
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -80,6 +83,15 @@ export default function PlanningModule() {
           <TabsTrigger value="day_plan" className="gap-1.5 text-xs">
             <ClipboardList className="h-3.5 w-3.5" /> Day Plan
           </TabsTrigger>
+          <TabsTrigger value="week_plan" className="gap-1.5 text-xs">
+            <CalendarIcon className="h-3.5 w-3.5" /> Week Plan
+          </TabsTrigger>
+          <TabsTrigger value="month_plan" className="gap-1.5 text-xs">
+            <CalendarDays className="h-3.5 w-3.5" /> Month Plan
+          </TabsTrigger>
+          <TabsTrigger value="season_plan" className="gap-1.5 text-xs">
+            <Ship className="h-3.5 w-3.5" /> Season Plan
+          </TabsTrigger>
           <TabsTrigger value="line_running" className="gap-1.5 text-xs">
             <CalendarDays className="h-3.5 w-3.5" /> Line Running Days
           </TabsTrigger>
@@ -93,6 +105,18 @@ export default function PlanningModule() {
 
         <TabsContent value="day_plan" className="mt-4">
           <DayPlanTab factoryId={factoryId} selectedDate={dateStr} department={department} />
+        </TabsContent>
+
+        <TabsContent value="week_plan" className="mt-4">
+          <WeekPlanTab factoryId={factoryId} selectedDate={dateStr} department={department} />
+        </TabsContent>
+
+        <TabsContent value="month_plan" className="mt-4">
+          <MonthPlanTab factoryId={factoryId} selectedDate={dateStr} department={department} />
+        </TabsContent>
+
+        <TabsContent value="season_plan" className="mt-4">
+          <SeasonPlanTab factoryId={factoryId} department={department} />
         </TabsContent>
 
         <TabsContent value="line_running" className="mt-4">

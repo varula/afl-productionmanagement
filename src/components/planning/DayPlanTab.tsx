@@ -37,11 +37,11 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
   const [plannedEff, setPlannedEff] = useState(60);
   const [targetEff, setTargetEff] = useState(65);
 
-  // Bulk add state
-  const [bulkStyleId, setBulkStyleId] = useState('');
+  // Bulk add state - per-line configuration
   const [bulkWorkingHours, setBulkWorkingHours] = useState(8);
   const [bulkPlannedEff, setBulkPlannedEff] = useState(60);
   const [bulkTargetEff, setBulkTargetEff] = useState(65);
+  const [perLineConfig, setPerLineConfig] = useState<Record<string, { styleId: string; ops: number; helpers: number }>>({});
 
   const { data: lines = [] } = useQuery({
     queryKey: ['lines-for-plans', factoryId, department],
@@ -151,7 +151,11 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
   };
 
   const openBulkAdd = () => {
-    setBulkStyleId('');
+    const config: Record<string, { styleId: string; ops: number; helpers: number }> = {};
+    for (const l of unplannedLines as any[]) {
+      config[l.id] = { styleId: '', ops: l.operator_count || 0, helpers: l.helper_count || 0 };
+    }
+    setPerLineConfig(config);
     setBulkWorkingHours(8);
     setBulkPlannedEff(60);
     setBulkTargetEff(65);
@@ -218,23 +222,22 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
 
   const bulkAddMutation = useMutation({
     mutationFn: async () => {
-      if (!bulkStyleId) throw new Error('Select a style');
       if (unplannedLines.length === 0) throw new Error('All lines already have plans');
+      const configEntries = Object.entries(perLineConfig);
+      const validEntries = configEntries.filter(([, c]) => c.styleId);
+      if (validEntries.length === 0) throw new Error('Select a style for at least one line');
 
-      const style = styles.find(s => s.id === bulkStyleId);
-      const smv = Number(style?.smv) || 0;
-
-      const newPlans = unplannedLines.map((line: any) => {
-        const ops = line.operator_count || 0;
-        const helpers = line.helper_count || 0;
-        const target = autoCalcTarget(ops, bulkWorkingHours, bulkPlannedEff, smv);
+      const newPlans = validEntries.map(([lineId, config]) => {
+        const style = styles.find(s => s.id === config.styleId);
+        const smv = Number(style?.smv) || 0;
+        const target = autoCalcTarget(config.ops, bulkWorkingHours, bulkPlannedEff, smv);
         return {
           date: selectedDate,
-          line_id: line.id,
-          style_id: bulkStyleId,
+          line_id: lineId,
+          style_id: config.styleId,
           target_qty: target,
-          planned_operators: ops,
-          planned_helpers: helpers,
+          planned_operators: config.ops,
+          planned_helpers: config.helpers,
           working_hours: bulkWorkingHours,
           planned_efficiency: bulkPlannedEff,
           target_efficiency: bulkTargetEff,
@@ -309,7 +312,7 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
   });
 
   const selectedStyle = styles.find(s => s.id === styleId);
-  const bulkSelectedStyle = styles.find(s => s.id === bulkStyleId);
+  const configuredCount = Object.values(perLineConfig).filter(c => c.styleId).length;
 
   return (
     <div className="space-y-4">
@@ -510,32 +513,42 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
 
       {/* Bulk Add Dialog */}
       <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Layers className="h-4 w-4 text-primary" />
               Add All {unplannedLines.length} Lines
             </DialogTitle>
             <DialogDescription>
-              Create plans for all {unplannedLines.length} unplanned {department} lines at once. Each line's operator/helper count from setup will be used, and target qty will be auto-calculated.
+              Select a style, operators, and helpers for each line individually. Target qty is auto-calculated per line.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Style (same for all lines) *</Label>
-              <Select value={bulkStyleId} onValueChange={(id) => {
-                setBulkStyleId(id);
-                const style = styles.find(s => s.id === id);
-                if (style) setBulkTargetEff(Number(style.target_efficiency));
-              }}>
-                <SelectTrigger><SelectValue placeholder="Select style" /></SelectTrigger>
-                <SelectContent>
-                  {styles.map(s => (
-                    <SelectItem key={s.id} value={s.id}>{s.style_no} — {s.buyer} (SMV: {s.smv})</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Apply same style to all */}
+            <div className="flex items-end gap-2">
+              <div className="flex-1 space-y-1.5">
+                <Label className="text-xs">Quick: Apply same style to all lines</Label>
+                <Select onValueChange={(id) => {
+                  const style = styles.find(s => s.id === id);
+                  if (style) setBulkTargetEff(Number(style.target_efficiency));
+                  setPerLineConfig(prev => {
+                    const updated = { ...prev };
+                    for (const key of Object.keys(updated)) {
+                      updated[key] = { ...updated[key], styleId: id };
+                    }
+                    return updated;
+                  });
+                }}>
+                  <SelectTrigger><SelectValue placeholder="Apply style to all..." /></SelectTrigger>
+                  <SelectContent>
+                    {styles.map(s => (
+                      <SelectItem key={s.id} value={s.id}>{s.style_no} — {s.buyer} (SMV: {s.smv})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs">Working Hours</Label>
@@ -551,44 +564,65 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
               </div>
             </div>
 
-            {bulkSelectedStyle && (
-              <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2">
-                <strong>{bulkSelectedStyle.style_no}</strong> | Buyer: {bulkSelectedStyle.buyer} | SMV: {bulkSelectedStyle.smv}
-              </div>
-            )}
-
-            {/* Preview of lines to be added */}
-            <div className="border rounded-md overflow-hidden max-h-[200px] overflow-y-auto">
+            {/* Per-line configuration table */}
+            <div className="border rounded-md overflow-hidden max-h-[350px] overflow-y-auto">
               <table className="w-full text-xs">
-                <thead>
-                  <tr className="bg-muted/30 border-b">
-                    <th className="text-left px-2.5 py-1.5 font-semibold text-muted-foreground">Line</th>
-                    <th className="text-left px-2.5 py-1.5 font-semibold text-muted-foreground">Floor</th>
-                    <th className="text-right px-2.5 py-1.5 font-semibold text-muted-foreground">Ops</th>
-                    <th className="text-right px-2.5 py-1.5 font-semibold text-muted-foreground">Target</th>
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-muted/50 border-b">
+                    <th className="text-left px-2 py-1.5 font-semibold text-muted-foreground">Line</th>
+                    <th className="text-left px-2 py-1.5 font-semibold text-muted-foreground">Floor</th>
+                    <th className="text-left px-2 py-1.5 font-semibold text-muted-foreground min-w-[160px]">Style *</th>
+                    <th className="text-right px-2 py-1.5 font-semibold text-muted-foreground w-16">Ops</th>
+                    <th className="text-right px-2 py-1.5 font-semibold text-muted-foreground w-16">Helpers</th>
+                    <th className="text-right px-2 py-1.5 font-semibold text-muted-foreground w-20">Target</th>
                   </tr>
                 </thead>
                 <tbody>
                   {unplannedLines.map((l: any) => {
-                    const smv = Number(bulkSelectedStyle?.smv) || 0;
-                    const target = autoCalcTarget(l.operator_count || 0, bulkWorkingHours, bulkPlannedEff, smv);
+                    const lineConfig = perLineConfig[l.id] || { styleId: '', ops: l.operator_count || 0, helpers: l.helper_count || 0 };
+                    const selectedLineStyle = styles.find(s => s.id === lineConfig.styleId);
+                    const smv = Number(selectedLineStyle?.smv) || 0;
+                    const target = autoCalcTarget(lineConfig.ops, bulkWorkingHours, bulkPlannedEff, smv);
                     return (
                       <tr key={l.id} className="border-b border-border/30">
-                        <td className="px-2.5 py-1.5 font-medium">L{l.line_number}</td>
-                        <td className="px-2.5 py-1.5 text-muted-foreground">{l.floors?.name}</td>
-                        <td className="px-2.5 py-1.5 text-right">{l.operator_count || 0}</td>
-                        <td className="px-2.5 py-1.5 text-right font-bold">{target > 0 ? target.toLocaleString() : '—'}</td>
+                        <td className="px-2 py-1.5 font-medium">L{l.line_number}</td>
+                        <td className="px-2 py-1.5 text-muted-foreground">{l.floors?.name}</td>
+                        <td className="px-2 py-1">
+                          <Select value={lineConfig.styleId} onValueChange={(id) => {
+                            setPerLineConfig(prev => ({
+                              ...prev,
+                              [l.id]: { ...prev[l.id], styleId: id },
+                            }));
+                          }}>
+                            <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
+                            <SelectContent>
+                              {styles.map(s => (
+                                <SelectItem key={s.id} value={s.id}>{s.style_no} — {s.buyer}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="px-2 py-1">
+                          <Input type="number" min={0} className="h-7 text-xs text-right w-16" value={lineConfig.ops}
+                            onChange={e => setPerLineConfig(prev => ({ ...prev, [l.id]: { ...prev[l.id], ops: Number(e.target.value) } }))} />
+                        </td>
+                        <td className="px-2 py-1">
+                          <Input type="number" min={0} className="h-7 text-xs text-right w-16" value={lineConfig.helpers}
+                            onChange={e => setPerLineConfig(prev => ({ ...prev, [l.id]: { ...prev[l.id], helpers: Number(e.target.value) } }))} />
+                        </td>
+                        <td className="px-2 py-1.5 text-right font-bold">{target > 0 ? target.toLocaleString() : '—'}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
             </div>
+            <p className="text-xs text-muted-foreground">{configuredCount} of {unplannedLines.length} lines configured</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setBulkDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => bulkAddMutation.mutate()} disabled={!bulkStyleId || bulkAddMutation.isPending}>
-              {bulkAddMutation.isPending ? 'Creating...' : `Create ${unplannedLines.length} Plans`}
+            <Button onClick={() => bulkAddMutation.mutate()} disabled={configuredCount === 0 || bulkAddMutation.isPending}>
+              {bulkAddMutation.isPending ? 'Creating...' : `Create ${configuredCount} Plans`}
             </Button>
           </DialogFooter>
         </DialogContent>
