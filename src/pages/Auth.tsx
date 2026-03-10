@@ -122,7 +122,7 @@ export default function Auth() {
           </div>
           <CardTitle className="text-xl font-extrabold">Armana Fashions Limited</CardTitle>
           <CardDescription className="text-xs">
-            {isLogin ? 'Sign in to your production management system' : 'Create a new account'}
+            {isForgotPassword ? 'Reset your password' : isLogin ? 'Sign in to your production management system' : 'Create a new account'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
