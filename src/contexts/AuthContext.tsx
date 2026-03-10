@@ -27,8 +27,8 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [roles, setRoles] = useState<AppRole[]>(['admin']); // Default to admin for testing
-  const [isApproved, setIsApproved] = useState(true); // Default to approved for testing
+  const [roles, setRoles] = useState<AppRole[]>([]);
+  const [isApproved, setIsApproved] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchRoles = async (userId: string) => {
@@ -39,9 +39,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', userId);
       if (data && data.length > 0) {
         setRoles(data.map((r) => r.role as AppRole));
+      } else {
+        setRoles(['operator']);
       }
     } catch (e) {
       console.warn('Could not fetch roles:', e);
+      setRoles(['operator']);
     }
   };
 
@@ -53,39 +56,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', userId)
         .maybeSingle();
       if (data) {
-        setIsApproved(data.is_approved ?? true);
+        setIsApproved(data.is_approved ?? false);
       }
     } catch (e) {
       console.warn('Could not fetch profile:', e);
     }
   };
 
-  const autoSignIn = async () => {
-    // Seed test admin via edge function
-    try {
-      await supabase.functions.invoke('seed-test-admin');
-    } catch (e) {
-      console.warn('Seed function not available:', e);
-    }
-
-    // Sign in with test credentials
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: 'admin@test.com',
-        password: 'admin123456',
-      });
-      if (error) {
-        console.error('Auto sign-in failed:', error.message);
-      }
-    } catch (e) {
-      console.error('Sign-in error:', e);
-    }
-    // Always set loading to false after attempting
-    setLoading(false);
-  };
-
   useEffect(() => {
-    // Timeout to prevent infinite loading
     const timeout = setTimeout(() => {
       setLoading(false);
     }, 5000);
@@ -98,6 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (newSession?.user) {
           await fetchRoles(newSession.user.id);
           await fetchProfile(newSession.user.id);
+        } else {
+          setRoles([]);
+          setIsApproved(false);
         }
         setLoading(false);
         clearTimeout(timeout);
@@ -111,12 +92,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(existing.user);
         await fetchRoles(existing.user.id);
         await fetchProfile(existing.user.id);
-        setLoading(false);
-        clearTimeout(timeout);
-      } else {
-        // No session — auto sign in with test admin
-        await autoSignIn();
       }
+      setLoading(false);
+      clearTimeout(timeout);
     });
 
     return () => {
