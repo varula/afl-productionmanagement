@@ -619,6 +619,136 @@ export type Database = {
           },
         ]
       }
+      orders: {
+        Row: {
+          bom: string | null
+          bom_cc_description: string | null
+          booking_period: string | null
+          bulk_yy: number | null
+          channel: string | null
+          color_description: string | null
+          confirmed_units: number
+          created_at: string
+          dpo_number: string | null
+          dpo_qty: number
+          fabric_description: string | null
+          factory_id: string | null
+          final_quantity: number
+          id: string
+          market: string | null
+          master_style_no: string
+          mill: string | null
+          po_number: string | null
+          published_indc_date: string | null
+          published_units: number
+          rd_number: string | null
+          remarks: string | null
+          season: string
+          ship_cancel_date: string | null
+          shipment_id: string | null
+          shipped_qty: number
+          status: string
+          style_description: string | null
+          style_id: string | null
+          subcon_name: string | null
+          total_fabric_requirement: number | null
+          trigger_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          bom?: string | null
+          bom_cc_description?: string | null
+          booking_period?: string | null
+          bulk_yy?: number | null
+          channel?: string | null
+          color_description?: string | null
+          confirmed_units?: number
+          created_at?: string
+          dpo_number?: string | null
+          dpo_qty?: number
+          fabric_description?: string | null
+          factory_id?: string | null
+          final_quantity?: number
+          id?: string
+          market?: string | null
+          master_style_no?: string
+          mill?: string | null
+          po_number?: string | null
+          published_indc_date?: string | null
+          published_units?: number
+          rd_number?: string | null
+          remarks?: string | null
+          season?: string
+          ship_cancel_date?: string | null
+          shipment_id?: string | null
+          shipped_qty?: number
+          status?: string
+          style_description?: string | null
+          style_id?: string | null
+          subcon_name?: string | null
+          total_fabric_requirement?: number | null
+          trigger_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bom?: string | null
+          bom_cc_description?: string | null
+          booking_period?: string | null
+          bulk_yy?: number | null
+          channel?: string | null
+          color_description?: string | null
+          confirmed_units?: number
+          created_at?: string
+          dpo_number?: string | null
+          dpo_qty?: number
+          fabric_description?: string | null
+          factory_id?: string | null
+          final_quantity?: number
+          id?: string
+          market?: string | null
+          master_style_no?: string
+          mill?: string | null
+          po_number?: string | null
+          published_indc_date?: string | null
+          published_units?: number
+          rd_number?: string | null
+          remarks?: string | null
+          season?: string
+          ship_cancel_date?: string | null
+          shipment_id?: string | null
+          shipped_qty?: number
+          status?: string
+          style_description?: string | null
+          style_id?: string | null
+          subcon_name?: string | null
+          total_fabric_requirement?: number | null
+          trigger_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_factory_id_fkey"
+            columns: ["factory_id"]
+            isOneToOne: false
+            referencedRelation: "factories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_style_id_fkey"
+            columns: ["style_id"]
+            isOneToOne: false
+            referencedRelation: "styles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       production_plans: {
         Row: {
           created_at: string
