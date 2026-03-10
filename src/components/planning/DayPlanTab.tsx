@@ -151,7 +151,11 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
   };
 
   const openBulkAdd = () => {
-    setBulkStyleId('');
+    const config: Record<string, { styleId: string; ops: number; helpers: number }> = {};
+    for (const l of unplannedLines as any[]) {
+      config[l.id] = { styleId: '', ops: l.operator_count || 0, helpers: l.helper_count || 0 };
+    }
+    setPerLineConfig(config);
     setBulkWorkingHours(8);
     setBulkPlannedEff(60);
     setBulkTargetEff(65);
