@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { Ship, CalendarDays, Target, AlertTriangle, CheckCircle2, Plus, Pencil, Trash2, Upload, Download, ArrowLeft } from 'lucide-react';
 import { format, parseISO, differenceInDays, addMonths, subDays } from 'date-fns';
 import { exportToExcel, parseExcelFile, downloadTemplate } from '@/lib/excel-utils';
+import { SeasonGanttChart } from './SeasonGanttChart';
 
 interface SeasonPlanTabProps {
   factoryId: string;
