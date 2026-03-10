@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useOutletContext } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import {
   Users, Shield, Crown, UserCheck, User as UserIcon, CheckCircle2, XCircle, Clock,
-  Trash2, Pencil, UserPlus, Search,
+  Trash2, Pencil, Search,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -28,13 +29,20 @@ const ROLE_CONFIG: Record<AppRole, { label: string; color: string; icon: typeof 
 
 const ALL_ROLES: AppRole[] = ['admin', 'manager', 'line_chief', 'operator'];
 
-type StatusFilter = 'all' | 'pending' | 'approved';
-type SidebarFilter = StatusFilter | AppRole;
+const FILTER_MAP: Record<string, { type: 'status' | 'role' | 'all'; value?: string }> = {
+  'usr-all': { type: 'all' },
+  'usr-pending': { type: 'status', value: 'pending' },
+  'usr-approved': { type: 'status', value: 'approved' },
+  'usr-admin': { type: 'role', value: 'admin' },
+  'usr-manager': { type: 'role', value: 'manager' },
+  'usr-linechief': { type: 'role', value: 'line_chief' },
+  'usr-operator': { type: 'role', value: 'operator' },
+};
 
 export default function UserManagementPage() {
   const { user: currentUser } = useAuth();
+  const { activeFilter } = useOutletContext<{ activeFilter: string }>();
   const queryClient = useQueryClient();
-  const [activeFilter, setActiveFilter] = useState<SidebarFilter>('all');
   const [search, setSearch] = useState('');
   const [editUser, setEditUser] = useState<any | null>(null);
   const [editName, setEditName] = useState('');
