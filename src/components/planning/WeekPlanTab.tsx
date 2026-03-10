@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CalendarDays, Target, TrendingUp, Users } from 'lucide-react';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, parseISO } from 'date-fns';
+import { format, startOfWeek, addDays, eachDayOfInterval, parseISO, getDay } from 'date-fns';
 
 interface WeekPlanTabProps {
   factoryId: string;
@@ -14,8 +14,9 @@ interface WeekPlanTabProps {
 }
 
 export function WeekPlanTab({ factoryId, selectedDate, department }: WeekPlanTabProps) {
-  const weekStart = startOfWeek(parseISO(selectedDate), { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(parseISO(selectedDate), { weekStartsOn: 1 });
+  // Week: Saturday (6) to Thursday (4) — 6 working days, Friday off
+  const weekStart = startOfWeek(parseISO(selectedDate), { weekStartsOn: 6 });
+  const weekEnd = addDays(weekStart, 5); // Saturday + 5 = Thursday
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
   const weekStartStr = format(weekStart, 'yyyy-MM-dd');
   const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
