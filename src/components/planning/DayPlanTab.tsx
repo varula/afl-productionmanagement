@@ -80,6 +80,33 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
     enabled: lineIds.length > 0,
   });
 
+  // Fetch season plan context for styles being sewn today (PO, O/Q, sew status, ship CXL)
+  const styleIdsInPlans = useMemo(() => [...new Set((plans as any[]).map(p => p.style_id).filter(Boolean))], [plans]);
+  const { data: seasonContext = [] } = useQuery({
+    queryKey: ['day-plan-season-context', styleIdsInPlans],
+    queryFn: async () => {
+      if (!styleIdsInPlans.length) return [];
+      const { data } = await supabase
+        .from('season_plan_entries')
+        .select('style_id, order_qty, sew_complete_qty, sew_balance, po_number, dpo_number, ship_date, status, line_id, orders!season_plan_entries_order_id_fkey(ship_cancel_date, style_description)')
+        .in('style_id', styleIdsInPlans);
+      return data ?? [];
+    },
+    enabled: styleIdsInPlans.length > 0,
+  });
+
+  // Map style_id+line_id to season context
+  const seasonMap = useMemo(() => {
+    const m = new Map<string, any>();
+    for (const s of seasonContext as any[]) {
+      // Key by style_id (first match wins, prefer same line)
+      const key = s.style_id;
+      if (!m.has(key)) m.set(key, s);
+    }
+    return m;
+  }, [seasonContext]);
+  });
+
   // Get hourly production for present operators
   const planIds = plans.map((p: any) => p.id);
   const { data: hourlyData = [] } = useQuery({
