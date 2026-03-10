@@ -98,7 +98,7 @@ export function WeekPlanTab({ factoryId, selectedDate, department }: WeekPlanTab
           { label: 'Week', value: `${format(weekStart, 'MMM d')} – ${format(weekEnd, 'MMM d')}`, icon: CalendarDays, color: 'text-primary' },
           { label: 'Total Target', value: totalTarget.toLocaleString(), icon: Target, color: 'text-success' },
           { label: 'Total Output', value: totalOutput.toLocaleString(), icon: TrendingUp, color: 'text-accent' },
-          { label: 'Days Planned', value: `${plannedDays} / 7`, icon: Users, color: 'text-primary' },
+          { label: 'Days Planned', value: `${plannedDays} / 6`, icon: Users, color: 'text-primary' },
         ].map(k => (
           <Card key={k.label} className="border-[1.5px]">
             <CardContent className="p-3">

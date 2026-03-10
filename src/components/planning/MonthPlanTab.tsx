@@ -20,11 +20,15 @@ export function MonthPlanTab({ factoryId, selectedDate, department }: MonthPlanT
   const monthEndStr = format(monthEnd, 'yyyy-MM-dd');
 
   const weeks = useMemo(() => {
-    const starts = eachWeekOfInterval({ start: monthStart, end: monthEnd }, { weekStartsOn: 1 });
-    return starts.map(ws => ({
-      start: ws < monthStart ? monthStart : ws,
-      end: endOfWeek(ws, { weekStartsOn: 1 }) > monthEnd ? monthEnd : endOfWeek(ws, { weekStartsOn: 1 }),
-    }));
+    // Week starts on Saturday (6), ends on Thursday (Sat + 5 days)
+    const starts = eachWeekOfInterval({ start: monthStart, end: monthEnd }, { weekStartsOn: 6 });
+    return starts.map(ws => {
+      const wEnd = addDays(ws, 5); // Saturday + 5 = Thursday
+      return {
+        start: ws < monthStart ? monthStart : ws,
+        end: wEnd > monthEnd ? monthEnd : wEnd,
+      };
+    });
   }, [monthStart, monthEnd]);
 
   const { data: lines = [] } = useQuery({
