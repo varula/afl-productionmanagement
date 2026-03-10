@@ -11,6 +11,8 @@ import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 
 const ICON_MAP: Record<string, any> = {
   FileCheck, Scissors, ShieldCheck: Shield, Shirt, Shield, PackageCheck, ClipboardCheck, Building, Warehouse,
+  shield: Shield, filecheck: FileCheck, scissors: Scissors, shirt: Shirt,
+  packagecheck: PackageCheck, clipboardcheck: ClipboardCheck, building: Building, warehouse: Warehouse,
 };
 
 const SECTION_ROUTES: Record<string, string> = {
