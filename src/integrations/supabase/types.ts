@@ -819,6 +819,98 @@ export type Database = {
           },
         ]
       }
+      season_plan_entries: {
+        Row: {
+          created_at: string
+          factory_id: string | null
+          id: string
+          inspection_date: string | null
+          line_id: string | null
+          order_qty: number
+          plan_cut_date: string | null
+          plan_sew_date: string | null
+          planned_days: number
+          remarks: string | null
+          sew_complete_date: string | null
+          sew_complete_qty: number
+          ship_date: string | null
+          shipment_id: string | null
+          status: string
+          style_id: string
+          target_per_day: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          factory_id?: string | null
+          id?: string
+          inspection_date?: string | null
+          line_id?: string | null
+          order_qty?: number
+          plan_cut_date?: string | null
+          plan_sew_date?: string | null
+          planned_days?: number
+          remarks?: string | null
+          sew_complete_date?: string | null
+          sew_complete_qty?: number
+          ship_date?: string | null
+          shipment_id?: string | null
+          status?: string
+          style_id: string
+          target_per_day?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          factory_id?: string | null
+          id?: string
+          inspection_date?: string | null
+          line_id?: string | null
+          order_qty?: number
+          plan_cut_date?: string | null
+          plan_sew_date?: string | null
+          planned_days?: number
+          remarks?: string | null
+          sew_complete_date?: string | null
+          sew_complete_qty?: number
+          ship_date?: string | null
+          shipment_id?: string | null
+          status?: string
+          style_id?: string
+          target_per_day?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_plan_entries_factory_id_fkey"
+            columns: ["factory_id"]
+            isOneToOne: false
+            referencedRelation: "factories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "season_plan_entries_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "season_plan_entries_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "season_plan_entries_style_id_fkey"
+            columns: ["style_id"]
+            isOneToOne: false
+            referencedRelation: "styles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shipments: {
         Row: {
           actual_delivery: string | null
@@ -834,12 +926,16 @@ export type Database = {
           factory_id: string | null
           id: string
           in_transit_at: string | null
+          inspection_date: string | null
           order_ref: string
           packed_at: string | null
           packed_qty: number
+          plan_cut_date: string | null
+          plan_sew_date: string | null
           production_complete_at: string | null
           quantity: number
           remarks: string | null
+          sew_complete_qty: number
           ship_date: string | null
           shipped_qty: number
           status: Database["public"]["Enums"]["shipment_status"]
@@ -861,12 +957,16 @@ export type Database = {
           factory_id?: string | null
           id?: string
           in_transit_at?: string | null
+          inspection_date?: string | null
           order_ref: string
           packed_at?: string | null
           packed_qty?: number
+          plan_cut_date?: string | null
+          plan_sew_date?: string | null
           production_complete_at?: string | null
           quantity?: number
           remarks?: string | null
+          sew_complete_qty?: number
           ship_date?: string | null
           shipped_qty?: number
           status?: Database["public"]["Enums"]["shipment_status"]
@@ -888,12 +988,16 @@ export type Database = {
           factory_id?: string | null
           id?: string
           in_transit_at?: string | null
+          inspection_date?: string | null
           order_ref?: string
           packed_at?: string | null
           packed_qty?: number
+          plan_cut_date?: string | null
+          plan_sew_date?: string | null
           production_complete_at?: string | null
           quantity?: number
           remarks?: string | null
+          sew_complete_qty?: number
           ship_date?: string | null
           shipped_qty?: number
           status?: Database["public"]["Enums"]["shipment_status"]
