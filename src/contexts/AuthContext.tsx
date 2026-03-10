@@ -4,6 +4,16 @@ import type { Session, User } from '@supabase/supabase-js';
 
 type AppRole = 'admin' | 'manager' | 'line_chief' | 'operator';
 
+const ALLOWED_DOMAINS = ['armanabd.com', 'armanagroup.com'];
+const WHITELISTED_EMAILS = ['dhnperumal@gmail.com'];
+
+function isAllowedEmail(email: string): boolean {
+  const lower = email.toLowerCase();
+  if (WHITELISTED_EMAILS.includes(lower)) return true;
+  const domain = lower.split('@')[1];
+  return ALLOWED_DOMAINS.includes(domain);
+}
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;
