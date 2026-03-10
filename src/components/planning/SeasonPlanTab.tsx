@@ -329,7 +329,7 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
       if (!rows.length) { toast.error('Empty file'); return; }
       const styleMap = new Map(styles.map(s => [s.style_no, s]));
       const lineMap = new Map((lines as any[]).map(l => [`L${l.line_number}`, l]));
-      const entries = rows.map((r: any) => {
+      const entries = (rows as any[]).map((r: any) => {
         const style = styleMap.get(r['Style #']);
         if (!style) return null;
         const line = lineMap.get(r['Line No']);
