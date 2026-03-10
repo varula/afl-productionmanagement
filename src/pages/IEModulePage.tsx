@@ -45,6 +45,7 @@ const CATEGORIES: { key: IECategory; label: string; icon: React.ElementType; des
   { key: 'capacity_study', label: 'Capacity Study', icon: BarChart3, description: 'Line/factory capacity analysis reports' },
   { key: 'time_study', label: 'Time Study', icon: Clock, description: 'Time study follow-up and method improvements' },
   { key: 'machine_inventory', label: 'Machine Inventory', icon: Cpu, description: 'Machine type, brand, condition and allocation' },
+  { key: 'line_balancing', label: 'Line Balancing', icon: GitBranch, description: 'Workload distribution and bottleneck analysis per line' },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
