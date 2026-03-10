@@ -282,7 +282,7 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
         const { error } = await supabase.from('season_plan_entries').update(payload).eq('id', editingId);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('season_plan_entries').insert(payload);
+        const { error } = await supabase.from('season_plan_entries').insert(payload as any);
         if (error) throw error;
       }
     },
