@@ -123,6 +123,10 @@ export default function PlanningModule() {
           <SeasonPlanTab factoryId={factoryId} department={department} />
         </TabsContent>
 
+        <TabsContent value="washing" className="mt-4">
+          <WashingPlanTab factoryId={factoryId} department={department} />
+        </TabsContent>
+
         <TabsContent value="line_running" className="mt-4">
           <LineRunningDaysTab factoryId={factoryId} selectedDate={dateStr} department={department} />
         </TabsContent>
