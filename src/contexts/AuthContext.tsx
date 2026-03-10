@@ -81,6 +81,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
+        if (newSession?.user) {
+          const email = newSession.user.email ?? '';
+          if (!isAllowedEmail(email)) {
+            await supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+            setRoles([]);
+            setIsApproved(false);
+            setLoading(false);
+            clearTimeout(timeout);
+            return;
+          }
+        }
         setSession(newSession);
         setUser(newSession?.user ?? null);
         if (newSession?.user) {
@@ -98,6 +111,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Then check for existing session
     supabase.auth.getSession().then(async ({ data: { session: existing } }) => {
       if (existing?.user) {
+        const email = existing.user.email ?? '';
+        if (!isAllowedEmail(email)) {
+          await supabase.auth.signOut();
+          setLoading(false);
+          clearTimeout(timeout);
+          return;
+        }
         setSession(existing);
         setUser(existing.user);
         await fetchRoles(existing.user.id);
