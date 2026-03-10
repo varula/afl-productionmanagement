@@ -7,11 +7,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, TrendingUp, UserCheck, UserX, PenLine, Eye } from 'lucide-react';
+import { Users, TrendingUp, UserCheck, UserX, PenLine, Eye, Search } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useActiveFilter, useFactoryId } from '@/hooks/useActiveFilter';
 import { toast } from 'sonner';
+
+const DESIGNATIONS = [
+  'Operator', 'Helper', 'Cleaner', 'Sweeper', 'Office Boy', 'Driver',
+  'Supervisor', 'Line Chief', 'Manager', 'Sr. Executive', 'Executive',
+  'Fire Safety Officer', 'Welfare Officer', 'Baby Sitter', 'Canteen Boy',
+  'Site Asst.', 'Personal', 'Mechanic', 'Quality Inspector', 'Iron Man', 'Other'
+];
+
+const EXPERTISE_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
 
 export default function WorkersPage() {
   const activeFilter = useActiveFilter();
@@ -22,18 +31,22 @@ export default function WorkersPage() {
   const [employeeNo, setEmployeeNo] = useState('');
   const [grade, setGrade] = useState<string>('C');
   const [lineId, setLineId] = useState<string>('');
+  const [designation, setDesignation] = useState('Operator');
+  const [salary, setSalary] = useState('');
+  const [operationsCount, setOperationsCount] = useState('');
+  const [expertiseLevel, setExpertiseLevel] = useState('Beginner');
+  const [joinDate, setJoinDate] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { data: operators = [] } = useQuery({
     queryKey: ['workers-operators', factoryId],
     queryFn: async () => {
-      // Get factory floor IDs first, then line IDs, then filter operators by line
       let query = supabase
         .from('operators')
-        .select('id, name, employee_no, grade, is_active, line_id, lines(line_number, type, floor_id, floors(name))')
+        .select('id, name, employee_no, grade, is_active, line_id, joined_at, designation, salary, operations_count, expertise_level, lines(line_number, type, floor_id, floors(name))')
         .order('employee_no');
 
       if (factoryId) {
-        // Get line IDs belonging to this factory via floors
         const { data: floorData } = await supabase.from('floors').select('id').eq('factory_id', factoryId);
         if (floorData && floorData.length > 0) {
           const { data: lineData } = await supabase.from('lines').select('id').in('floor_id', floorData.map(f => f.id));
@@ -77,8 +90,16 @@ export default function WorkersPage() {
   const addMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from('operators').insert({
-        name, employee_no: employeeNo, grade: grade as any, factory_id: factoryId,
+        name,
+        employee_no: employeeNo,
+        grade: grade as any,
+        factory_id: factoryId,
         line_id: lineId || null,
+        designation,
+        salary: salary ? Number(salary) : 0,
+        operations_count: operationsCount ? Number(operationsCount) : 0,
+        expertise_level: expertiseLevel,
+        joined_at: joinDate || null,
       });
       if (error) throw error;
     },
@@ -86,11 +107,12 @@ export default function WorkersPage() {
       queryClient.invalidateQueries({ queryKey: ['workers-operators'] });
       toast.success('Operator added');
       setName(''); setEmployeeNo(''); setGrade('C'); setLineId('');
+      setDesignation('Operator'); setSalary(''); setOperationsCount('');
+      setExpertiseLevel('Beginner'); setJoinDate('');
     },
     onError: (e: any) => toast.error(e.message),
   });
 
-  // Grade distribution
   const gradeData = useMemo(() => {
     const counts: Record<string, number> = { A: 0, B: 0, C: 0, D: 0 };
     for (const op of operators as any[]) counts[op.grade] = (counts[op.grade] ?? 0) + 1;
@@ -117,6 +139,16 @@ export default function WorkersPage() {
     const match = floorBreakdown.filter(f => f.key === activeFilter);
     return match.length > 0 ? match : floorBreakdown;
   }, [activeFilter, floorBreakdown]);
+
+  const filteredOperators = useMemo(() => {
+    if (!searchTerm) return operators as any[];
+    const term = searchTerm.toLowerCase();
+    return (operators as any[]).filter(op =>
+      op.name?.toLowerCase().includes(term) ||
+      op.employee_no?.toLowerCase().includes(term) ||
+      op.designation?.toLowerCase().includes(term)
+    );
+  }, [operators, searchTerm]);
 
   const totalWorkers = filtered.reduce((s, f) => s + f.total, 0);
   const totalPresent = filtered.reduce((s, f) => s + f.present, 0);
@@ -194,20 +226,103 @@ export default function WorkersPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Full Directory Table */}
+        <Card className="border-[1.5px]">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-[13px] font-bold">Worker Directory ({filteredOperators.length})</CardTitle>
+            <div className="relative w-60">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="Search name, ID, designation..."
+                className="pl-8 h-8 text-xs"
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="text-left py-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold w-10">SL.#</th>
+                    <th className="text-left py-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Emp. ID</th>
+                    <th className="text-left py-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Name</th>
+                    <th className="text-left py-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Designation</th>
+                    <th className="text-left py-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Line</th>
+                    <th className="text-center py-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Grade</th>
+                    <th className="text-center py-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Expertise</th>
+                    <th className="text-center py-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Ops</th>
+                    <th className="text-left py-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Join Date</th>
+                    <th className="text-right py-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Salary</th>
+                    <th className="text-center py-2 px-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredOperators.map((op: any, i: number) => (
+                    <tr key={op.id} className={`border-b border-border/50 hover:bg-muted/30 ${i % 2 === 0 ? 'bg-background' : 'bg-muted/10'}`}>
+                      <td className="py-1.5 px-2 text-xs text-muted-foreground">{i + 1}</td>
+                      <td className="py-1.5 px-2 font-mono text-xs text-foreground font-medium">{op.employee_no}</td>
+                      <td className="py-1.5 px-2 font-medium text-foreground text-xs">{op.name}</td>
+                      <td className="py-1.5 px-2 text-xs text-muted-foreground uppercase">{op.designation || 'Operator'}</td>
+                      <td className="py-1.5 px-2 text-xs text-muted-foreground">
+                        {op.lines ? `${(op.lines as any).type === 'cutting' ? 'Table' : 'Line'} ${(op.lines as any).line_number}` : '—'}
+                      </td>
+                      <td className="py-1.5 px-2 text-center">
+                        <Badge variant="outline" className="text-[10px]">{op.grade}</Badge>
+                      </td>
+                      <td className="py-1.5 px-2 text-center">
+                        <Badge variant="outline" className={`text-[10px] ${
+                          op.expertise_level === 'Expert' ? 'bg-success/15 text-success border-success/30' :
+                          op.expertise_level === 'Advanced' ? 'bg-accent/15 text-accent border-accent/30' :
+                          op.expertise_level === 'Intermediate' ? 'bg-warning/15 text-warning border-warning/30' :
+                          'bg-muted text-muted-foreground'
+                        }`}>
+                          {op.expertise_level || 'Beginner'}
+                        </Badge>
+                      </td>
+                      <td className="py-1.5 px-2 text-center text-xs font-medium text-foreground">{op.operations_count || 0}</td>
+                      <td className="py-1.5 px-2 text-xs text-muted-foreground">{op.joined_at || '—'}</td>
+                      <td className="py-1.5 px-2 text-right text-xs font-medium text-foreground">{op.salary ? Number(op.salary).toLocaleString() : '—'}</td>
+                      <td className="py-1.5 px-2 text-center">
+                        <Badge variant="outline" className={`text-[10px] ${op.is_active ? 'bg-success/15 text-success border-success/30' : 'bg-pink/15 text-pink border-pink/30'}`}>
+                          {op.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredOperators.length === 0 && (
+                    <tr><td colSpan={11} className="py-8 text-center text-sm text-muted-foreground">No workers found</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </TabsContent>
 
       <TabsContent value="entry" className="space-y-4 mt-0">
         <Card className="border-[1.5px]">
-          <CardHeader className="pb-2"><CardTitle className="text-[13px] font-bold">Add New Operator</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-[13px] font-bold">Add New Worker</CardTitle></CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs">Full Name</Label>
                 <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Ahmed Khan" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Employee No</Label>
-                <Input value={employeeNo} onChange={e => setEmployeeNo(e.target.value)} placeholder="e.g. EMP-0421" />
+                <Label className="text-xs">Employee ID</Label>
+                <Input value={employeeNo} onChange={e => setEmployeeNo(e.target.value)} placeholder="e.g. 1001" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Designation</Label>
+                <Select value={designation} onValueChange={setDesignation}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {DESIGNATIONS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs">Grade</Label>
@@ -234,46 +349,31 @@ export default function WorkersPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Expertise Level</Label>
+                <Select value={expertiseLevel} onValueChange={setExpertiseLevel}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {EXPERTISE_LEVELS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Operations Can Handle</Label>
+                <Input type="number" value={operationsCount} onChange={e => setOperationsCount(e.target.value)} placeholder="e.g. 5" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Join Date</Label>
+                <Input type="date" value={joinDate} onChange={e => setJoinDate(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Salary</Label>
+                <Input type="number" value={salary} onChange={e => setSalary(e.target.value)} placeholder="e.g. 8198" />
+              </div>
             </div>
             <Button className="mt-4" onClick={() => addMutation.mutate()} disabled={!name || !employeeNo || addMutation.isPending}>
-              {addMutation.isPending ? 'Saving...' : 'Add Operator'}
+              {addMutation.isPending ? 'Saving...' : 'Add Worker'}
             </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[1.5px]">
-          <CardHeader className="pb-2"><CardTitle className="text-[13px] font-bold">Operator Directory ({(operators as any[]).length})</CardTitle></CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Emp #</th>
-                    <th className="text-left py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Name</th>
-                    <th className="text-center py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Grade</th>
-                    <th className="text-left py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Line</th>
-                    <th className="text-center py-2 px-3 text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(operators as any[]).map((op, i) => (
-                    <tr key={op.id} className="border-b border-border/50 hover:bg-muted/30 animate-pop-in" style={{ animationDelay: `${i * 20}ms` }}>
-                      <td className="py-2 px-3 font-mono text-xs text-foreground">{op.employee_no}</td>
-                      <td className="py-2 px-3 font-medium text-foreground">{op.name}</td>
-                      <td className="py-2 px-3 text-center"><Badge variant="outline" className="text-[10px]">{op.grade}</Badge></td>
-                      <td className="py-2 px-3 text-muted-foreground text-xs">
-                        {op.lines ? `${(op.lines as any).type === 'cutting' ? 'Table' : 'Line'} ${(op.lines as any).line_number}` : '—'}
-                      </td>
-                      <td className="py-2 px-3 text-center">
-                        <Badge variant="outline" className={`text-[10px] ${op.is_active ? 'bg-success/15 text-success border-success/30' : 'bg-pink/15 text-pink border-pink/30'}`}>
-                          {op.is_active ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           </CardContent>
         </Card>
       </TabsContent>
