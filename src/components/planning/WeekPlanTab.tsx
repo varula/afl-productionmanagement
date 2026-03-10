@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CalendarDays, Target, TrendingUp, Users } from 'lucide-react';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, parseISO } from 'date-fns';
+import { format, startOfWeek, addDays, eachDayOfInterval, parseISO } from 'date-fns';
 
 interface WeekPlanTabProps {
   factoryId: string;
@@ -14,8 +14,9 @@ interface WeekPlanTabProps {
 }
 
 export function WeekPlanTab({ factoryId, selectedDate, department }: WeekPlanTabProps) {
-  const weekStart = startOfWeek(parseISO(selectedDate), { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(parseISO(selectedDate), { weekStartsOn: 1 });
+  // Week: Saturday (6) to Thursday (4) — 6 working days, Friday off
+  const weekStart = startOfWeek(parseISO(selectedDate), { weekStartsOn: 6 });
+  const weekEnd = addDays(weekStart, 5); // Saturday + 5 = Thursday
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
   const weekStartStr = format(weekStart, 'yyyy-MM-dd');
   const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
@@ -97,7 +98,7 @@ export function WeekPlanTab({ factoryId, selectedDate, department }: WeekPlanTab
           { label: 'Week', value: `${format(weekStart, 'MMM d')} – ${format(weekEnd, 'MMM d')}`, icon: CalendarDays, color: 'text-primary' },
           { label: 'Total Target', value: totalTarget.toLocaleString(), icon: Target, color: 'text-success' },
           { label: 'Total Output', value: totalOutput.toLocaleString(), icon: TrendingUp, color: 'text-accent' },
-          { label: 'Days Planned', value: `${plannedDays} / 7`, icon: Users, color: 'text-primary' },
+          { label: 'Days Planned', value: `${plannedDays} / 6`, icon: Users, color: 'text-primary' },
         ].map(k => (
           <Card key={k.label} className="border-[1.5px]">
             <CardContent className="p-3">

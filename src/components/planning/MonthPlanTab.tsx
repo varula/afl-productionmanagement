@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CalendarDays, Target, TrendingUp, BarChart3 } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachWeekOfInterval, endOfWeek, startOfWeek, parseISO } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachWeekOfInterval, addDays, startOfWeek, parseISO } from 'date-fns';
 
 interface MonthPlanTabProps {
   factoryId: string;
@@ -20,11 +20,15 @@ export function MonthPlanTab({ factoryId, selectedDate, department }: MonthPlanT
   const monthEndStr = format(monthEnd, 'yyyy-MM-dd');
 
   const weeks = useMemo(() => {
-    const starts = eachWeekOfInterval({ start: monthStart, end: monthEnd }, { weekStartsOn: 1 });
-    return starts.map(ws => ({
-      start: ws < monthStart ? monthStart : ws,
-      end: endOfWeek(ws, { weekStartsOn: 1 }) > monthEnd ? monthEnd : endOfWeek(ws, { weekStartsOn: 1 }),
-    }));
+    // Week starts on Saturday (6), ends on Thursday (Sat + 5 days)
+    const starts = eachWeekOfInterval({ start: monthStart, end: monthEnd }, { weekStartsOn: 6 });
+    return starts.map(ws => {
+      const wEnd = addDays(ws, 5); // Saturday + 5 = Thursday
+      return {
+        start: ws < monthStart ? monthStart : ws,
+        end: wEnd > monthEnd ? monthEnd : wEnd,
+      };
+    });
   }, [monthStart, monthEnd]);
 
   const { data: lines = [] } = useQuery({
