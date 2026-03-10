@@ -315,10 +315,13 @@ export default function ShipmentsPage() {
                 <TableRow>
                   <TableHead className="text-xs">Order</TableHead>
                   <TableHead className="text-xs">Buyer</TableHead>
+                  <TableHead className="text-xs">Season</TableHead>
+                  <TableHead className="text-xs">PO</TableHead>
                   <TableHead className="text-xs">Destination</TableHead>
+                  <TableHead className="text-xs">Market</TableHead>
                   <TableHead className="text-xs text-right">Qty</TableHead>
-                  <TableHead className="text-xs text-right">Packed</TableHead>
                   <TableHead className="text-xs text-right">Shipped</TableHead>
+                  <TableHead className="text-xs">Ship CXL</TableHead>
                   <TableHead className="text-xs">Status</TableHead>
                   <TableHead className="text-xs">Ship Date</TableHead>
                   <TableHead className="text-xs">ETA</TableHead>
@@ -327,20 +330,24 @@ export default function ShipmentsPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={10} className="text-center text-sm text-muted-foreground py-8">Loading…</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={13} className="text-center text-sm text-muted-foreground py-8">Loading…</TableCell></TableRow>
                 ) : filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={10} className="text-center text-sm text-muted-foreground py-8">No shipments found</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={13} className="text-center text-sm text-muted-foreground py-8">No shipments found</TableCell></TableRow>
                 ) : filtered.map(s => {
                   const cfg = STATUS_CONFIG[s.status];
                   const Icon = cfg.icon;
+                  const ord = s.style_id ? orderMap.get(s.style_id) : null;
                   return (
                     <TableRow key={s.id}>
                       <TableCell className="text-xs font-medium">{s.order_ref}</TableCell>
                       <TableCell className="text-xs">{s.buyer}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{ord?.season || '—'}</TableCell>
+                      <TableCell className="text-xs font-mono">{ord?.po_number || '—'}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{s.destination}</TableCell>
+                      <TableCell className="text-xs">{ord?.market || '—'}</TableCell>
                       <TableCell className="text-xs text-right">{s.quantity.toLocaleString()}</TableCell>
-                      <TableCell className="text-xs text-right">{s.packed_qty.toLocaleString()}</TableCell>
                       <TableCell className="text-xs text-right">{s.shipped_qty.toLocaleString()}</TableCell>
+                      <TableCell className="text-xs font-mono text-destructive">{ord?.ship_cancel_date ? format(new Date(ord.ship_cancel_date), 'dd MMM') : '—'}</TableCell>
                       <TableCell>
                         <Badge className={`${cfg.color} text-xs gap-1`}><Icon className="h-3 w-3" />{cfg.label}</Badge>
                       </TableCell>
