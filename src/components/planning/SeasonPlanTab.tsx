@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -21,15 +20,14 @@ interface SeasonPlanTabProps {
   department: 'sewing' | 'finishing';
 }
 
-// Backward planning defaults (days before delivery)
 const BACKWARD_DEFAULTS = {
-  inspection_to_delivery: 3,    // inspection 3 days before delivery
-  wash_delivery_to_inspection: 2, // wash delivery 2 days before inspection
-  wash_in_house_to_wash_delivery: 3, // wash in-house 3 days before wash delivery
-  wash_out_to_wash_in_house: 5,   // wash out 5 days before wash in-house
-  sew_complete_to_wash_out: 2,    // sew complete 2 days before wash out
-  plan_sew_to_sew_complete: 15,   // sew start 15 days before sew complete
-  plan_cut_to_plan_sew: 5,        // cut start 5 days before sew start
+  inspection_to_delivery: 3,
+  wash_delivery_to_inspection: 2,
+  wash_in_house_to_wash_delivery: 3,
+  wash_out_to_wash_in_house: 5,
+  sew_complete_to_wash_out: 2,
+  plan_sew_to_sew_complete: 15,
+  plan_cut_to_plan_sew: 5,
 };
 
 function calcBackwardDates(deliveryDate: string) {
@@ -41,7 +39,6 @@ function calcBackwardDates(deliveryDate: string) {
   const sewComplete = subDays(washOut, BACKWARD_DEFAULTS.sew_complete_to_wash_out);
   const planSew = subDays(sewComplete, BACKWARD_DEFAULTS.plan_sew_to_sew_complete);
   const planCut = subDays(planSew, BACKWARD_DEFAULTS.plan_cut_to_plan_sew);
-
   return {
     plan_cut_date: format(planCut, 'yyyy-MM-dd'),
     plan_sew_date: format(planSew, 'yyyy-MM-dd'),
@@ -55,12 +52,14 @@ function calcBackwardDates(deliveryDate: string) {
 }
 
 const INITIAL_FORM = {
-  style_id: '', shipment_id: '', line_id: '',
-  order_qty: 0, plan_cut_date: '', plan_sew_date: '',
+  style_id: '', shipment_id: '', line_id: '', order_id: '',
+  order_qty: 0, cut_qty: 0, plan_cut_date: '', plan_sew_date: '',
   sew_complete_date: '', wash_out_date: '', wash_in_house_date: '',
   wash_delivery_date: '', wash_type: 'external',
   inspection_date: '', ship_date: '', delivery_date: '',
-  sew_complete_qty: 0, target_per_day: 0, planned_days: 0,
+  cut_off_date: '', ex_factory_date: '',
+  sew_complete_qty: 0, sew_balance: 0, target_per_day: 0, planned_days: 0,
+  destination: '', wash_plant: '', po_number: '', dpo_number: '',
   remarks: '', status: 'planned',
 };
 
@@ -68,19 +67,18 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const today = new Date();
-  const seasonEnd = format(addMonths(today, 4), 'yyyy-MM-dd');
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ ...INITIAL_FORM });
 
-  const { data: shipments = [] } = useQuery({
-    queryKey: ['season-shipments-crud', factoryId],
+  // Fetch orders for linking
+  const { data: orders = [] } = useQuery({
+    queryKey: ['orders-for-season', factoryId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('shipments')
-        .select('*, styles(style_no, buyer, smv)')
-        .order('expected_delivery', { ascending: true });
+      const q = supabase.from('orders').select('*').order('master_style_no');
+      if (factoryId) q.eq('factory_id', factoryId);
+      const { data } = await q;
       return data ?? [];
     },
   });
@@ -90,7 +88,7 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
     queryFn: async () => {
       const { data } = await supabase
         .from('season_plan_entries')
-        .select('*, styles(style_no, buyer, smv), shipments(order_ref, buyer, quantity, status, expected_delivery), lines(line_number, floors(name))')
+        .select('*, styles(style_no, buyer, smv), lines(line_number, floors(name)), orders!season_plan_entries_order_id_fkey(season, master_style_no, style_description, bom, bom_cc_description, color_description, market, channel, po_number, dpo_number, confirmed_units, ship_cancel_date, factory_id, factories(name))')
         .order('ship_date', { ascending: true });
       return data ?? [];
     },
@@ -116,30 +114,54 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
   });
 
   const seasonData = useMemo(() => {
-    return (seasonEntries as any[]).map(e => ({
-      id: e.id,
-      style: e.styles?.style_no || '',
-      buyer: e.styles?.buyer || e.shipments?.buyer || '',
-      orderRef: e.shipments?.order_ref || '',
-      orderQty: e.order_qty,
-      lineNo: e.lines ? `L${e.lines.line_number}` : '—',
-      planCutDate: e.plan_cut_date,
-      planSewDate: e.plan_sew_date,
-      sewCompleteDate: e.sew_complete_date,
-      washOutDate: e.wash_out_date,
-      washInHouseDate: e.wash_in_house_date,
-      washDeliveryDate: e.wash_delivery_date,
-      washType: e.wash_type || 'external',
-      inspectionDate: e.inspection_date,
-      shipDate: e.ship_date,
-      deliveryDate: e.delivery_date,
-      sewCompleteQty: e.sew_complete_qty,
-      targetPerDay: e.target_per_day,
-      plannedDays: e.planned_days,
-      status: e.status,
-      remarks: e.remarks,
-      daysToShip: e.ship_date ? differenceInDays(parseISO(e.ship_date), today) : 999,
-    })).sort((a, b) => a.daysToShip - b.daysToShip);
+    return (seasonEntries as any[]).map(e => {
+      const ord = e.orders;
+      const orderQty = e.order_qty || ord?.confirmed_units || 0;
+      const cutQty = e.cut_qty || Math.ceil(orderQty * 1.05); // +5% allowance
+      return {
+        id: e.id,
+        // From order
+        season: ord?.season || '',
+        styleDescription: ord?.style_description || '',
+        masterStyle: ord?.master_style_no || '',
+        style: e.styles?.style_no || '',
+        bom: ord?.bom || '',
+        color: ord?.color_description || '',
+        market: ord?.market || '',
+        channel: ord?.channel || '',
+        po: e.po_number || ord?.po_number || '',
+        dpo: e.dpo_number || ord?.dpo_number || '',
+        destination: e.destination || '',
+        shipCxl: ord?.ship_cancel_date || null,
+        // Quantities
+        orderQty,
+        cutQty,
+        sewCompleteQty: e.sew_complete_qty || 0,
+        sewBalance: e.sew_balance || (orderQty - (e.sew_complete_qty || 0)),
+        // Dates
+        cutOffDate: e.cut_off_date,
+        exFactoryDate: e.ex_factory_date,
+        planCutDate: e.plan_cut_date,
+        planSewDate: e.plan_sew_date,
+        sewCompleteDate: e.sew_complete_date,
+        washOutDate: e.wash_out_date,
+        washInHouseDate: e.wash_in_house_date,
+        washDeliveryDate: e.wash_delivery_date,
+        washType: e.wash_type || 'external',
+        washPlant: e.wash_plant || '',
+        inspectionDate: e.inspection_date,
+        shipDate: e.ship_date,
+        deliveryDate: e.delivery_date,
+        // Meta
+        lineNo: e.lines ? `L${e.lines.line_number}` : '—',
+        targetPerDay: e.target_per_day,
+        plannedDays: e.planned_days,
+        status: e.status,
+        remarks: e.remarks,
+        daysToShip: e.ship_date ? differenceInDays(parseISO(e.ship_date), today) : 999,
+        buyer: e.styles?.buyer || '',
+      };
+    }).sort((a, b) => a.daysToShip - b.daysToShip);
   }, [seasonEntries]);
 
   const urgentOrders = seasonData.filter(s => s.daysToShip <= 30 && s.status !== 'completed');
@@ -147,10 +169,32 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
   const updateField = (field: string, value: any) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
-      // Backward planning: when delivery_date changes, auto-calculate all dates
       if (field === 'delivery_date' && value) {
         const dates = calcBackwardDates(value);
         return { ...updated, ...dates };
+      }
+      // When order is selected, auto-fill fields from order
+      if (field === 'order_id' && value) {
+        const order = orders.find((o: any) => o.id === value);
+        if (order) {
+          return {
+            ...updated,
+            style_id: order.style_id || updated.style_id,
+            order_qty: order.confirmed_units || order.final_quantity || updated.order_qty,
+            cut_qty: Math.ceil((order.confirmed_units || order.final_quantity || 0) * 1.05),
+            po_number: order.po_number || '',
+            dpo_number: order.dpo_number || '',
+            destination: '',
+          };
+        }
+      }
+      // Auto-calc cut qty when order qty changes
+      if (field === 'order_qty') {
+        return { ...updated, cut_qty: Math.ceil(Number(value) * 1.05) };
+      }
+      // Auto-calc sew balance
+      if (field === 'sew_complete_qty') {
+        return { ...updated, sew_balance: updated.order_qty - Number(value) };
       }
       return updated;
     });
@@ -170,7 +214,9 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
         style_id: raw.style_id || '',
         shipment_id: raw.shipment_id || '',
         line_id: raw.line_id || '',
+        order_id: raw.order_id || '',
         order_qty: raw.order_qty,
+        cut_qty: raw.cut_qty || Math.ceil(raw.order_qty * 1.05),
         plan_cut_date: raw.plan_cut_date || '',
         plan_sew_date: raw.plan_sew_date || '',
         sew_complete_date: raw.sew_complete_date || '',
@@ -181,9 +227,16 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
         inspection_date: raw.inspection_date || '',
         ship_date: raw.ship_date || '',
         delivery_date: raw.delivery_date || '',
+        cut_off_date: raw.cut_off_date || '',
+        ex_factory_date: raw.ex_factory_date || '',
         sew_complete_qty: raw.sew_complete_qty,
+        sew_balance: raw.sew_balance || (raw.order_qty - raw.sew_complete_qty),
         target_per_day: raw.target_per_day,
         planned_days: raw.planned_days,
+        destination: raw.destination || '',
+        wash_plant: raw.wash_plant || '',
+        po_number: raw.po_number || '',
+        dpo_number: raw.dpo_number || '',
         remarks: raw.remarks || '',
         status: raw.status,
       });
@@ -194,12 +247,14 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!formData.style_id) throw new Error('Select a style');
-      const payload = {
+      const payload: Record<string, any> = {
         factory_id: factoryId || null,
         style_id: formData.style_id,
         shipment_id: formData.shipment_id || null,
         line_id: formData.line_id || null,
+        order_id: formData.order_id || null,
         order_qty: formData.order_qty,
+        cut_qty: formData.cut_qty,
         plan_cut_date: formData.plan_cut_date || null,
         plan_sew_date: formData.plan_sew_date || null,
         sew_complete_date: formData.sew_complete_date || null,
@@ -210,17 +265,24 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
         inspection_date: formData.inspection_date || null,
         ship_date: formData.ship_date || null,
         delivery_date: formData.delivery_date || null,
+        cut_off_date: formData.cut_off_date || null,
+        ex_factory_date: formData.ex_factory_date || null,
         sew_complete_qty: formData.sew_complete_qty,
+        sew_balance: formData.sew_balance,
         target_per_day: formData.target_per_day,
         planned_days: formData.planned_days,
+        destination: formData.destination,
+        wash_plant: formData.wash_plant,
+        po_number: formData.po_number,
+        dpo_number: formData.dpo_number,
         remarks: formData.remarks || null,
         status: formData.status,
       };
       if (editingId) {
-        const { error } = await supabase.from('season_plan_entries').update(payload).eq('id', editingId);
+        const { error } = await supabase.from('season_plan_entries').update(payload as any).eq('id', editingId);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('season_plan_entries').insert(payload);
+        const { error } = await supabase.from('season_plan_entries').insert(payload as any);
         if (error) throw error;
       }
     },
@@ -246,16 +308,14 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
 
   const handleExport = () => {
     const rows = seasonData.map(s => ({
-      Style: s.style, Buyer: s.buyer, 'Order Ref': s.orderRef, Line: s.lineNo,
-      'Order Qty': s.orderQty,
-      'Plan Cut Date': s.planCutDate || '', 'Plan Sew Date': s.planSewDate || '',
-      'Sew Complete Date': s.sewCompleteDate || '',
-      'Wash Out Date': s.washOutDate || '', 'Wash In-House Date': s.washInHouseDate || '',
-      'Wash Delivery Date': s.washDeliveryDate || '', 'Wash Type': s.washType,
-      'Inspection Date': s.inspectionDate || '', 'Ship Date': s.shipDate || '',
-      'Delivery Date': s.deliveryDate || '',
-      'Sew Complete Qty': s.sewCompleteQty, 'Target/Day': s.targetPerDay,
-      'Planned Days': s.plannedDays, Status: s.status, Remarks: s.remarks || '',
+      Season: s.season, 'Style Description': s.styleDescription, 'Master Style': s.masterStyle,
+      'Style #': s.style, BOM: s.bom, Color: s.color, Market: s.market, Channel: s.channel,
+      PO: s.po, DPO: s.dpo, Destination: s.destination,
+      'O/Q': s.orderQty, 'Cut Qty @5%': s.cutQty, 'Ship CXL': s.shipCxl || '',
+      'Cut Off': s.cutOffDate || '', 'Ex Factory': s.exFactoryDate || '',
+      'Sew Status': s.status, 'Sew B/L': s.sewBalance, 'Sew/Com': s.sewCompleteQty,
+      'Line No': s.lineNo, 'Sewing Start': s.planSewDate || '', 'Sewing Close': s.sewCompleteDate || '',
+      'Wash Plant': s.washPlant, 'PCD': s.planCutDate || '', 'Ship Date': s.shipDate || '',
     }));
     exportToExcel(rows, `season_plan_${format(today, 'yyyy-MM')}`, 'Season Plan');
     toast.success('Exported season plan');
@@ -269,28 +329,32 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
       if (!rows.length) { toast.error('Empty file'); return; }
       const styleMap = new Map(styles.map(s => [s.style_no, s]));
       const lineMap = new Map((lines as any[]).map(l => [`L${l.line_number}`, l]));
-      const entries = rows.map((r: any) => {
-        const style = styleMap.get(r.Style);
+      const entries = (rows as any[]).map((r: any) => {
+        const style = styleMap.get(r['Style #']);
         if (!style) return null;
-        const line = lineMap.get(r.Line);
+        const line = lineMap.get(r['Line No']);
+        const oq = Number(r['O/Q']) || 0;
         return {
           factory_id: factoryId || null, style_id: style.id,
           line_id: line ? (line as any).id : null,
-          order_qty: Number(r['Order Qty']) || 0,
-          plan_cut_date: r['Plan Cut Date'] || null, plan_sew_date: r['Plan Sew Date'] || null,
-          sew_complete_date: r['Sew Complete Date'] || null,
-          wash_out_date: r['Wash Out Date'] || null, wash_in_house_date: r['Wash In-House Date'] || null,
-          wash_delivery_date: r['Wash Delivery Date'] || null, wash_type: r['Wash Type'] || 'external',
-          inspection_date: r['Inspection Date'] || null, ship_date: r['Ship Date'] || null,
-          delivery_date: r['Delivery Date'] || null,
-          sew_complete_qty: Number(r['Sew Complete Qty']) || 0,
-          target_per_day: Number(r['Target/Day']) || 0,
-          planned_days: Number(r['Planned Days']) || 0,
-          remarks: r.Remarks || null, status: r.Status || 'planned',
+          order_qty: oq,
+          cut_qty: Number(r['Cut Qty @5%']) || Math.ceil(oq * 1.05),
+          plan_cut_date: r['PCD'] || null, plan_sew_date: r['Sewing Start'] || null,
+          sew_complete_date: r['Sewing Close'] || null,
+          cut_off_date: r['Cut Off'] || null,
+          ex_factory_date: r['Ex Factory'] || null,
+          wash_plant: r['Wash Plant'] || '',
+          destination: r['Destination'] || '',
+          po_number: r['PO'] || '',
+          dpo_number: r['DPO'] || '',
+          sew_complete_qty: Number(r['Sew/Com']) || 0,
+          sew_balance: Number(r['Sew B/L']) || 0,
+          ship_date: r['Ship Date'] || null,
+          remarks: r.Remarks || null, status: r['Sew Status'] || 'planned',
         };
       }).filter(Boolean);
-      if (!entries.length) { toast.error('No valid rows. Check Style column.'); return; }
-      const { error } = await supabase.from('season_plan_entries').insert(entries);
+      if (!entries.length) { toast.error('No valid rows. Check Style # column.'); return; }
+      const { error } = await supabase.from('season_plan_entries').insert(entries as any);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['season-plan-entries'] });
       toast.success(`Imported ${entries.length} season entries`);
@@ -300,24 +364,29 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
 
   const statusColors: Record<string, string> = {
     planned: 'bg-muted text-muted-foreground',
-    cutting: 'bg-primary/15 text-primary border-primary/30',
-    sewing: 'bg-accent/15 text-accent border-accent/30',
+    cutting: 'bg-amber-500/15 text-amber-700 border-amber-500/30',
+    sewing: 'bg-emerald-500/15 text-emerald-700 border-emerald-500/30',
     washing: 'bg-blue-500/15 text-blue-600 border-blue-500/30',
-    finishing: 'bg-warning/15 text-warning border-warning/30',
-    completed: 'bg-success/15 text-success border-success/30',
+    finishing: 'bg-purple-500/15 text-purple-700 border-purple-500/30',
+    completed: 'bg-emerald-600/15 text-emerald-700 border-emerald-600/30',
     delayed: 'bg-destructive/15 text-destructive border-destructive/30',
   };
+
+  const fmtDate = (d: string | null) => d ? format(parseISO(d), 'dd-MMM') : '—';
+
+  const TEMPLATE_COLS = ['Season', 'Style Description', 'Master Style', 'Style #', 'BOM', 'Color', 'Market', 'Channel', 'PO', 'DPO', 'Destination', 'O/Q', 'Cut Qty @5%', 'Ship CXL', 'Cut Off', 'Ex Factory', 'Sew Status', 'Sew B/L', 'Sew/Com', 'Line No', 'Sewing Start', 'Sewing Close', 'Wash Plant'];
 
   return (
     <div className="space-y-4">
       <input type="file" ref={fileInputRef} accept=".xlsx,.xls" className="hidden" onChange={handleImport} />
 
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Season Window', value: `${format(today, 'MMM')} – ${format(addMonths(today, 3), 'MMM yyyy')}`, icon: CalendarDays, color: 'text-primary' },
-          { label: 'Total Entries', value: String(seasonData.length), icon: Target, color: 'text-success' },
+          { label: 'Total Entries', value: String(seasonData.length), icon: Target, color: 'text-primary' },
           { label: 'Urgent (≤30d)', value: String(urgentOrders.length), icon: AlertTriangle, color: 'text-destructive' },
-          { label: 'On Track', value: String(seasonData.length - urgentOrders.length), icon: CheckCircle2, color: 'text-success' },
+          { label: 'Total O/Q', value: seasonData.reduce((a, s) => a + s.orderQty, 0).toLocaleString(), icon: Ship, color: 'text-primary' },
+          { label: 'On Track', value: String(seasonData.filter(s => s.status !== 'delayed' && s.status !== 'completed').length), icon: CheckCircle2, color: 'text-emerald-600' },
         ].map(k => (
           <Card key={k.label} className="border-[1.5px]">
             <CardContent className="p-3">
@@ -331,13 +400,14 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
         ))}
       </div>
 
+      {/* Main Table */}
       <Card className="border-[1.5px]">
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-[13px] font-bold flex items-center gap-2">
-            <Ship className="h-4 w-4 text-primary" /> Season Plan — PCD → Sew → Wash → Inspection → Ship
+            <Ship className="h-4 w-4 text-primary" /> Season Plan
           </CardTitle>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <Button size="sm" variant="outline" onClick={() => downloadTemplate(['Style', 'Line', 'Order Qty', 'Delivery Date', 'Plan Cut Date', 'Plan Sew Date', 'Sew Complete Date', 'Wash Out Date', 'Wash In-House Date', 'Wash Delivery Date', 'Wash Type', 'Inspection Date', 'Ship Date', 'Sew Complete Qty', 'Target/Day', 'Planned Days', 'Status', 'Remarks'], 'season_plan')} className="gap-1.5 h-7">
+            <Button size="sm" variant="outline" onClick={() => downloadTemplate(TEMPLATE_COLS, 'season_plan')} className="gap-1.5 h-7">
               <Download className="h-3.5 w-3.5" /> Template
             </Button>
             <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()} className="gap-1.5 h-7">
@@ -356,42 +426,50 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b bg-muted/30">
-                  {['Style', 'Buyer', 'Line', 'Order Qty', 'PCD', 'PSD', 'Sew Comp', 'Wash Out', 'Wash In', 'Wash Del', 'Inspect', 'Ship', 'Days Left', 'Sew Qty', 'Tgt/Day', 'Status', ''].map(h => (
-                    <th key={h} className={`py-2 px-1.5 text-[9px] uppercase tracking-wider text-muted-foreground font-semibold whitespace-nowrap ${['Order Qty', 'Days Left', 'Sew Qty', 'Tgt/Day'].includes(h) ? 'text-right' : 'text-left'} ${h === 'Status' ? 'text-center' : ''}`}>{h}</th>
+                  {['Season', 'Style Desc', 'Master Style', 'Style #', 'BOM', 'Color', 'Market', 'Channel', 'PO', 'DPO', 'Dest', 'O/Q', 'Cut @5%', 'Ship CXL', 'Cut Off', 'Ex Fac', 'Sew Status', 'Sew B/L', 'Sew/Com', 'Line', 'Sew Start', 'Sew Close', 'Wash Plant', ''].map(h => (
+                    <th key={h} className={`py-2 px-1.5 text-[8px] uppercase tracking-wider text-muted-foreground font-semibold whitespace-nowrap ${['O/Q', 'Cut @5%', 'Sew B/L', 'Sew/Com'].includes(h) ? 'text-right' : 'text-left'} ${h === 'Sew Status' ? 'text-center' : ''}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr><td colSpan={17} className="py-8 text-center text-muted-foreground">Loading...</td></tr>
+                  <tr><td colSpan={24} className="py-8 text-center text-muted-foreground">Loading...</td></tr>
                 ) : seasonData.length === 0 ? (
-                  <tr><td colSpan={17} className="py-12 text-center text-muted-foreground">
-                    No season plan entries. Click <strong>"Add Entry"</strong> to create one with backward planning from delivery date.
+                  <tr><td colSpan={24} className="py-12 text-center text-muted-foreground">
+                    No season plan entries. Click <strong>"Add Entry"</strong> to start.
                   </td></tr>
                 ) : seasonData.map((item) => {
-                  const urgencyColor = item.daysToShip <= 14 ? 'text-destructive font-bold' : item.daysToShip <= 30 ? 'text-warning font-bold' : 'text-foreground';
-                  const fmtDate = (d: string | null) => d ? format(parseISO(d), 'MMM d') : '—';
+                  const urgencyColor = item.daysToShip <= 14 ? 'bg-destructive/5' : item.daysToShip <= 30 ? 'bg-amber-500/5' : '';
                   return (
-                    <tr key={item.id} className="border-b border-border/50 hover:bg-muted/30">
-                      <td className="py-2 px-1.5 font-medium text-foreground">{item.style}</td>
-                      <td className="py-2 px-1.5 text-muted-foreground text-[10px]">{item.buyer}</td>
-                      <td className="py-2 px-1.5">{item.lineNo}</td>
-                      <td className="py-2 px-1.5 text-right font-bold">{item.orderQty.toLocaleString()}</td>
-                      <td className="py-2 px-1.5 font-mono text-muted-foreground text-[10px]">{fmtDate(item.planCutDate)}</td>
-                      <td className="py-2 px-1.5 font-mono text-muted-foreground text-[10px]">{fmtDate(item.planSewDate)}</td>
-                      <td className="py-2 px-1.5 font-mono text-muted-foreground text-[10px]">{fmtDate(item.sewCompleteDate)}</td>
-                      <td className="py-2 px-1.5 font-mono text-blue-600 text-[10px]">{fmtDate(item.washOutDate)}</td>
-                      <td className="py-2 px-1.5 font-mono text-blue-600 text-[10px]">{fmtDate(item.washInHouseDate)}</td>
-                      <td className="py-2 px-1.5 font-mono text-blue-600 text-[10px]">{fmtDate(item.washDeliveryDate)}</td>
-                      <td className="py-2 px-1.5 font-mono text-muted-foreground text-[10px]">{fmtDate(item.inspectionDate)}</td>
-                      <td className="py-2 px-1.5 font-mono text-foreground font-medium text-[10px]">{fmtDate(item.shipDate)}</td>
-                      <td className={`py-2 px-1.5 text-right ${urgencyColor}`}>{item.daysToShip < 999 ? `${item.daysToShip}d` : '—'}</td>
-                      <td className="py-2 px-1.5 text-right">{item.sewCompleteQty > 0 ? item.sewCompleteQty.toLocaleString() : '—'}</td>
-                      <td className="py-2 px-1.5 text-right">{item.targetPerDay > 0 ? item.targetPerDay.toLocaleString() : '—'}</td>
-                      <td className="py-2 px-1.5 text-center">
-                        <Badge variant="outline" className={`text-[8px] capitalize ${statusColors[item.status] || ''}`}>{item.status}</Badge>
+                    <tr key={item.id} className={`border-b border-border/50 hover:bg-muted/30 ${urgencyColor}`}>
+                      <td className="py-1.5 px-1.5 text-muted-foreground whitespace-nowrap">{item.season || '—'}</td>
+                      <td className="py-1.5 px-1.5 max-w-[120px] truncate" title={item.styleDescription}>{item.styleDescription || '—'}</td>
+                      <td className="py-1.5 px-1.5 font-medium whitespace-nowrap">{item.masterStyle || '—'}</td>
+                      <td className="py-1.5 px-1.5 font-bold text-foreground whitespace-nowrap">{item.style || '—'}</td>
+                      <td className="py-1.5 px-1.5 text-muted-foreground">{item.bom || '—'}</td>
+                      <td className="py-1.5 px-1.5 text-muted-foreground max-w-[80px] truncate" title={item.color}>{item.color || '—'}</td>
+                      <td className="py-1.5 px-1.5">{item.market || '—'}</td>
+                      <td className="py-1.5 px-1.5">{item.channel || '—'}</td>
+                      <td className="py-1.5 px-1.5 font-mono text-[10px]">{item.po || '—'}</td>
+                      <td className="py-1.5 px-1.5 font-mono text-[10px]">{item.dpo || '—'}</td>
+                      <td className="py-1.5 px-1.5">{item.destination || '—'}</td>
+                      <td className="py-1.5 px-1.5 text-right font-bold">{item.orderQty > 0 ? item.orderQty.toLocaleString() : '—'}</td>
+                      <td className="py-1.5 px-1.5 text-right font-medium text-amber-700">{item.cutQty > 0 ? item.cutQty.toLocaleString() : '—'}</td>
+                      <td className="py-1.5 px-1.5 font-mono text-[10px] text-destructive font-medium">{fmtDate(item.shipCxl)}</td>
+                      <td className="py-1.5 px-1.5 font-mono text-[10px]">{fmtDate(item.cutOffDate)}</td>
+                      <td className="py-1.5 px-1.5 font-mono text-[10px]">{fmtDate(item.exFactoryDate)}</td>
+                      <td className="py-1.5 px-1.5 text-center">
+                        <Badge variant="outline" className={`text-[7px] capitalize ${statusColors[item.status] || ''}`}>{item.status}</Badge>
                       </td>
-                      <td className="py-2 px-1.5">
+                      <td className={`py-1.5 px-1.5 text-right font-bold ${item.sewBalance > 0 ? 'text-destructive' : 'text-emerald-600'}`}>
+                        {item.sewBalance > 0 ? item.sewBalance.toLocaleString() : item.sewBalance === 0 && item.sewCompleteQty > 0 ? '✓' : '—'}
+                      </td>
+                      <td className="py-1.5 px-1.5 text-right font-medium">{item.sewCompleteQty > 0 ? item.sewCompleteQty.toLocaleString() : '—'}</td>
+                      <td className="py-1.5 px-1.5 font-medium">{item.lineNo}</td>
+                      <td className="py-1.5 px-1.5 font-mono text-[10px] text-emerald-700">{fmtDate(item.planSewDate)}</td>
+                      <td className="py-1.5 px-1.5 font-mono text-[10px] text-emerald-700">{fmtDate(item.sewCompleteDate)}</td>
+                      <td className="py-1.5 px-1.5">{item.washPlant || '—'}</td>
+                      <td className="py-1.5 px-1.5">
                         <div className="flex gap-0.5">
                           <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => openEdit(item)}><Pencil className="h-3 w-3" /></Button>
                           <AlertDialog>
@@ -434,64 +512,102 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
         </Card>
       )}
 
+      {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingId ? 'Edit Season Entry' : 'Add Season Entry'}</DialogTitle>
             <DialogDescription>
               <span className="flex items-center gap-1.5">
                 <ArrowLeft className="h-3.5 w-3.5" />
-                Set the <strong>Delivery Date</strong> first — all dates will auto-calculate backward. Adjust as needed.
+                Link an <strong>Order</strong> to auto-fill details, or set the <strong>Delivery Date</strong> for backward planning.
               </span>
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Core info */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div>
-                <Label className="text-xs font-semibold">Style *</Label>
-                <Select value={formData.style_id} onValueChange={v => updateField('style_id', v)}>
-                  <SelectTrigger className="h-8"><SelectValue placeholder="Select style" /></SelectTrigger>
-                  <SelectContent>{styles.map(s => <SelectItem key={s.id} value={s.id}>{s.style_no} — {s.buyer}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs font-semibold">Shipment (optional)</Label>
-                <Select value={formData.shipment_id} onValueChange={v => updateField('shipment_id', v)}>
-                  <SelectTrigger className="h-8"><SelectValue placeholder="Link to shipment" /></SelectTrigger>
-                  <SelectContent>{(shipments as any[]).map(s => <SelectItem key={s.id} value={s.id}>{s.order_ref} — {s.buyer}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs font-semibold">Line (optional)</Label>
-                <Select value={formData.line_id} onValueChange={v => updateField('line_id', v)}>
-                  <SelectTrigger className="h-8"><SelectValue placeholder="Assign line" /></SelectTrigger>
-                  <SelectContent>{(lines as any[]).map(l => <SelectItem key={l.id} value={l.id}>L{l.line_number} — {l.floors?.name}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs font-semibold">Order Qty</Label>
-                <Input type="number" className="h-8" value={formData.order_qty} onChange={e => updateField('order_qty', Number(e.target.value))} />
-              </div>
-            </div>
-
-            {/* Delivery Date — the anchor for backward planning */}
+            {/* Order Link */}
             <Card className="border-primary/30 bg-primary/5">
               <CardContent className="p-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex-1">
-                    <Label className="text-xs font-bold text-primary">📅 Delivery Date (anchor for backward planning)</Label>
-                    <Input type="date" className="h-8 mt-1 border-primary/30" value={formData.delivery_date} onChange={e => updateField('delivery_date', e.target.value)} />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="md:col-span-2">
+                    <Label className="text-xs font-bold text-primary">🔗 Link to Order (auto-fills details)</Label>
+                    <Select value={formData.order_id} onValueChange={v => updateField('order_id', v)}>
+                      <SelectTrigger className="h-8 mt-1"><SelectValue placeholder="Select order..." /></SelectTrigger>
+                      <SelectContent>
+                        {(orders as any[]).map(o => (
+                          <SelectItem key={o.id} value={o.id}>
+                            {o.master_style_no} — {o.season} — PO: {o.po_number || 'N/A'} ({o.confirmed_units} units)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="text-[10px] text-muted-foreground max-w-[200px]">
-                    Setting this will auto-calculate: PCD, PSD, Sew Complete, Wash dates, Inspection, Ship Date
+                  <div>
+                    <Label className="text-xs font-bold text-primary">📅 Delivery Date</Label>
+                    <Input type="date" className="h-8 mt-1 border-primary/30" value={formData.delivery_date} onChange={e => updateField('delivery_date', e.target.value)} />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Timeline dates — auto-filled but editable */}
+            {/* Core Identification */}
+            <div>
+              <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Identification</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                  <Label className="text-[10px]">Style *</Label>
+                  <Select value={formData.style_id} onValueChange={v => updateField('style_id', v)}>
+                    <SelectTrigger className="h-8"><SelectValue placeholder="Select style" /></SelectTrigger>
+                    <SelectContent>{styles.map(s => <SelectItem key={s.id} value={s.id}>{s.style_no} — {s.buyer}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px]">Line</Label>
+                  <Select value={formData.line_id} onValueChange={v => updateField('line_id', v)}>
+                    <SelectTrigger className="h-8"><SelectValue placeholder="Assign line" /></SelectTrigger>
+                    <SelectContent>{(lines as any[]).map(l => <SelectItem key={l.id} value={l.id}>L{l.line_number} — {l.floors?.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px]">PO Number</Label>
+                  <Input className="h-8" value={formData.po_number} onChange={e => updateField('po_number', e.target.value)} />
+                </div>
+                <div>
+                  <Label className="text-[10px]">DPO Number</Label>
+                  <Input className="h-8" value={formData.dpo_number} onChange={e => updateField('dpo_number', e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            {/* Quantities */}
+            <div>
+              <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Quantities & Location</p>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div>
+                  <Label className="text-[10px]">O/Q (Order Qty)</Label>
+                  <Input type="number" className="h-8" value={formData.order_qty} onChange={e => updateField('order_qty', Number(e.target.value))} />
+                </div>
+                <div>
+                  <Label className="text-[10px]">Cut Qty @5%</Label>
+                  <Input type="number" className="h-8" value={formData.cut_qty} onChange={e => updateField('cut_qty', Number(e.target.value))} />
+                </div>
+                <div>
+                  <Label className="text-[10px]">Sew Complete Qty</Label>
+                  <Input type="number" className="h-8" value={formData.sew_complete_qty} onChange={e => updateField('sew_complete_qty', Number(e.target.value))} />
+                </div>
+                <div>
+                  <Label className="text-[10px]">Sew Balance</Label>
+                  <Input type="number" className="h-8 bg-muted/50" value={formData.sew_balance} readOnly />
+                </div>
+                <div>
+                  <Label className="text-[10px]">Destination</Label>
+                  <Input className="h-8" value={formData.destination} onChange={e => updateField('destination', e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            {/* Timeline Dates */}
             <div>
               <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Production Timeline</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -500,24 +616,40 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
                   <Input type="date" className="h-7 text-xs" value={formData.plan_cut_date} onChange={e => updateField('plan_cut_date', e.target.value)} />
                 </div>
                 <div>
-                  <Label className="text-[10px]">Plan Sew Date (PSD)</Label>
+                  <Label className="text-[10px]">Cut Off Date</Label>
+                  <Input type="date" className="h-7 text-xs" value={formData.cut_off_date} onChange={e => updateField('cut_off_date', e.target.value)} />
+                </div>
+                <div>
+                  <Label className="text-[10px]">Sewing Start Date</Label>
                   <Input type="date" className="h-7 text-xs" value={formData.plan_sew_date} onChange={e => updateField('plan_sew_date', e.target.value)} />
                 </div>
                 <div>
-                  <Label className="text-[10px]">Sew Complete Date</Label>
+                  <Label className="text-[10px]">Sewing Close Date</Label>
                   <Input type="date" className="h-7 text-xs" value={formData.sew_complete_date} onChange={e => updateField('sew_complete_date', e.target.value)} />
+                </div>
+                <div>
+                  <Label className="text-[10px]">Ex Factory Date</Label>
+                  <Input type="date" className="h-7 text-xs" value={formData.ex_factory_date} onChange={e => updateField('ex_factory_date', e.target.value)} />
                 </div>
                 <div>
                   <Label className="text-[10px]">Ship Date</Label>
                   <Input type="date" className="h-7 text-xs" value={formData.ship_date} onChange={e => updateField('ship_date', e.target.value)} />
                 </div>
+                <div>
+                  <Label className="text-[10px]">Inspection Date</Label>
+                  <Input type="date" className="h-7 text-xs" value={formData.inspection_date} onChange={e => updateField('inspection_date', e.target.value)} />
+                </div>
+                <div>
+                  <Label className="text-[10px]">Target Per Day</Label>
+                  <Input type="number" className="h-7 text-xs" value={formData.target_per_day} onChange={e => updateField('target_per_day', Number(e.target.value))} />
+                </div>
               </div>
             </div>
 
-            {/* Wash dates */}
+            {/* Wash */}
             <div>
-              <p className="text-xs font-bold text-blue-600 mb-2 uppercase tracking-wider">🧺 Washing Schedule</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <p className="text-xs font-bold text-blue-600 mb-2 uppercase tracking-wider">🧺 Washing</p>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <div>
                   <Label className="text-[10px]">Wash Type</Label>
                   <Select value={formData.wash_type} onValueChange={v => updateField('wash_type', v)}>
@@ -529,45 +661,26 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-[10px]">Wash Out Date</Label>
+                  <Label className="text-[10px]">Wash Plant</Label>
+                  <Input className="h-7 text-xs" value={formData.wash_plant} onChange={e => updateField('wash_plant', e.target.value)} placeholder="e.g. ABC Wash" />
+                </div>
+                <div>
+                  <Label className="text-[10px]">Wash Out</Label>
                   <Input type="date" className="h-7 text-xs" value={formData.wash_out_date} onChange={e => updateField('wash_out_date', e.target.value)} />
                 </div>
                 <div>
-                  <Label className="text-[10px]">Wash In-House Date</Label>
+                  <Label className="text-[10px]">Wash In-House</Label>
                   <Input type="date" className="h-7 text-xs" value={formData.wash_in_house_date} onChange={e => updateField('wash_in_house_date', e.target.value)} />
                 </div>
                 <div>
-                  <Label className="text-[10px]">Wash Delivery Date</Label>
+                  <Label className="text-[10px]">Wash Delivery</Label>
                   <Input type="date" className="h-7 text-xs" value={formData.wash_delivery_date} onChange={e => updateField('wash_delivery_date', e.target.value)} />
                 </div>
               </div>
             </div>
 
-            {/* Inspection & quantities */}
-            <div>
-              <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Inspection & Quantities</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div>
-                  <Label className="text-[10px]">Inspection Date</Label>
-                  <Input type="date" className="h-7 text-xs" value={formData.inspection_date} onChange={e => updateField('inspection_date', e.target.value)} />
-                </div>
-                <div>
-                  <Label className="text-[10px]">Sew Complete Qty</Label>
-                  <Input type="number" className="h-7 text-xs" value={formData.sew_complete_qty} onChange={e => updateField('sew_complete_qty', Number(e.target.value))} />
-                </div>
-                <div>
-                  <Label className="text-[10px]">Target Per Day</Label>
-                  <Input type="number" className="h-7 text-xs" value={formData.target_per_day} onChange={e => updateField('target_per_day', Number(e.target.value))} />
-                </div>
-                <div>
-                  <Label className="text-[10px]">Planned Days</Label>
-                  <Input type="number" className="h-7 text-xs" value={formData.planned_days} onChange={e => updateField('planned_days', Number(e.target.value))} />
-                </div>
-              </div>
-            </div>
-
-            {/* Status & remarks */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Status & Remarks */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div>
                 <Label className="text-xs">Status</Label>
                 <Select value={formData.status} onValueChange={v => updateField('status', v)}>
@@ -578,6 +691,10 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <Label className="text-xs">Planned Days</Label>
+                <Input type="number" className="h-8" value={formData.planned_days} onChange={e => updateField('planned_days', Number(e.target.value))} />
               </div>
               <div>
                 <Label className="text-xs">Remarks</Label>
