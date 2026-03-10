@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { Ship, CalendarDays, Target, AlertTriangle, CheckCircle2, Plus, Pencil, Trash2, Upload, Download, ArrowLeft } from 'lucide-react';
 import { format, parseISO, differenceInDays, addMonths, subDays } from 'date-fns';
 import { exportToExcel, parseExcelFile, downloadTemplate } from '@/lib/excel-utils';
+import { SeasonGanttChart } from './SeasonGanttChart';
 
 interface SeasonPlanTabProps {
   factoryId: string;
@@ -419,7 +420,20 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
         </CardContent>
       </Card>
 
-      {/* Add/Edit Dialog with Backward Planning */}
+      {/* Gantt Timeline */}
+      {seasonData.length > 0 && (
+        <Card className="border-[1.5px]">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-[13px] font-bold flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-primary" /> Visual Timeline — PCD → Sew → Wash → Inspect → Ship
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <SeasonGanttChart entries={seasonData} />
+          </CardContent>
+        </Card>
+      )}
+
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
