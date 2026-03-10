@@ -136,6 +136,28 @@ export default function ShipmentsPage() {
     },
   });
 
+  // Enrich shipments with order data (PO, season, market, channel, ship CXL)
+  const shipmentStyleIds = useMemo(() => [...new Set(shipments.map(s => s.style_id).filter(Boolean))], [shipments]);
+  const { data: orderContext = [] } = useQuery({
+    queryKey: ['shipment-order-context', shipmentStyleIds],
+    queryFn: async () => {
+      if (!shipmentStyleIds.length) return [];
+      const { data } = await supabase
+        .from('orders')
+        .select('style_id, season, master_style_no, style_description, po_number, dpo_number, market, channel, ship_cancel_date, color_description')
+        .in('style_id', shipmentStyleIds as string[]);
+      return data ?? [];
+    },
+    enabled: shipmentStyleIds.length > 0,
+  });
+  const orderMap = useMemo(() => {
+    const m = new Map<string, any>();
+    for (const o of orderContext as any[]) {
+      if (o.style_id && !m.has(o.style_id)) m.set(o.style_id, o);
+    }
+    return m;
+  }, [orderContext]);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       const payload = {
