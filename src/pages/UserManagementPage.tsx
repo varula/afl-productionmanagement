@@ -169,35 +169,7 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="flex gap-0 max-w-6xl">
-      {/* Left Sidebar Filters */}
-      <aside className="w-44 shrink-0 pr-4 border-r border-border/40 space-y-1 pt-1">
-        {sidebarItems.map((item, idx) => (
-          <div key={item.key}>
-            {item.section && (
-              <div className={`text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-3 ${idx > 0 ? 'mt-4' : ''} mb-1`}>
-                {item.section}
-              </div>
-            )}
-            <button
-              onClick={() => setActiveFilter(item.key)}
-              className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                activeFilter === item.key
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
-            >
-              {item.label}
-              {item.count !== undefined && item.count > 0 && activeFilter !== item.key && (
-                <span className="ml-1 text-[9px] text-muted-foreground">({item.count})</span>
-              )}
-            </button>
-          </div>
-        ))}
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 pl-5 space-y-5">
+    <div className="space-y-5 max-w-6xl">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
