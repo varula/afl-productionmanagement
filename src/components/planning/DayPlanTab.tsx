@@ -312,7 +312,7 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
   });
 
   const selectedStyle = styles.find(s => s.id === styleId);
-  const bulkSelectedStyle = styles.find(s => s.id === bulkStyleId);
+  const configuredCount = Object.values(perLineConfig).filter(c => c.styleId).length;
 
   return (
     <div className="space-y-4">
