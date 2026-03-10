@@ -47,9 +47,20 @@ export default function FloorsPage() {
   });
 
   const { data: plans = [] } = useQuery({
-    queryKey: ['floors-plans', today],
+    queryKey: ['floors-plans', today, factoryId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('production_plans').select('id, line_id, target_qty, styles(style_no, buyer)').eq('date', today);
+      let query = supabase.from('production_plans').select('id, line_id, target_qty, styles(style_no, buyer)').eq('date', today);
+      // Filter by factory if we have floor IDs
+      if (factoryId) {
+        const { data: floorData } = await supabase.from('floors').select('id').eq('factory_id', factoryId);
+        if (floorData && floorData.length > 0) {
+          const { data: lineData } = await supabase.from('lines').select('id').in('floor_id', floorData.map(f => f.id));
+          if (lineData && lineData.length > 0) {
+            query = query.in('line_id', lineData.map(l => l.id));
+          }
+        }
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data ?? [];
     },
