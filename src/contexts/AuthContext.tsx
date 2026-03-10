@@ -41,35 +41,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isApproved, setIsApproved] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const fetchRoles = async (userId: string) => {
+  const fetchUserData = async (currentUser: User) => {
     try {
-      const { data } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId);
-      if (data && data.length > 0) {
-        setRoles(data.map((r) => r.role as AppRole));
+      const [rolesResult, profileResult] = await Promise.all([
+        supabase.from('user_roles').select('role').eq('user_id', currentUser.id),
+        supabase.from('profiles').select('is_approved').eq('user_id', currentUser.id).maybeSingle(),
+      ]);
+
+      if (rolesResult.data && rolesResult.data.length > 0) {
+        setRoles(rolesResult.data.map((r) => r.role as AppRole));
       } else {
         setRoles(['operator']);
       }
-    } catch (e) {
-      console.warn('Could not fetch roles:', e);
-      setRoles(['operator']);
-    }
-  };
 
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('is_approved')
-        .eq('user_id', userId)
-        .maybeSingle();
-      if (data) {
-        setIsApproved(data.is_approved ?? false);
+      if (profileResult.data) {
+        setIsApproved(profileResult.data.is_approved ?? false);
       }
     } catch (e) {
-      console.warn('Could not fetch profile:', e);
+      console.warn('Could not fetch user data:', e);
+      setRoles(['operator']);
     }
   };
 
@@ -78,13 +68,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     }, 5000);
 
-    // Set up auth state listener FIRST
+    // Set up auth state listener FIRST (synchronous state updates only)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
+      (_event, newSession) => {
+        // Synchronous state updates — no async calls here to avoid deadlocks
         if (newSession?.user) {
           const email = newSession.user.email ?? '';
           if (!isAllowedEmail(email)) {
-            await supabase.auth.signOut();
+            // Defer sign-out to avoid recursive auth state changes
+            setTimeout(() => supabase.auth.signOut(), 0);
             setSession(null);
             setUser(null);
             setRoles([]);
@@ -93,18 +85,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             clearTimeout(timeout);
             return;
           }
-        }
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        if (newSession?.user) {
-          await fetchRoles(newSession.user.id);
-          await fetchProfile(newSession.user.id);
+          setSession(newSession);
+          setUser(newSession.user);
+          // Defer async data fetching
+          setTimeout(() => {
+            fetchUserData(newSession.user!).then(() => {
+              setLoading(false);
+              clearTimeout(timeout);
+            });
+          }, 0);
         } else {
+          setSession(null);
+          setUser(null);
           setRoles([]);
           setIsApproved(false);
+          setLoading(false);
+          clearTimeout(timeout);
         }
-        setLoading(false);
-        clearTimeout(timeout);
       }
     );
 
@@ -120,8 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         setSession(existing);
         setUser(existing.user);
-        await fetchRoles(existing.user.id);
-        await fetchProfile(existing.user.id);
+        await fetchUserData(existing.user);
       }
       setLoading(false);
       clearTimeout(timeout);
