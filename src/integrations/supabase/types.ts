@@ -822,6 +822,7 @@ export type Database = {
       season_plan_entries: {
         Row: {
           created_at: string
+          delivery_date: string | null
           factory_id: string | null
           id: string
           inspection_date: string | null
@@ -839,9 +840,14 @@ export type Database = {
           style_id: string
           target_per_day: number
           updated_at: string
+          wash_delivery_date: string | null
+          wash_in_house_date: string | null
+          wash_out_date: string | null
+          wash_type: string
         }
         Insert: {
           created_at?: string
+          delivery_date?: string | null
           factory_id?: string | null
           id?: string
           inspection_date?: string | null
@@ -859,9 +865,14 @@ export type Database = {
           style_id: string
           target_per_day?: number
           updated_at?: string
+          wash_delivery_date?: string | null
+          wash_in_house_date?: string | null
+          wash_out_date?: string | null
+          wash_type?: string
         }
         Update: {
           created_at?: string
+          delivery_date?: string | null
           factory_id?: string | null
           id?: string
           inspection_date?: string | null
@@ -879,6 +890,10 @@ export type Database = {
           style_id?: string
           target_per_day?: number
           updated_at?: string
+          wash_delivery_date?: string | null
+          wash_in_house_date?: string | null
+          wash_out_date?: string | null
+          wash_type?: string
         }
         Relationships: [
           {
@@ -942,6 +957,9 @@ export type Database = {
           style_id: string | null
           tracking_number: string | null
           updated_at: string
+          wash_delivery_date: string | null
+          wash_in_house_date: string | null
+          wash_out_date: string | null
         }
         Insert: {
           actual_delivery?: string | null
@@ -973,6 +991,9 @@ export type Database = {
           style_id?: string | null
           tracking_number?: string | null
           updated_at?: string
+          wash_delivery_date?: string | null
+          wash_in_house_date?: string | null
+          wash_out_date?: string | null
         }
         Update: {
           actual_delivery?: string | null
@@ -1004,6 +1025,9 @@ export type Database = {
           style_id?: string | null
           tracking_number?: string | null
           updated_at?: string
+          wash_delivery_date?: string | null
+          wash_in_house_date?: string | null
+          wash_out_date?: string | null
         }
         Relationships: [
           {
