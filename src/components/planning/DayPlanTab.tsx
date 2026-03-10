@@ -407,43 +407,51 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/30">
-                  {['Line', 'Floor', 'Style', 'Buyer', 'SMV', 'SAM', 'Target', 'Output', 'Planned Ops', 'Present', 'Absent', 'Hours', 'Plan Eff %', 'Actual Eff %', 'Progress', ''].map(h => (
-                    <th key={h} className={`py-2 px-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold ${['SMV','SAM','Target','Output','Planned Ops','Present','Absent','Hours','Plan Eff %','Actual Eff %'].includes(h) ? 'text-right' : 'text-left'}`}>{h}</th>
+                  {['Line', 'Floor', 'Style', 'Buyer', 'PO', 'O/Q', 'Sew B/L', 'Ship CXL', 'SMV', 'Target', 'Output', 'Ops', 'Present', 'Absent', 'Hours', 'Plan Eff', 'Actual Eff', 'Progress', ''].map(h => (
+                    <th key={h} className={`py-2 px-1.5 text-[9px] uppercase tracking-wider text-muted-foreground font-semibold whitespace-nowrap ${['O/Q','Sew B/L','SMV','Target','Output','Ops','Present','Absent','Hours','Plan Eff','Actual Eff'].includes(h) ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {enrichedPlans.map((p: any) => {
-                  const progressColor = p.progress >= 80 ? 'text-emerald-500' : p.progress >= 50 ? 'text-warning' : 'text-destructive';
+                  const progressColor = p.progress >= 80 ? 'text-emerald-600' : p.progress >= 50 ? 'text-amber-600' : 'text-destructive';
+                  const ctx = seasonMap.get(p.style_id);
+                  const sewBal = ctx?.sew_balance ?? (ctx ? ctx.order_qty - (ctx.sew_complete_qty || 0) : null);
+                  const shipCxl = ctx?.orders?.ship_cancel_date;
                   return (
                     <tr key={p.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                      <td className="py-2 px-2.5"><Badge variant="outline" className="text-[10px] font-bold">L{p.lines?.line_number}</Badge></td>
-                      <td className="py-2 px-2.5 text-xs text-muted-foreground">{p.lines?.floors?.name || '—'}</td>
-                      <td className="py-2 px-2.5 font-medium text-foreground">{p.styles?.style_no || '—'}</td>
-                      <td className="py-2 px-2.5 text-muted-foreground text-xs">{p.styles?.buyer || '—'}</td>
-                      <td className="py-2 px-2.5 text-right font-mono text-xs font-bold text-foreground">{p.styles?.smv || '—'}</td>
-                      <td className="py-2 px-2.5 text-right font-mono text-xs text-muted-foreground">{p.styles?.sam || '—'}</td>
-                      <td className="py-2 px-2.5 text-right font-bold text-foreground">{p.target_qty.toLocaleString()}</td>
-                      <td className="py-2 px-2.5 text-right font-medium">{p.output.toLocaleString()}</td>
-                      <td className="py-2 px-2.5 text-right">{p.planned_operators}</td>
-                      <td className="py-2 px-2.5 text-right font-medium text-emerald-600">{p.presentOps}</td>
-                      <td className="py-2 px-2.5 text-right">
+                      <td className="py-1.5 px-1.5"><Badge variant="outline" className="text-[10px] font-bold">L{p.lines?.line_number}</Badge></td>
+                      <td className="py-1.5 px-1.5 text-xs text-muted-foreground">{p.lines?.floors?.name || '—'}</td>
+                      <td className="py-1.5 px-1.5 font-medium text-foreground">{p.styles?.style_no || '—'}</td>
+                      <td className="py-1.5 px-1.5 text-muted-foreground text-[10px]">{p.styles?.buyer || '—'}</td>
+                      <td className="py-1.5 px-1.5 font-mono text-[10px]">{ctx?.po_number || '—'}</td>
+                      <td className="py-1.5 px-1.5 text-right text-[10px] font-medium">{ctx?.order_qty ? ctx.order_qty.toLocaleString() : '—'}</td>
+                      <td className={`py-1.5 px-1.5 text-right text-[10px] font-bold ${sewBal > 0 ? 'text-destructive' : sewBal === 0 ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                        {sewBal !== null ? (sewBal > 0 ? sewBal.toLocaleString() : '✓') : '—'}
+                      </td>
+                      <td className="py-1.5 px-1.5 font-mono text-[10px] text-destructive">{shipCxl ? format(parseISO(shipCxl), 'dd-MMM') : '—'}</td>
+                      <td className="py-1.5 px-1.5 text-right font-mono text-xs font-bold text-foreground">{p.styles?.smv || '—'}</td>
+                      <td className="py-1.5 px-1.5 text-right font-bold text-foreground">{p.target_qty.toLocaleString()}</td>
+                      <td className="py-1.5 px-1.5 text-right font-medium">{p.output.toLocaleString()}</td>
+                      <td className="py-1.5 px-1.5 text-right">{p.planned_operators}</td>
+                      <td className="py-1.5 px-1.5 text-right font-medium text-emerald-600">{p.presentOps}</td>
+                      <td className="py-1.5 px-1.5 text-right">
                         {p.absentOps > 0 ? <span className="text-destructive font-bold">{p.absentOps}</span> : <span className="text-muted-foreground">0</span>}
                       </td>
-                      <td className="py-2 px-2.5 text-right text-muted-foreground">{p.working_hours}</td>
-                      <td className="py-2 px-2.5 text-right text-xs">{Number(p.planned_efficiency).toFixed(0)}%</td>
-                      <td className="py-2 px-2.5 text-right text-xs font-bold">
-                        <span className={p.actualEff >= Number(p.planned_efficiency) ? 'text-success' : p.actualEff > 0 ? 'text-destructive' : 'text-muted-foreground'}>
+                      <td className="py-1.5 px-1.5 text-right text-muted-foreground">{p.working_hours}</td>
+                      <td className="py-1.5 px-1.5 text-right text-xs">{Number(p.planned_efficiency).toFixed(0)}%</td>
+                      <td className="py-1.5 px-1.5 text-right text-xs font-bold">
+                        <span className={p.actualEff >= Number(p.planned_efficiency) ? 'text-emerald-600' : p.actualEff > 0 ? 'text-destructive' : 'text-muted-foreground'}>
                           {p.actualEff > 0 ? `${p.actualEff.toFixed(1)}%` : '—'}
                         </span>
                       </td>
-                      <td className="py-2 px-2.5 w-28">
+                      <td className="py-1.5 px-1.5 w-24">
                         <div className="flex items-center gap-1.5">
                           <Progress value={p.progress} className="h-1.5 flex-1" />
                           <span className={`text-[10px] font-bold w-7 text-right ${progressColor}`}>{p.progress}%</span>
                         </div>
                       </td>
-                      <td className="py-2 px-2.5">
+                      <td className="py-1.5 px-1.5">
                         <div className="flex gap-0.5">
                           <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(p)}><Pencil className="h-3 w-3" /></Button>
                           <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => deleteMutation.mutate(p.id)}><Trash2 className="h-3 w-3" /></Button>
@@ -453,7 +461,7 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
                   );
                 })}
                 {enrichedPlans.length === 0 && (
-                  <tr><td colSpan={16} className="py-12 text-center text-muted-foreground text-sm">No plans for this date. Click "Add Plan" or "Add All Lines" to create.</td></tr>
+                  <tr><td colSpan={19} className="py-12 text-center text-muted-foreground text-sm">No plans for this date. Click "Add Plan" or "Add All Lines" to create.</td></tr>
                 )}
               </tbody>
             </table>
