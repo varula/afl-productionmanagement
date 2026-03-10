@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Ruler, Upload, Plus, Pencil, Trash2, Download, FileText, Eye,
-  Users, ClipboardList, BarChart3, Clock, Cpu, Search
+  Users, ClipboardList, BarChart3, Clock, Cpu, Search, GitBranch
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
