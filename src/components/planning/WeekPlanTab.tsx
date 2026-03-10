@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CalendarDays, Target, TrendingUp, Users } from 'lucide-react';
-import { format, startOfWeek, addDays, eachDayOfInterval, parseISO, getDay } from 'date-fns';
+import { format, startOfWeek, addDays, eachDayOfInterval, parseISO } from 'date-fns';
 
 interface WeekPlanTabProps {
   factoryId: string;
