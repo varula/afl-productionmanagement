@@ -181,11 +181,11 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
               <div className="text-xs text-muted-foreground">{user?.email || 'admin@test.com'}</div>
               <Badge variant="outline" className="mt-1.5 text-[10px] bg-primary/10 text-primary border-primary/30">{roleLabel}</Badge>
             </div>
-            <button onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl hover:bg-muted/60 transition-colors text-left">
+            <button onClick={() => { setMenuOpen(false); navigate('/admin/users'); }} className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl hover:bg-muted/60 transition-colors text-left">
               <User className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-foreground">My Profile</span>
             </button>
-            <button onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl hover:bg-muted/60 transition-colors text-left">
+            <button onClick={() => { setMenuOpen(false); navigate('/admin/settings'); }} className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl hover:bg-muted/60 transition-colors text-left">
               <Settings className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-foreground">Settings</span>
             </button>
