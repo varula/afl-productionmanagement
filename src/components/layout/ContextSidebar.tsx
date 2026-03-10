@@ -165,8 +165,7 @@ interface ContextSidebarProps {
 export function ContextSidebar({ activeFilter, onFilterChange, factoryId = '' }: ContextSidebarProps) {
   const location = useLocation();
   const hourlyGroups = useHourlyEntrySidebar(factoryId);
-  const { role } = useUserRole();
-  const isAdmin = role === 'admin';
+  const { isAdmin } = useUserRole();
 
   const isHourlyEntry = location.pathname === '/hourly-entry';
   const { data: dbGroups = [], refetch } = useSidebarFilters(location.pathname);
