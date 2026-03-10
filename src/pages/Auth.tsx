@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Factory, Shield, UserCog, Users, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
+// Allowed email domains + specific whitelisted emails
 const ALLOWED_DOMAINS = ['armanabd.com', 'armanagroup.com'];
+const WHITELISTED_EMAILS = ['dhnperumal@gmail.com'];
 
 const ROLE_INFO = [
   { role: 'admin', label: 'Admin', icon: Shield, description: 'Full system access, factory & user management', color: 'bg-destructive/10 text-destructive border-destructive/30' },
@@ -20,8 +21,10 @@ const ROLE_INFO = [
   { role: 'operator', label: 'Operator', icon: Eye, description: 'View-only access to dashboard and reports', color: 'bg-muted text-muted-foreground border-border' },
 ];
 
-function isAllowedDomain(email: string): boolean {
-  const domain = email.split('@')[1]?.toLowerCase();
+function isAllowedEmail(email: string): boolean {
+  const lower = email.toLowerCase();
+  if (WHITELISTED_EMAILS.includes(lower)) return true;
+  const domain = lower.split('@')[1];
   return ALLOWED_DOMAINS.includes(domain);
 }
 
@@ -30,7 +33,6 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [selectedRole, setSelectedRole] = useState('operator');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const { toast } = useToast();
@@ -41,7 +43,7 @@ export default function Auth() {
       const { error } = await lovable.auth.signInWithOAuth('google', {
         redirect_uri: window.location.origin,
         extraParams: {
-          hd: 'armanabd.com', // Restrict to Armana domain
+          hd: 'armanabd.com',
         },
       });
       if (error) throw error;
@@ -55,11 +57,10 @@ export default function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate email domain
-    if (!isAllowedDomain(email)) {
+    if (!isAllowedEmail(email)) {
       toast({
-        title: 'Invalid Email Domain',
-        description: `Only @armanabd.com or @armanagroup.com emails are allowed.`,
+        title: 'Invalid Email',
+        description: 'Only authorized Armana emails or approved users can access the system.',
         variant: 'destructive',
       });
       return;
@@ -76,14 +77,14 @@ export default function Auth() {
           email,
           password,
           options: {
-            data: { full_name: fullName, requested_role: selectedRole },
+            data: { full_name: fullName },
             emailRedirectTo: window.location.origin
           }
         });
         if (error) throw error;
         toast({
           title: 'Account created',
-          description: 'Check your email for verification. Your role will be assigned by an admin.',
+          description: 'Check your email for verification. An admin will approve your access and assign your role.',
         });
       }
     } catch (err: any) {
@@ -115,22 +116,10 @@ export default function Auth() {
             disabled={googleLoading}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
-              <path
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                fill="#4285F4"
-              />
-              <path
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                fill="#34A853"
-              />
-              <path
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                fill="#EA4335"
-              />
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
             </svg>
             {googleLoading ? 'Signing in...' : 'Continue with Google'}
           </Button>
@@ -146,64 +135,39 @@ export default function Auth() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-xs font-semibold">Full Name</Label>
-                  <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Enter your full name" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold">Request Role</Label>
-                  <Select value={selectedRole} onValueChange={setSelectedRole}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ROLE_INFO.map(r => (
-                        <SelectItem key={r.role} value={r.role}>
-                          <div className="flex items-center gap-2">
-                            <r.icon className="h-3.5 w-3.5" />
-                            <span className="font-medium">{r.label}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {/* Role description */}
-                  <div className="rounded-lg border border-border bg-muted/50 p-2.5">
-                    {ROLE_INFO.map(r => r.role === selectedRole ? (
-                      <div key={r.role} className="flex items-start gap-2">
-                        <Badge variant="outline" className={`text-[9px] shrink-0 mt-0.5 ${r.color}`}>
-                          {r.label}
-                        </Badge>
-                        <span className="text-[10px] text-muted-foreground">{r.description}</span>
-                      </div>
-                    ) : null)}
-                  </div>
-                  <p className="text-[9px] text-muted-foreground">
-                    Note: Admin will approve your role after registration. Default access is Operator (view-only).
-                  </p>
-                </div>
-              </>
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-xs font-semibold">Full Name</Label>
+                <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Enter your full name" />
+              </div>
             )}
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-xs font-semibold">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                required 
-                placeholder="you@armanabd.com" 
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="you@armanabd.com"
               />
               <p className="text-[9px] text-muted-foreground">
-                Only @armanabd.com or @armanagroup.com emails allowed
+                Authorized Armana emails & approved users only
               </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password" className="text-xs font-semibold">Password</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="••••••••" />
             </div>
+
+            {!isLogin && (
+              <div className="rounded-lg border border-border bg-muted/30 p-3">
+                <p className="text-[10px] text-muted-foreground">
+                  Your account will be created with <strong>Operator</strong> (view-only) access by default.
+                  An admin (<span className="font-medium text-foreground">ie@armanagroup.com</span>) will review and assign your role.
+                </p>
+              </div>
+            )}
 
             {isLogin && (
               <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-1.5">
