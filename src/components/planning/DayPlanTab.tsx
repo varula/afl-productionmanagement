@@ -222,23 +222,22 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
 
   const bulkAddMutation = useMutation({
     mutationFn: async () => {
-      if (!bulkStyleId) throw new Error('Select a style');
       if (unplannedLines.length === 0) throw new Error('All lines already have plans');
+      const configEntries = Object.entries(perLineConfig);
+      const validEntries = configEntries.filter(([, c]) => c.styleId);
+      if (validEntries.length === 0) throw new Error('Select a style for at least one line');
 
-      const style = styles.find(s => s.id === bulkStyleId);
-      const smv = Number(style?.smv) || 0;
-
-      const newPlans = unplannedLines.map((line: any) => {
-        const ops = line.operator_count || 0;
-        const helpers = line.helper_count || 0;
-        const target = autoCalcTarget(ops, bulkWorkingHours, bulkPlannedEff, smv);
+      const newPlans = validEntries.map(([lineId, config]) => {
+        const style = styles.find(s => s.id === config.styleId);
+        const smv = Number(style?.smv) || 0;
+        const target = autoCalcTarget(config.ops, bulkWorkingHours, bulkPlannedEff, smv);
         return {
           date: selectedDate,
-          line_id: line.id,
-          style_id: bulkStyleId,
+          line_id: lineId,
+          style_id: config.styleId,
           target_qty: target,
-          planned_operators: ops,
-          planned_helpers: helpers,
+          planned_operators: config.ops,
+          planned_helpers: config.helpers,
           working_hours: bulkWorkingHours,
           planned_efficiency: bulkPlannedEff,
           target_efficiency: bulkTargetEff,
