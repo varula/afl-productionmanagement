@@ -381,8 +381,6 @@ export default function UserManagementPage() {
             </Table>
           </CardContent>
         </Card>
-      </div>
-
       {/* Edit Profile Dialog */}
       <Dialog open={!!editUser} onOpenChange={(open) => !open && setEditUser(null)}>
         <DialogContent className="sm:max-w-md">
