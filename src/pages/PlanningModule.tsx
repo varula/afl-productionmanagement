@@ -93,6 +93,9 @@ export default function PlanningModule() {
           <TabsTrigger value="season_plan" className="gap-1.5 text-xs">
             <Ship className="h-3.5 w-3.5" /> Season Plan
           </TabsTrigger>
+          <TabsTrigger value="washing" className="gap-1.5 text-xs">
+            <Droplets className="h-3.5 w-3.5" /> Washing Plan
+          </TabsTrigger>
           <TabsTrigger value="line_running" className="gap-1.5 text-xs">
             <CalendarDays className="h-3.5 w-3.5" /> Line Running Days
           </TabsTrigger>
