@@ -952,16 +952,24 @@ export type Database = {
       season_plan_entries: {
         Row: {
           created_at: string
+          cut_off_date: string | null
+          cut_qty: number
           delivery_date: string | null
+          destination: string | null
+          dpo_number: string | null
+          ex_factory_date: string | null
           factory_id: string | null
           id: string
           inspection_date: string | null
           line_id: string | null
+          order_id: string | null
           order_qty: number
           plan_cut_date: string | null
           plan_sew_date: string | null
           planned_days: number
+          po_number: string | null
           remarks: string | null
+          sew_balance: number
           sew_complete_date: string | null
           sew_complete_qty: number
           ship_date: string | null
@@ -973,20 +981,29 @@ export type Database = {
           wash_delivery_date: string | null
           wash_in_house_date: string | null
           wash_out_date: string | null
+          wash_plant: string | null
           wash_type: string
         }
         Insert: {
           created_at?: string
+          cut_off_date?: string | null
+          cut_qty?: number
           delivery_date?: string | null
+          destination?: string | null
+          dpo_number?: string | null
+          ex_factory_date?: string | null
           factory_id?: string | null
           id?: string
           inspection_date?: string | null
           line_id?: string | null
+          order_id?: string | null
           order_qty?: number
           plan_cut_date?: string | null
           plan_sew_date?: string | null
           planned_days?: number
+          po_number?: string | null
           remarks?: string | null
+          sew_balance?: number
           sew_complete_date?: string | null
           sew_complete_qty?: number
           ship_date?: string | null
@@ -998,20 +1015,29 @@ export type Database = {
           wash_delivery_date?: string | null
           wash_in_house_date?: string | null
           wash_out_date?: string | null
+          wash_plant?: string | null
           wash_type?: string
         }
         Update: {
           created_at?: string
+          cut_off_date?: string | null
+          cut_qty?: number
           delivery_date?: string | null
+          destination?: string | null
+          dpo_number?: string | null
+          ex_factory_date?: string | null
           factory_id?: string | null
           id?: string
           inspection_date?: string | null
           line_id?: string | null
+          order_id?: string | null
           order_qty?: number
           plan_cut_date?: string | null
           plan_sew_date?: string | null
           planned_days?: number
+          po_number?: string | null
           remarks?: string | null
+          sew_balance?: number
           sew_complete_date?: string | null
           sew_complete_qty?: number
           ship_date?: string | null
@@ -1023,6 +1049,7 @@ export type Database = {
           wash_delivery_date?: string | null
           wash_in_house_date?: string | null
           wash_out_date?: string | null
+          wash_plant?: string | null
           wash_type?: string
         }
         Relationships: [
@@ -1038,6 +1065,13 @@ export type Database = {
             columns: ["line_id"]
             isOneToOne: false
             referencedRelation: "lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "season_plan_entries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
           {
