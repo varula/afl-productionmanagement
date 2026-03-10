@@ -105,7 +105,6 @@ export function DayPlanTab({ factoryId, selectedDate, department }: DayPlanTabPr
     }
     return m;
   }, [seasonContext]);
-  });
 
   // Get hourly production for present operators
   const planIds = plans.map((p: any) => p.id);
