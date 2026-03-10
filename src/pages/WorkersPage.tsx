@@ -26,11 +26,23 @@ export default function WorkersPage() {
   const { data: operators = [] } = useQuery({
     queryKey: ['workers-operators', factoryId],
     queryFn: async () => {
+      // Get factory floor IDs first, then line IDs, then filter operators by line
       let query = supabase
         .from('operators')
         .select('id, name, employee_no, grade, is_active, line_id, lines(line_number, type, floor_id, floors(name))')
         .order('employee_no');
-      if (factoryId) query = query.eq('factory_id', factoryId);
+
+      if (factoryId) {
+        // Get line IDs belonging to this factory via floors
+        const { data: floorData } = await supabase.from('floors').select('id').eq('factory_id', factoryId);
+        if (floorData && floorData.length > 0) {
+          const { data: lineData } = await supabase.from('lines').select('id').in('floor_id', floorData.map(f => f.id));
+          if (lineData && lineData.length > 0) {
+            query = query.in('line_id', lineData.map(l => l.id));
+          }
+        }
+      }
+
       const { data, error } = await query;
       if (error) throw error;
       return data ?? [];
