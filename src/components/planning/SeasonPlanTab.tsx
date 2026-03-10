@@ -354,7 +354,7 @@ export function SeasonPlanTab({ factoryId, department }: SeasonPlanTabProps) {
         };
       }).filter(Boolean);
       if (!entries.length) { toast.error('No valid rows. Check Style # column.'); return; }
-      const { error } = await supabase.from('season_plan_entries').insert(entries);
+      const { error } = await supabase.from('season_plan_entries').insert(entries as any);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['season-plan-entries'] });
       toast.success(`Imported ${entries.length} season entries`);
