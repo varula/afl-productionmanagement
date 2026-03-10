@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CalendarDays, Target, TrendingUp, BarChart3 } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachWeekOfInterval, endOfWeek, startOfWeek, parseISO } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachWeekOfInterval, addDays, startOfWeek, parseISO } from 'date-fns';
 
 interface MonthPlanTabProps {
   factoryId: string;
