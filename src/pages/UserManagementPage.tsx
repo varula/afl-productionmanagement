@@ -235,22 +235,6 @@ export default function UserManagementPage() {
               onChange={e => setSearch(e.target.value)}
               className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground w-full"
             />
-          </div>
-          <div className="flex gap-2">
-            {(['all', 'pending', 'approved'] as const).map(f => (
-              <Button
-                key={f}
-                variant={activeFilter === f ? 'default' : 'outline'}
-                size="sm"
-                className="text-xs capitalize"
-                onClick={() => setActiveFilter(f)}
-              >
-                {f} {f === 'pending' && pendingCount > 0 && (
-                  <Badge className="ml-1 h-4 px-1 text-[9px] bg-amber-500 text-white">{pendingCount}</Badge>
-                )}
-              </Button>
-            ))}
-          </div>
         </div>
 
         {/* Users Table */}
