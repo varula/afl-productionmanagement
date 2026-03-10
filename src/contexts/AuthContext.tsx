@@ -129,20 +129,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
-    setRoles(['admin']); // Reset to default
-    setIsApproved(true);
+    setRoles([]);
+    setIsApproved(false);
   };
 
   const hasRole = (role: AppRole) => roles.includes(role);
-
-  // Show loading state but with a max timeout
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-muted-foreground text-sm">Signing in…</p>
-      </div>
-    );
-  }
 
   return (
     <AuthContext.Provider value={{ session, user, roles, isApproved, loading, signOut, hasRole }}>
