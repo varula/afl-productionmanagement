@@ -19,7 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
-type IECategory = 'skill_matrix' | 'operation_breakdown' | 'capacity_study' | 'time_study' | 'machine_inventory';
+type IECategory = 'skill_matrix' | 'operation_breakdown' | 'capacity_study' | 'time_study' | 'machine_inventory' | 'line_balancing';
 
 interface IEDocument {
   id: string;
