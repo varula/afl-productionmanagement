@@ -224,17 +224,16 @@ export default function UserManagementPage() {
           })}
         </div>
 
-        {/* Search + Quick Tabs */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-muted/60 border border-border/50 rounded-xl px-3 py-2 flex-1 max-w-xs">
-            <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <input
-              type="text"
-              placeholder="Search users…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground w-full"
-            />
+        {/* Search */}
+        <div className="flex items-center gap-2 bg-muted/60 border border-border/50 rounded-xl px-3 py-2 max-w-xs">
+          <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <input
+            type="text"
+            placeholder="Search users…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground w-full"
+          />
         </div>
 
         {/* Users Table */}
