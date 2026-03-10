@@ -149,7 +149,7 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
 
             <div className="px-4 py-2.5 border-t border-border/40">
               <button
-                onClick={() => { setBellOpen(false); navigate('/notification-settings'); }}
+                onClick={() => { setBellOpen(false); navigate('/admin/notifications'); }}
                 className="text-xs text-primary hover:underline font-medium w-full text-center"
               >
                 Manage Notifications
