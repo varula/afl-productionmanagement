@@ -7,13 +7,14 @@ import { useFactoryId } from '@/hooks/useActiveFilter';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
-  Target, CalendarDays, ClipboardList, RefreshCw, Scissors, Calendar as CalendarIcon, Ship,
+  Target, CalendarDays, ClipboardList, RefreshCw, Scissors, Calendar as CalendarIcon, Ship, Droplets,
 } from 'lucide-react';
 
 import { DayPlanTab } from '@/components/planning/DayPlanTab';
 import { WeekPlanTab } from '@/components/planning/WeekPlanTab';
 import { MonthPlanTab } from '@/components/planning/MonthPlanTab';
 import { SeasonPlanTab } from '@/components/planning/SeasonPlanTab';
+import { WashingPlanTab } from '@/components/planning/WashingPlanTab';
 import { LineRunningDaysTab } from '@/components/planning/LineRunningDaysTab';
 import { StyleChangeoverTab } from '@/components/planning/StyleChangeoverTab';
 import { SampleMakingTab } from '@/components/planning/SampleMakingTab';
@@ -92,6 +93,9 @@ export default function PlanningModule() {
           <TabsTrigger value="season_plan" className="gap-1.5 text-xs">
             <Ship className="h-3.5 w-3.5" /> Season Plan
           </TabsTrigger>
+          <TabsTrigger value="washing" className="gap-1.5 text-xs">
+            <Droplets className="h-3.5 w-3.5" /> Washing Plan
+          </TabsTrigger>
           <TabsTrigger value="line_running" className="gap-1.5 text-xs">
             <CalendarDays className="h-3.5 w-3.5" /> Line Running Days
           </TabsTrigger>
@@ -117,6 +121,10 @@ export default function PlanningModule() {
 
         <TabsContent value="season_plan" className="mt-4">
           <SeasonPlanTab factoryId={factoryId} department={department} />
+        </TabsContent>
+
+        <TabsContent value="washing" className="mt-4">
+          <WashingPlanTab factoryId={factoryId} department={department} />
         </TabsContent>
 
         <TabsContent value="line_running" className="mt-4">
