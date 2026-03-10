@@ -278,6 +278,61 @@ const STATIC_SIDEBAR_CONFIG: SidebarConfig = {
       { label: 'Shift Templates', key: 'fs-shifts' },
     ]},
   ],
+  '/planning': [
+    { title: 'Plan View', items: [
+      { label: 'Day Plan', key: 'pl-dayplan', active: true },
+      { label: 'Line Running Days', key: 'pl-running' },
+      { label: 'Style Changeover', key: 'pl-changeover' },
+      { label: 'Sample Making', key: 'pl-samples' },
+    ]},
+    { title: 'Department', items: [
+      { label: 'Sewing', key: 'pl-sewing' },
+      { label: 'Finishing', key: 'pl-finishing' },
+    ]},
+  ],
+  '/overtime': [
+    { title: 'View', items: [
+      { label: 'Analytics', key: 'ot-analytics', active: true },
+      { label: 'Approval Workflow', key: 'ot-approval' },
+    ]},
+    { title: 'Period', items: [
+      { label: 'Today', key: 'ot-today' },
+      { label: 'This Week', key: 'ot-week' },
+      { label: 'This Month', key: 'ot-month' },
+    ]},
+    { title: 'By Department', items: [
+      { label: 'Sewing', key: 'ot-sewing' },
+      { label: 'Cutting', key: 'ot-cutting' },
+      { label: 'Finishing', key: 'ot-finishing' },
+    ]},
+  ],
+  '/ie': [
+    { title: 'Category', items: [
+      { label: 'Skill Matrix', key: 'ie-skill', active: true },
+      { label: 'Operation Breakdown', key: 'ie-ops' },
+      { label: 'Capacity Study', key: 'ie-capacity' },
+      { label: 'Time Study', key: 'ie-time' },
+      { label: 'Machine Inventory', key: 'ie-machine' },
+    ]},
+    { title: 'Status', items: [
+      { label: 'Active', key: 'ie-active' },
+      { label: 'Draft', key: 'ie-draft' },
+      { label: 'Archived', key: 'ie-archived' },
+    ]},
+  ],
+  '/admin/users': [
+    { title: 'Filter', items: [
+      { label: 'All Users', key: 'usr-all', active: true },
+      { label: 'Pending Approval', key: 'usr-pending' },
+      { label: 'Approved', key: 'usr-approved' },
+    ]},
+    { title: 'By Role', items: [
+      { label: 'Admin', key: 'usr-admin' },
+      { label: 'Manager / IE', key: 'usr-manager' },
+      { label: 'Line Chief', key: 'usr-linechief' },
+      { label: 'Operator', key: 'usr-operator' },
+    ]},
+  ],
 };
 
 const HOUR_LABELS = [
@@ -406,6 +461,10 @@ export function ContextSidebar({ activeFilter, onFilterChange, factoryId = '' }:
 
 export function getDefaultFilter(pathname: string): string {
   if (pathname === '/hourly-entry') return 'hr-all';
+  if (pathname === '/planning') return 'pl-dayplan';
+  if (pathname === '/overtime') return 'ot-analytics';
+  if (pathname === '/ie') return 'ie-skill';
+  if (pathname === '/admin/users') return 'usr-all';
   const groups = STATIC_SIDEBAR_CONFIG[pathname] || [];
   for (const group of groups) {
     for (const item of group.items) {
