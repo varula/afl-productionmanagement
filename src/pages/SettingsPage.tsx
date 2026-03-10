@@ -9,6 +9,7 @@ const sections = [
   { icon: Factory, title: 'Factory Configuration', desc: 'Manage factories, floors, and production lines', path: '/admin/factories' },
   { icon: Users, title: 'User Management', desc: 'Add users, assign roles (Admin, Manager, Line Chief, Operator)', path: '/admin/users' },
   { icon: Bell, title: 'Notifications', desc: 'Configure WhatsApp alerts for downtime, quality, and shipment issues', path: '/admin/notifications' },
+  { icon: Filter, title: 'Sidebar Filters', desc: 'Add, edit, reorder sidebar filters for every module', path: '/admin/filters' },
   { icon: Shield, title: 'Security', desc: 'Password policies, session management, audit logs' },
   { icon: Database, title: 'Data & Backup', desc: 'Export data, manage backups, data retention policies' },
 ];

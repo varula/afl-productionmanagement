@@ -94,6 +94,7 @@ function ProtectedRoutes() {
         <Route path="/admin/settings" element={<SettingsPage />} />
         <Route path="/admin/users" element={<UserManagementPage />} />
         <Route path="/admin/notifications" element={<NotificationSettingsPage />} />
+        <Route path="/admin/filters" element={<FilterManagementPage />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
