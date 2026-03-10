@@ -871,6 +871,83 @@ export type Database = {
           },
         ]
       }
+      sidebar_filter_groups: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          route: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          route: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          route?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sidebar_filter_items: {
+        Row: {
+          badge_value: string | null
+          created_at: string
+          filter_key: string
+          group_id: string
+          id: string
+          is_active: boolean
+          is_default: boolean
+          label: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          badge_value?: string | null
+          created_at?: string
+          filter_key: string
+          group_id: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          label: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          badge_value?: string | null
+          created_at?: string
+          filter_key?: string
+          group_id?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          label?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sidebar_filter_items_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "sidebar_filter_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       style_changeovers: {
         Row: {
           changeover_date: string
