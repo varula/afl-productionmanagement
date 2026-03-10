@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useOutletContext } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import {
   Users, Shield, Crown, UserCheck, User as UserIcon, CheckCircle2, XCircle, Clock,
-  Trash2, Pencil, UserPlus, Search,
+  Trash2, Pencil, Search,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -28,13 +29,20 @@ const ROLE_CONFIG: Record<AppRole, { label: string; color: string; icon: typeof 
 
 const ALL_ROLES: AppRole[] = ['admin', 'manager', 'line_chief', 'operator'];
 
-type StatusFilter = 'all' | 'pending' | 'approved';
-type SidebarFilter = StatusFilter | AppRole;
+const FILTER_MAP: Record<string, { type: 'status' | 'role' | 'all'; value?: string }> = {
+  'usr-all': { type: 'all' },
+  'usr-pending': { type: 'status', value: 'pending' },
+  'usr-approved': { type: 'status', value: 'approved' },
+  'usr-admin': { type: 'role', value: 'admin' },
+  'usr-manager': { type: 'role', value: 'manager' },
+  'usr-linechief': { type: 'role', value: 'line_chief' },
+  'usr-operator': { type: 'role', value: 'operator' },
+};
 
 export default function UserManagementPage() {
   const { user: currentUser } = useAuth();
+  const { activeFilter } = useOutletContext<{ activeFilter: string }>();
   const queryClient = useQueryClient();
-  const [activeFilter, setActiveFilter] = useState<SidebarFilter>('all');
   const [search, setSearch] = useState('');
   const [editUser, setEditUser] = useState<any | null>(null);
   const [editName, setEditName] = useState('');
@@ -138,11 +146,15 @@ export default function UserManagementPage() {
     return acc;
   }, {} as Record<AppRole, number>);
 
+  const currentFilter = FILTER_MAP[activeFilter] || { type: 'all' };
+
   const filteredUsers = users.filter(u => {
     // Sidebar filter
-    if (activeFilter === 'pending' && u.is_approved) return false;
-    if (activeFilter === 'approved' && !u.is_approved) return false;
-    if (ALL_ROLES.includes(activeFilter as AppRole) && u.role !== activeFilter) return false;
+    if (currentFilter.type === 'status') {
+      if (currentFilter.value === 'pending' && u.is_approved) return false;
+      if (currentFilter.value === 'approved' && !u.is_approved) return false;
+    }
+    if (currentFilter.type === 'role' && u.role !== currentFilter.value) return false;
 
     // Search
     if (search) {
@@ -152,16 +164,6 @@ export default function UserManagementPage() {
     return true;
   });
 
-  const sidebarItems: { key: SidebarFilter; label: string; count?: number; section?: string }[] = [
-    { key: 'all', label: 'All Users', count: users.length, section: 'FILTER' },
-    { key: 'pending', label: 'Pending Approval', count: pendingCount },
-    { key: 'approved', label: 'Approved', count: approvedCount },
-    { key: 'admin', label: 'Admin', count: roleCounts.admin, section: 'BY ROLE' },
-    { key: 'manager', label: 'Manager / IE', count: roleCounts.manager },
-    { key: 'line_chief', label: 'Line Chief', count: roleCounts.line_chief },
-    { key: 'operator', label: 'Operator', count: roleCounts.operator },
-  ];
-
   const openEdit = (u: any) => {
     setEditUser(u);
     setEditName(u.full_name || '');
@@ -169,35 +171,7 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="flex gap-0 max-w-6xl">
-      {/* Left Sidebar Filters */}
-      <aside className="w-44 shrink-0 pr-4 border-r border-border/40 space-y-1 pt-1">
-        {sidebarItems.map((item, idx) => (
-          <div key={item.key}>
-            {item.section && (
-              <div className={`text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-3 ${idx > 0 ? 'mt-4' : ''} mb-1`}>
-                {item.section}
-              </div>
-            )}
-            <button
-              onClick={() => setActiveFilter(item.key)}
-              className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                activeFilter === item.key
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
-            >
-              {item.label}
-              {item.count !== undefined && item.count > 0 && activeFilter !== item.key && (
-                <span className="ml-1 text-[9px] text-muted-foreground">({item.count})</span>
-              )}
-            </button>
-          </div>
-        ))}
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 pl-5 space-y-5">
+    <div className="space-y-5 max-w-6xl">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
@@ -250,33 +224,16 @@ export default function UserManagementPage() {
           })}
         </div>
 
-        {/* Search + Quick Tabs */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-muted/60 border border-border/50 rounded-xl px-3 py-2 flex-1 max-w-xs">
-            <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <input
-              type="text"
-              placeholder="Search users…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground w-full"
-            />
-          </div>
-          <div className="flex gap-2">
-            {(['all', 'pending', 'approved'] as const).map(f => (
-              <Button
-                key={f}
-                variant={activeFilter === f ? 'default' : 'outline'}
-                size="sm"
-                className="text-xs capitalize"
-                onClick={() => setActiveFilter(f)}
-              >
-                {f} {f === 'pending' && pendingCount > 0 && (
-                  <Badge className="ml-1 h-4 px-1 text-[9px] bg-amber-500 text-white">{pendingCount}</Badge>
-                )}
-              </Button>
-            ))}
-          </div>
+        {/* Search */}
+        <div className="flex items-center gap-2 bg-muted/60 border border-border/50 rounded-xl px-3 py-2 max-w-xs">
+          <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <input
+            type="text"
+            placeholder="Search users…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground w-full"
+          />
         </div>
 
         {/* Users Table */}
@@ -409,8 +366,6 @@ export default function UserManagementPage() {
             </Table>
           </CardContent>
         </Card>
-      </div>
-
       {/* Edit Profile Dialog */}
       <Dialog open={!!editUser} onOpenChange={(open) => !open && setEditUser(null)}>
         <DialogContent className="sm:max-w-md">
