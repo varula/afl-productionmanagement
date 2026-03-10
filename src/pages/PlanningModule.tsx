@@ -7,13 +7,14 @@ import { useFactoryId } from '@/hooks/useActiveFilter';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
-  Target, CalendarDays, ClipboardList, RefreshCw, Scissors, Calendar as CalendarIcon, Ship,
+  Target, CalendarDays, ClipboardList, RefreshCw, Scissors, Calendar as CalendarIcon, Ship, Droplets,
 } from 'lucide-react';
 
 import { DayPlanTab } from '@/components/planning/DayPlanTab';
 import { WeekPlanTab } from '@/components/planning/WeekPlanTab';
 import { MonthPlanTab } from '@/components/planning/MonthPlanTab';
 import { SeasonPlanTab } from '@/components/planning/SeasonPlanTab';
+import { WashingPlanTab } from '@/components/planning/WashingPlanTab';
 import { LineRunningDaysTab } from '@/components/planning/LineRunningDaysTab';
 import { StyleChangeoverTab } from '@/components/planning/StyleChangeoverTab';
 import { SampleMakingTab } from '@/components/planning/SampleMakingTab';
