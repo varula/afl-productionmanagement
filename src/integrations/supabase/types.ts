@@ -518,6 +518,38 @@ export type Database = {
           },
         ]
       }
+      operator_skills: {
+        Row: {
+          created_at: string
+          id: string
+          operation_name: string
+          operator_id: string
+          skill_level: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          operation_name: string
+          operator_id: string
+          skill_level?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          operation_name?: string
+          operator_id?: string
+          skill_level?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_skills_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operators: {
         Row: {
           created_at: string
@@ -534,6 +566,7 @@ export type Database = {
           operations_count: number | null
           salary: number | null
           updated_at: string
+          worker_type: string
         }
         Insert: {
           created_at?: string
@@ -550,6 +583,7 @@ export type Database = {
           operations_count?: number | null
           salary?: number | null
           updated_at?: string
+          worker_type?: string
         }
         Update: {
           created_at?: string
@@ -566,6 +600,7 @@ export type Database = {
           operations_count?: number | null
           salary?: number | null
           updated_at?: string
+          worker_type?: string
         }
         Relationships: [
           {
