@@ -56,6 +56,146 @@ export type Database = {
         }
         Relationships: []
       }
+      attendance: {
+        Row: {
+          check_in_time: string | null
+          check_out_time: string | null
+          created_at: string
+          date: string
+          factory_id: string
+          id: string
+          line_id: string | null
+          operator_id: string
+          remarks: string | null
+          shift: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          check_in_time?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          date?: string
+          factory_id: string
+          id?: string
+          line_id?: string | null
+          operator_id: string
+          remarks?: string | null
+          shift?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          check_in_time?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          date?: string
+          factory_id?: string
+          id?: string
+          line_id?: string | null
+          operator_id?: string
+          remarks?: string | null
+          shift?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_factory_id_fkey"
+            columns: ["factory_id"]
+            isOneToOne: false
+            referencedRelation: "factories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cut_plans: {
+        Row: {
+          actual_qty: number
+          created_at: string
+          date: string
+          fabric_type: string | null
+          factory_id: string
+          id: string
+          line_id: string | null
+          markers: number
+          planned_qty: number
+          plies: number
+          remarks: string | null
+          status: string
+          style_id: string
+          updated_at: string
+        }
+        Insert: {
+          actual_qty?: number
+          created_at?: string
+          date?: string
+          fabric_type?: string | null
+          factory_id: string
+          id?: string
+          line_id?: string | null
+          markers?: number
+          planned_qty?: number
+          plies?: number
+          remarks?: string | null
+          status?: string
+          style_id: string
+          updated_at?: string
+        }
+        Update: {
+          actual_qty?: number
+          created_at?: string
+          date?: string
+          fabric_type?: string | null
+          factory_id?: string
+          id?: string
+          line_id?: string | null
+          markers?: number
+          planned_qty?: number
+          plies?: number
+          remarks?: string | null
+          status?: string
+          style_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cut_plans_factory_id_fkey"
+            columns: ["factory_id"]
+            isOneToOne: false
+            referencedRelation: "factories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cut_plans_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cut_plans_style_id_fkey"
+            columns: ["style_id"]
+            isOneToOne: false
+            referencedRelation: "styles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       downtime: {
         Row: {
           created_at: string
@@ -399,6 +539,69 @@ export type Database = {
           },
         ]
       }
+      kaizen_logs: {
+        Row: {
+          after_state: string | null
+          before_state: string | null
+          category: string
+          created_at: string
+          description: string | null
+          factory_id: string
+          id: string
+          line_id: string | null
+          savings_estimate: number | null
+          status: string
+          submitted_by: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          after_state?: string | null
+          before_state?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          factory_id: string
+          id?: string
+          line_id?: string | null
+          savings_estimate?: number | null
+          status?: string
+          submitted_by: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          after_state?: string | null
+          before_state?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          factory_id?: string
+          id?: string
+          line_id?: string | null
+          savings_estimate?: number | null
+          status?: string
+          submitted_by?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kaizen_logs_factory_id_fkey"
+            columns: ["factory_id"]
+            isOneToOne: false
+            referencedRelation: "factories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kaizen_logs_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "lines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lines: {
         Row: {
           created_at: string
@@ -448,6 +651,72 @@ export type Database = {
             columns: ["floor_id"]
             isOneToOne: false
             referencedRelation: "floors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      maintenance_logs: {
+        Row: {
+          created_at: string
+          description: string | null
+          factory_id: string
+          id: string
+          line_id: string | null
+          machine_name: string
+          maintenance_type: string
+          remarks: string | null
+          reported_at: string
+          reported_by: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          factory_id: string
+          id?: string
+          line_id?: string | null
+          machine_name: string
+          maintenance_type?: string
+          remarks?: string | null
+          reported_at?: string
+          reported_by: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          factory_id?: string
+          id?: string
+          line_id?: string | null
+          machine_name?: string
+          maintenance_type?: string
+          remarks?: string | null
+          reported_at?: string
+          reported_by?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_logs_factory_id_fkey"
+            columns: ["factory_id"]
+            isOneToOne: false
+            referencedRelation: "factories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_logs_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "lines"
             referencedColumns: ["id"]
           },
         ]

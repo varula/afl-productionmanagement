@@ -15,6 +15,12 @@ import {
   Package,
   LineChart,
   Ruler,
+  UserCheck,
+  Scissors,
+  Lightbulb,
+  Wrench,
+  Palette,
+  MapPin,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -47,6 +53,12 @@ const mainNav = [
   { title: 'Inventory', url: '/inventory', icon: Package },
   { title: 'Analytics', url: '/analytics', icon: LineChart },
   { title: 'IE Module', url: '/ie', icon: Ruler },
+  { title: 'Attendance', url: '/attendance', icon: UserCheck },
+  { title: 'Cut Planning', url: '/cut-planning', icon: Scissors },
+  { title: 'Kaizen Log', url: '/kaizen', icon: Lightbulb },
+  { title: 'Maintenance', url: '/maintenance', icon: Wrench },
+  { title: 'Style Master', url: '/style-master', icon: Palette },
+  { title: 'Shipment Tracker', url: '/shipment-tracker', icon: MapPin },
   { title: 'MIS Reports', url: '/mis', icon: BarChart3 },
 ];
 
