@@ -38,6 +38,12 @@ import DepartmentDashboard from "./pages/DepartmentDashboard";
 import OvertimePage from "./pages/OvertimePage";
 import IEModulePage from "./pages/IEModulePage";
 import FilterManagementPage from "./pages/FilterManagementPage";
+import AttendancePage from "./pages/AttendancePage";
+import CutPlanningPage from "./pages/CutPlanningPage";
+import KaizenLogPage from "./pages/KaizenLogPage";
+import MaintenanceLogPage from "./pages/MaintenanceLogPage";
+import StyleMasterPage from "./pages/StyleMasterPage";
+import ShipmentTrackerPage from "./pages/ShipmentTrackerPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -95,6 +101,12 @@ function ProtectedRoutes() {
         <Route path="/admin/users" element={<UserManagementPage />} />
         <Route path="/admin/notifications" element={<NotificationSettingsPage />} />
         <Route path="/admin/filters" element={<FilterManagementPage />} />
+        <Route path="/attendance" element={<AttendancePage />} />
+        <Route path="/cut-planning" element={<CutPlanningPage />} />
+        <Route path="/kaizen" element={<KaizenLogPage />} />
+        <Route path="/maintenance" element={<MaintenanceLogPage />} />
+        <Route path="/style-master" element={<StyleMasterPage />} />
+        <Route path="/shipment-tracker" element={<ShipmentTrackerPage />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
