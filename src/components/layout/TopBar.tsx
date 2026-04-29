@@ -73,8 +73,8 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
           <span className="text-xs font-bold text-background tracking-tight">AG</span>
         </div>
         <div className="hidden md:block">
-          <div className="text-sm font-semibold text-foreground leading-tight tracking-tight">Armana Fashions</div>
-          <div className="text-xs text-muted-foreground font-normal">Production System</div>
+          <div className="text-sm font-semibold text-foreground leading-tight tracking-tight">Armana Productivity 360</div>
+          <div className="text-xs text-muted-foreground font-normal">Measure. Improve. Sustain.</div>
         </div>
       </div>
 
