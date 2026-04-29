@@ -70,7 +70,7 @@ export function TopBar({ selectedFactoryId, onFactoryChange }: TopBarProps) {
       {/* Brand */}
       <div className="flex items-center gap-2.5 shrink-0">
         <div className="w-8 h-8 rounded-xl bg-foreground flex items-center justify-center shrink-0">
-          <span className="text-xs font-bold text-background tracking-tight">AG</span>
+          <span className="text-xs font-bold text-background tracking-tight">AFL</span>
         </div>
         <div className="hidden md:block">
           <div className="text-sm font-semibold text-foreground leading-tight tracking-tight">Armana Productivity 360</div>
