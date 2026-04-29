@@ -128,9 +128,9 @@ export default function Auth() {
       <Card className="w-full max-w-md shadow-[0_20px_80px_rgba(30,40,100,0.15)] border-0 rounded-[22px]">
         <CardHeader className="text-center pb-4">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-[14px] bg-gradient-to-br from-primary to-purple">
-            <span className="text-[14px] font-extrabold text-primary-foreground tracking-tight">AG</span>
+            <span className="text-[14px] font-extrabold text-primary-foreground tracking-tight">AFL</span>
           </div>
-          <CardTitle className="text-xl font-extrabold">Armana Fashions Limited</CardTitle>
+          <CardTitle className="text-xl font-extrabold">Armana Productivity 360</CardTitle>
           <CardDescription className="text-xs">
             {isForgotPassword ? 'Reset your password' : isLogin ? 'Sign in to your production management system' : 'Create a new account'}
           </CardDescription>
